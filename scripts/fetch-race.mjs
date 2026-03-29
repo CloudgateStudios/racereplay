@@ -149,21 +149,37 @@ function getNestedValue(obj, dotPath) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-const [, , eventUrl, targetYear, outputDir = path.join(__dirname, "data")] = process.argv;
+const rawArgs = process.argv.slice(2).filter((a) => !a.startsWith("--") || a === "--dump-fields");
+const [eventUrl, targetYear, outputDir = path.join(__dirname, "data")] = rawArgs;
+
+// --event-name <substring>: filter to events whose name contains this string
+// (case-insensitive). Useful when an /odiv/ URL returns a multi-race group.
+const eventNameIdx = process.argv.indexOf("--event-name");
+const eventNameFilter = eventNameIdx !== -1
+  ? process.argv[eventNameIdx + 1]?.toLowerCase()
+  : null;
 
 if (!eventUrl || !eventUrl.startsWith("http")) {
   console.error(`
 Usage: node scripts/fetch-race.mjs <event-group-url> [year] [output-dir]
+                                    [--event-name <substring>] [--dump-fields]
 
-  event-group-url  labs-v2.competitor.com/results/event/UUID
-  year             Optional — only download this year (e.g. 2026). Defaults to most recent.
-  output-dir       Where to write CSVs. Defaults to scripts/data/
+  event-group-url    labs-v2.competitor.com/results/event/UUID
+  year               Optional — only download this year (e.g. 2026). Defaults to most recent.
+  output-dir         Where to write CSVs. Defaults to scripts/data/
+  --event-name       Filter to events whose name contains this string (case-insensitive).
+                     Useful when a /odiv/ URL returns results across multiple races.
+  --dump-fields      Print all raw API field names from the first record and exit.
 
 How to find the event-group-url:
   1. Go to the race results page on ironman.com
   2. View Page Source and search for "labs-v2.competitor.com"
   3. Copy the URL that looks like:
      https://labs-v2.competitor.com/results/event/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+Example:
+  node scripts/fetch-race.mjs https://labs-v2.competitor.com/results/event/odiv/UUID 2025 \\
+    --event-name "Oceanside"
 `);
   process.exit(1);
 }
@@ -191,11 +207,30 @@ How to find the event-group-url:
 
     if (!sorted.length) throw new Error("Could not find any events with a valid year and UUID.");
 
-    const toFetch = targetYear
-      ? sorted.filter((e) => e.year === targetYear)
-      : [sorted[0]]; // default: most recent
+    // Apply --event-name filter before year selection
+    const nameFiltered = eventNameFilter
+      ? sorted.filter((e) => {
+          const name = (e.wtc_name || e.wtc_externaleventname || "").toLowerCase();
+          return name.includes(eventNameFilter);
+        })
+      : sorted;
 
-    if (!toFetch.length) throw new Error(`No event found for year ${targetYear}.`);
+    if (eventNameFilter && !nameFiltered.length) {
+      throw new Error(
+        `No events found matching --event-name "${eventNameFilter}".\n` +
+        `Available events:\n` +
+        sorted.map((e) => `  • ${e.wtc_name || e.wtc_externaleventname} (${e.year})`).join("\n")
+      );
+    }
+
+    const toFetch = targetYear
+      ? nameFiltered.filter((e) => e.year === targetYear)
+      : [nameFiltered[0]]; // default: most recent matching event
+
+    if (!toFetch.length) {
+      const available = nameFiltered.map((e) => e.year).join(", ");
+      throw new Error(`No event found for year ${targetYear}. Available: ${available}`);
+    }
 
     for (const event of toFetch) {
       console.log(`\n🏊 Processing ${event.year}...`);

@@ -7,10 +7,25 @@
  * writes a full per-athlete passing CSV alongside the input file.
  *
  * Usage:
- *   node scripts/analyze-passing.mjs <csv-file>
+ *   node scripts/analyze-passing.mjs <csv-file> [--wave-offsets <file.json>]
  *
- * Example:
+ * Example (chip time only — same-wave athletes only):
  *   node scripts/analyze-passing.mjs scripts/data/oceanside_2026.csv
+ *
+ * Example (physical passing — cross-wave accurate):
+ *   node scripts/analyze-passing.mjs scripts/data/oceanside_2026.csv \
+ *     --wave-offsets scripts/data/oceanside_2026_waves.json
+ *
+ * Wave offsets file format (seconds after official gun):
+ *   {
+ *     "MPRO":   0,
+ *     "FPRO":   180,
+ *     "M18-24": 600,
+ *     "M25-29": 780,
+ *     ...
+ *   }
+ *   Division names must match the "Division" column in the results CSV exactly.
+ *   See scripts/data/wave-offsets-example.json for a template.
  *
  * Output CSV:
  *   scripts/data/oceanside_2026_passing.csv
@@ -19,6 +34,7 @@
  *   Bib, Name, Gender, Country, Division, Status,
  *   Overall Rank, Gender Rank, Division Rank,
  *   Finish Time, Swim Time, T1 Time, Bike Time, T2 Time, Run Time,
+ *   Wave Offset (Seconds),
  *   Swim Gained, Swim Lost, Swim Net,
  *   T1 Gained,   T1 Lost,   T1 Net,
  *   Bike Gained, Bike Lost, Bike Net,
@@ -69,7 +85,15 @@ function parseCSVRow(line) {
 
 // ─── Data Normalisation ───────────────────────────────────────────────────────
 
-function normaliseAthletes(rows) {
+/**
+ * normaliseAthletes(rows, externalWaveOffsets?)
+ *
+ * externalWaveOffsets: Map<divisionName, offsetSeconds> loaded from a
+ * --wave-offsets JSON file. When provided, these are used as the wave start
+ * offsets for every athlete in that division instead of trying to derive them
+ * from gun time fields (which most races don't publish via the API).
+ */
+function normaliseAthletes(rows, externalWaveOffsets = null) {
   // First pass: parse all raw fields
   const athletes = rows.map((r) => {
     const secs = (col) => {
@@ -86,16 +110,25 @@ function normaliseAthletes(rows) {
     const gunFinish = secs("Finish Gun (Seconds)");
 
     // Wave start offset = how many seconds after the official gun this athlete
-    // started. For finishers with gun time data: gunFinish - chipFinish.
-    // For others: derived in second pass below.
-    const waveOffset = (gunFinish != null && finish != null)
-      ? gunFinish - finish
-      : null;
+    // started. Sources in priority order:
+    //   1. External wave-offsets file (keyed by division name) — most reliable
+    //   2. Derived from API gun time field: gunFinish - chipFinish
+    //   3. Derived from division peers' median (second pass below)
+    //   4. 0 (chip time = gun time — same-wave comparisons only)
+    let waveOffset = null;
+    const division = r["Division"] || "";
+
+    if (externalWaveOffsets && externalWaveOffsets.has(division)) {
+      waveOffset = externalWaveOffsets.get(division);
+    } else if (gunFinish != null && finish != null) {
+      waveOffset = gunFinish - finish;
+    }
+    // else: filled in on second pass
 
     return {
       bib:          r["Bib Number"] || "?",
       name:         r["Athlete Name"] || "Unknown",
-      division:     r["Division"] || "",
+      division,
       gender:       r["Gender"] || "",
       country:      r["Country"] || "",
       status:       r["Status"] || "FIN",
@@ -109,14 +142,13 @@ function normaliseAthletes(rows) {
       runSecs:    run,
       finishSecs: finish,
       gunFinishSecs: gunFinish,
-      waveOffset,   // filled in below for DNFs
+      waveOffset,   // may be null — filled in second pass if still needed
     };
   });
 
-  // Second pass: for athletes without a wave offset (DNFs, DQs, or races
-  // where the API doesn't supply gun times), derive from division peers.
-  // Athletes in the same division start in the same wave, so their wave
-  // offsets should all be the same. Use the median of known offsets per div.
+  // Second pass: for any athlete still without a wave offset (e.g. DNFs when
+  // using external wave offsets, or races with no gun times and no wave file),
+  // derive from division peers' median wave offset.
   const offsetsByDiv = new Map();
   for (const a of athletes) {
     if (a.waveOffset == null) continue;
@@ -133,7 +165,8 @@ function normaliseAthletes(rows) {
       : sorted[mid];
   };
 
-  const hasGunTimes = athletes.some((a) => a.waveOffset != null);
+  const hasWaveData = athletes.some((a) => a.waveOffset != null && a.waveOffset !== 0)
+    || (externalWaveOffsets && externalWaveOffsets.size > 0);
 
   for (const a of athletes) {
     if (a.waveOffset != null) continue;
@@ -149,14 +182,14 @@ function normaliseAthletes(rows) {
     const w = a.waveOffset;
     const { swimSecs: sw, t1Secs: t1, bikeSecs: bk, t2Secs: t2, finishSecs: fin } = a;
 
-    a.cumAfterSwim  = sw != null                                         ? w + sw             : null;
-    a.cumAfterT1    = sw != null && t1 != null                           ? w + sw + t1        : null;
-    a.cumAfterBike  = sw != null && t1 != null && bk != null             ? w + sw + t1 + bk   : null;
-    a.cumAfterT2    = sw != null && t1 != null && bk != null && t2 != null ? w + sw + t1 + bk + t2 : null;
-    a.cumFinish     = fin != null                                        ? w + fin            : null;
+    a.cumAfterSwim  = sw != null                                             ? w + sw             : null;
+    a.cumAfterT1    = sw != null && t1 != null                               ? w + sw + t1        : null;
+    a.cumAfterBike  = sw != null && t1 != null && bk != null                 ? w + sw + t1 + bk   : null;
+    a.cumAfterT2    = sw != null && t1 != null && bk != null && t2 != null   ? w + sw + t1 + bk + t2 : null;
+    a.cumFinish     = fin != null                                            ? w + fin            : null;
   }
 
-  return { athletes, hasGunTimes };
+  return { athletes, hasWaveData };
 }
 
 // ─── Passing Algorithm ────────────────────────────────────────────────────────
@@ -319,7 +352,7 @@ function rpad(str, len) {
 
 // ─── Report ───────────────────────────────────────────────────────────────────
 
-function printReport(athletes, passingMap, hasGunTimes) {
+function printReport(athletes, passingMap, hasWaveData) {
   const finishers = athletes.filter((a) => a.status === "FIN" && a.finishSecs != null);
   const dnfs = athletes.filter((a) => a.status === "DNF");
 
@@ -329,9 +362,10 @@ function printReport(athletes, passingMap, hasGunTimes) {
   console.log(`  Athletes:  ${athletes.length}`);
   console.log(`  Finishers: ${finishers.length}`);
   console.log(`  DNFs:      ${dnfs.length}`);
-  const modeLabel = hasGunTimes
-    ? "✅ Gun time (physical — wave offsets applied)"
-    : "⚠️  Chip time only (gun times not in data — re-fetch to get physical passing)";
+  const modeLabel = hasWaveData
+    ? "✅ Physical passing mode (wave offsets applied)"
+    : "⚠️  Chip time only — same-wave comparisons only\n" +
+      "     To enable physical passing, provide --wave-offsets <file.json>";
   console.log(`  Mode:      ${modeLabel}`);
   console.log("═".repeat(70));
 
@@ -501,33 +535,55 @@ function buildOutputCSV(athletes, passingMap) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-const [, , csvFile] = process.argv;
+const args = process.argv.slice(2);
+const csvFile = args.find((a) => !a.startsWith("--"));
+const waveOffsetsIdx = args.indexOf("--wave-offsets");
+const waveOffsetsFile = waveOffsetsIdx !== -1 ? args[waveOffsetsIdx + 1] : null;
 
 if (!csvFile) {
   console.error(`
-Usage: node scripts/analyze-passing.mjs <csv-file>
+Usage: node scripts/analyze-passing.mjs <csv-file> [--wave-offsets <file.json>]
 
-Example:
-  node scripts/analyze-passing.mjs scripts/data/oceanside_2026.csv
+Examples:
+  node scripts/analyze-passing.mjs scripts/data/oceanside_2025.csv
+  node scripts/analyze-passing.mjs scripts/data/oceanside_2025.csv \\
+    --wave-offsets scripts/data/oceanside_2025_waves.json
+
+Wave offsets file maps division names → seconds after official gun:
+  { "MPRO": 0, "FPRO": 180, "M18-24": 600, "M25-29": 780, ... }
+  See scripts/data/wave-offsets-example.json for a full template.
 `);
   process.exit(1);
 }
 
 (async () => {
   try {
+    // Load wave offsets if provided
+    let externalWaveOffsets = null;
+    if (waveOffsetsFile) {
+      console.log(`\n🌊 Loading wave offsets from ${waveOffsetsFile}...`);
+      const raw = await fs.readFile(waveOffsetsFile, "utf-8");
+      const obj = JSON.parse(raw);
+      externalWaveOffsets = new Map(Object.entries(obj).map(([k, v]) => [k, Number(v)]));
+      console.log(`   ${externalWaveOffsets.size} division(s) loaded`);
+    }
+
     console.log(`\n📂 Reading ${csvFile}...`);
     const raw = await fs.readFile(csvFile, "utf-8");
     const rows = parseCSV(raw);
     console.log(`   ${rows.length} rows parsed`);
 
-    const { athletes, hasGunTimes } = normaliseAthletes(rows);
-    console.log(`   Normalised. ${hasGunTimes ? "Gun times found — using physical passing mode." : "No gun times in data — using chip time mode (wave offsets not applied)."}`);
+    const { athletes, hasWaveData } = normaliseAthletes(rows, externalWaveOffsets);
+    const modeMsg = hasWaveData
+      ? "Wave offsets applied — physical passing mode active."
+      : "No wave offsets — using chip time (same-wave comparisons only).";
+    console.log(`   Normalised. ${modeMsg}`);
     console.log(`   Running passing algorithm...`);
 
     const passingMap = computePassingData(athletes);
     console.log(`   Done. Computing report...`);
 
-    printReport(athletes, passingMap, hasGunTimes);
+    printReport(athletes, passingMap, hasWaveData);
 
     // Write output CSV alongside the input file
     const outputFile = csvFile.replace(/\.csv$/i, "_passing.csv");
