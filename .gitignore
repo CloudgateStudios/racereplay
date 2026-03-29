@@ -1,0 +1,14 @@
+# Environment
+.env.local
+.env.*.local
+
+# Race data — never commit CSVs
+scripts/data/
+
+# Node
+node_modules/
+.next/
+dist/
+
+# OS
+.DS_Store
