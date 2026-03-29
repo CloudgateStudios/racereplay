@@ -241,19 +241,40 @@ Example:
         continue;
       }
 
-      // --dump-fields: print every field name (and its value) from the first
-      // record, then exit. Useful for discovering what the API actually returns.
+      // --dump-fields: scan ALL records and union every field name that appears
+      // with a non-empty value on at least one athlete. Shows the example value
+      // from the first record that has it, plus how many records have it set.
+      // This is much more reliable than looking at just the first record, since
+      // TT-start races assign the winner start offset 0 (appears empty/absent).
       if (process.argv.includes("--dump-fields")) {
-        console.log(`\n🔍 Raw fields on first record (${results[0].bib} — ${results[0].athlete}):\n`);
-        const rec = results[0];
-        const allKeys = collectKeys(rec);
-        for (const key of allKeys.sort()) {
-          const val = getNestedValue(rec, key);
-          if (val !== undefined && val !== null && val !== "") {
-            console.log(`  ${key.padEnd(55)} ${JSON.stringify(val)}`);
+        console.log(`\n🔍 Scanning all ${results.length} records for non-empty fields...\n`);
+
+        // fieldName → { exampleValue, count }
+        const fieldStats = new Map();
+
+        for (const rec of results) {
+          const keys = collectKeys(rec);
+          for (const key of keys) {
+            const val = getNestedValue(rec, key);
+            if (val === undefined || val === null || val === "") continue;
+            if (!fieldStats.has(key)) {
+              fieldStats.set(key, { exampleValue: val, exampleBib: rec.bib, count: 0 });
+            }
+            fieldStats.get(key).count++;
           }
         }
-        console.log(`\n  (${allKeys.length} total fields — blanks hidden)\n`);
+
+        const sortedKeys = [...fieldStats.keys()].sort();
+        for (const key of sortedKeys) {
+          const { exampleValue, exampleBib, count } = fieldStats.get(key);
+          const pct = ((count / results.length) * 100).toFixed(0);
+          const coverage = `[${count}/${results.length} = ${pct}%]`;
+          console.log(
+            `  ${key.padEnd(55)} ${coverage.padEnd(20)} e.g. bib ${exampleBib}: ${JSON.stringify(exampleValue)}`
+          );
+        }
+
+        console.log(`\n  ${sortedKeys.length} distinct fields across ${results.length} records.\n`);
         process.exit(0);
       }
 
