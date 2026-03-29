@@ -1,0 +1,26 @@
+name: "Validate PR"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  valdiate_pr_title:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            fix
+            feat
+            docs
+            refactor
+            test
+            ci
+            chore
+            revert
+          requireScope: false
