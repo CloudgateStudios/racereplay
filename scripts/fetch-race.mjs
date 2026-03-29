@@ -127,6 +127,26 @@ function getYearFromName(name) {
   return m ? m[1] : null;
 }
 
+// ─── Debug helpers ────────────────────────────────────────────────────────────
+
+/** Flatten a nested object into dot-notation keys (e.g. "wtc_ContactId.address1_city") */
+function collectKeys(obj, prefix = "") {
+  const keys = [];
+  for (const [k, v] of Object.entries(obj ?? {})) {
+    const full = prefix ? `${prefix}.${k}` : k;
+    if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+      keys.push(...collectKeys(v, full));
+    } else {
+      keys.push(full);
+    }
+  }
+  return keys;
+}
+
+function getNestedValue(obj, dotPath) {
+  return dotPath.split(".").reduce((o, k) => o?.[k], obj);
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const [, , eventUrl, targetYear, outputDir = path.join(__dirname, "data")] = process.argv;
@@ -184,6 +204,22 @@ How to find the event-group-url:
       if (!results?.length) {
         console.warn(`   ⚠️  No results returned for ${event.year}`);
         continue;
+      }
+
+      // --dump-fields: print every field name (and its value) from the first
+      // record, then exit. Useful for discovering what the API actually returns.
+      if (process.argv.includes("--dump-fields")) {
+        console.log(`\n🔍 Raw fields on first record (${results[0].bib} — ${results[0].athlete}):\n`);
+        const rec = results[0];
+        const allKeys = collectKeys(rec);
+        for (const key of allKeys.sort()) {
+          const val = getNestedValue(rec, key);
+          if (val !== undefined && val !== null && val !== "") {
+            console.log(`  ${key.padEnd(55)} ${JSON.stringify(val)}`);
+          }
+        }
+        console.log(`\n  (${allKeys.length} total fields — blanks hidden)\n`);
+        process.exit(0);
       }
 
       const csv = convertToCSV(results);
