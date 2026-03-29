@@ -50,11 +50,13 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 
 ### 1.2 Database
 
-- [ ] Create Supabase project (one for staging, one for production)
-- [ ] Copy connection strings to `.env.local`:
+- [ ] Create two Supabase projects, both in region `us-east-1` (N. Virginia):
+  - `racereplay-prod`
+  - `racereplay-staging`
+- [ ] Copy staging connection strings to `.env.local` (use staging DB for local dev):
   ```
-  DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true
-  DIRECT_URL=postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres
+  DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+  DIRECT_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
   ```
 - [ ] Write `prisma/schema.prisma` (copy from `DATA_MODEL.md`)
 - [ ] Run first migration:
@@ -68,6 +70,7 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 
 - [ ] Write `.env.example`:
   ```
+  # Supabase — use staging credentials for local dev
   DATABASE_URL=
   DIRECT_URL=
   ADMIN_SECRET=
@@ -219,16 +222,32 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 
 ### 4.3 Deploy
 
-- [ ] Create Vercel project, connect GitHub repo
-- [ ] Set environment variables in Vercel dashboard:
-  - `DATABASE_URL`
-  - `DIRECT_URL`
+- [ ] Create Vercel project (Pro plan), connect GitHub repo, set region to `iad1` (US East)
+- [ ] Set environment variables in Vercel dashboard for **Production** environment:
+  - `DATABASE_URL` — prod Supabase pooled connection
+  - `DIRECT_URL` — prod Supabase direct connection
   - `ADMIN_SECRET`
-  - `NEXT_PUBLIC_APP_URL`
-- [ ] Run production migration:
+  - `NEXT_PUBLIC_APP_URL=https://racereplay.app`
+- [ ] Set environment variables in Vercel dashboard for **Preview** environment:
+  - `DATABASE_URL` — staging Supabase pooled connection
+  - `DIRECT_URL` — staging Supabase direct connection
+  - `ADMIN_SECRET`
+  - `NEXT_PUBLIC_APP_URL` — Vercel preview URL
+- [ ] Add `maxDuration: 60` to the upload API route config (Vercel Pro required):
+  ```ts
+  export const maxDuration = 60
+  ```
+- [ ] Run production migration against prod Supabase:
   ```bash
+  # Set DIRECT_URL to prod before running
   pnpm prisma migrate deploy
   ```
+- [ ] Run staging migration against staging Supabase:
+  ```bash
+  # Set DIRECT_URL to staging before running
+  pnpm prisma migrate deploy
+  ```
+- [ ] Attach custom domain `racereplay.app` in Vercel project settings
 - [ ] Upload a real Ironman CSV via the deployed admin UI
 - [ ] Smoke test: find a known athlete, verify ranks and passing stats against source
 

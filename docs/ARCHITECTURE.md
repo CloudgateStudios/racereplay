@@ -144,11 +144,13 @@ Do not use a short or guessable secret. Rotate it if compromised.
 
 | Concern | Details |
 |---|---|
-| Hosting | Vercel (single project) |
-| Database | Supabase — one project (prod); optionally a separate project for staging |
-| Env vars | Set in Vercel project settings per environment |
-| Custom domain | e.g. `racereplay.app` or subdomain |
-| Vercel region | Match to Supabase region to minimise latency |
+| Hosting | Vercel Pro (single project) |
+| Vercel region | `iad1` (Washington D.C., US East) |
+| Database | Supabase — two projects: one for **production**, one for **staging** |
+| Supabase region | `us-east-1` (N. Virginia) — matches Vercel `iad1` |
+| Env vars | Set in Vercel project settings per environment (production + preview) |
+| Custom domain | `racereplay.app` |
+| Function timeout | `maxDuration: 60` on the upload route (requires Vercel Pro) |
 
 ---
 
