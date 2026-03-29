@@ -86,14 +86,26 @@ function parseCSVRow(line) {
 // ─── Data Normalisation ───────────────────────────────────────────────────────
 
 /**
- * normaliseAthletes(rows, externalWaveOffsets?)
+ * normaliseAthletes(rows, rtrtStarts?, externalWaveOffsets?)
  *
- * externalWaveOffsets: Map<divisionName, offsetSeconds> loaded from a
- * --wave-offsets JSON file. When provided, these are used as the wave start
- * offsets for every athlete in that division instead of trying to derive them
- * from gun time fields (which most races don't publish via the API).
+ * rtrtStarts: Map<bib, startEpochSeconds> loaded from a --rtrt-starts CSV.
+ *   These are precise per-athlete Unix timestamps from the RTRT.me live
+ *   tracking system (the IRONMAN Tracker app backend). Each athlete's
+ *   startEpoch is the exact moment they crossed the start timing mat.
+ *
+ *   Gun-time cumulative at any checkpoint:
+ *     gunCum = startEpoch + chipSplitSeconds
+ *   Because epoch times are absolute, comparing two athletes' gunCum values
+ *   at a given checkpoint directly answers "who was physically ahead?"
+ *
+ *   Note: We subtract the earliest startEpoch in the field so cumulative
+ *   values are relative seconds (not raw Unix timestamps), which keeps the
+ *   numbers human-readable and avoids float precision issues.
+ *
+ * externalWaveOffsets: Map<divisionName, offsetSeconds> — fallback for wave-
+ *   start races when RTRT data is unavailable. Loaded from --wave-offsets JSON.
  */
-function normaliseAthletes(rows, externalWaveOffsets = null) {
+function normaliseAthletes(rows, rtrtStarts = null, externalWaveOffsets = null) {
   // First pass: parse all raw fields
   const athletes = rows.map((r) => {
     const secs = (col) => {
@@ -109,24 +121,31 @@ function normaliseAthletes(rows, externalWaveOffsets = null) {
     const finish = secs("Finish (Seconds)");
     const gunFinish = secs("Finish Gun (Seconds)");
 
-    // Wave start offset = how many seconds after the official gun this athlete
-    // started. Sources in priority order:
-    //   1. External wave-offsets file (keyed by division name) — most reliable
-    //   2. Derived from API gun time field: gunFinish - chipFinish
-    //   3. Derived from division peers' median (second pass below)
-    //   4. 0 (chip time = gun time — same-wave comparisons only)
-    let waveOffset = null;
+    const bib      = r["Bib Number"] || "?";
     const division = r["Division"] || "";
 
-    if (externalWaveOffsets && externalWaveOffsets.has(division)) {
-      waveOffset = externalWaveOffsets.get(division);
-    } else if (gunFinish != null && finish != null) {
-      waveOffset = gunFinish - finish;
+    // startEpoch: per-athlete Unix timestamp of their actual race start.
+    // Used as the basis for gunCum calculations when RTRT data is available.
+    const startEpoch = rtrtStarts?.get(String(bib)) ?? null;
+
+    // waveOffset fallback (for non-RTRT / wave-start races):
+    // Sources in priority order:
+    //   1. Derived from RTRT startEpoch (computed after all epochs known — see below)
+    //   2. External wave-offsets file (keyed by division name)
+    //   3. Derived from API gun time field: gunFinish - chipFinish
+    //   4. Derived from division peers' median (second pass)
+    //   5. 0 (chip time only)
+    let waveOffset = null;
+    if (!rtrtStarts) {
+      if (externalWaveOffsets && externalWaveOffsets.has(division)) {
+        waveOffset = externalWaveOffsets.get(division);
+      } else if (gunFinish != null && finish != null) {
+        waveOffset = gunFinish - finish;
+      }
     }
-    // else: filled in on second pass
 
     return {
-      bib:          r["Bib Number"] || "?",
+      bib,
       name:         r["Athlete Name"] || "Unknown",
       division,
       gender:       r["Gender"] || "",
@@ -142,13 +161,29 @@ function normaliseAthletes(rows, externalWaveOffsets = null) {
       runSecs:    run,
       finishSecs: finish,
       gunFinishSecs: gunFinish,
-      waveOffset,   // may be null — filled in second pass if still needed
+      startEpoch,   // null if no RTRT data
+      waveOffset,   // null if using RTRT path; filled in second pass otherwise
     };
   });
 
-  // Second pass: for any athlete still without a wave offset (e.g. DNFs when
-  // using external wave offsets, or races with no gun times and no wave file),
-  // derive from division peers' median wave offset.
+  // ── RTRT path: convert per-athlete startEpoch → waveOffset ─────────────────
+  // Normalise epoch times to seconds relative to the earliest starter, so
+  // cumulative values stay small and human-readable.
+  if (rtrtStarts) {
+    const epochs = athletes.map((a) => a.startEpoch).filter((e) => e != null);
+    const minEpoch = epochs.length ? Math.min(...epochs) : 0;
+
+    for (const a of athletes) {
+      if (a.startEpoch != null) {
+        // waveOffset = seconds this athlete started after the first athlete
+        a.waveOffset = Math.round((a.startEpoch - minEpoch) * 1000) / 1000;
+      }
+      // DNFs / untracked athletes with no RTRT record: fall back to division median (below)
+    }
+  }
+
+  // Second pass: for any athlete still without a wave offset, derive from
+  // division peers' median (handles DNFs, athletes missing from RTRT data, etc.)
   const offsetsByDiv = new Map();
   for (const a of athletes) {
     if (a.waveOffset == null) continue;
@@ -165,7 +200,8 @@ function normaliseAthletes(rows, externalWaveOffsets = null) {
       : sorted[mid];
   };
 
-  const hasWaveData = athletes.some((a) => a.waveOffset != null && a.waveOffset !== 0)
+  const hasWaveData = (rtrtStarts && rtrtStarts.size > 0)
+    || athletes.some((a) => a.waveOffset != null && a.waveOffset !== 0)
     || (externalWaveOffsets && externalWaveOffsets.size > 0);
 
   for (const a of athletes) {
@@ -362,10 +398,13 @@ function printReport(athletes, passingMap, hasWaveData) {
   console.log(`  Athletes:  ${athletes.length}`);
   console.log(`  Finishers: ${finishers.length}`);
   console.log(`  DNFs:      ${dnfs.length}`);
-  const modeLabel = hasWaveData
-    ? "✅ Physical passing mode (wave offsets applied)"
+  const rtrtCount = athletes.filter((a) => a.startEpoch != null).length;
+  const modeLabel = rtrtCount > 0
+    ? `✅ Physical passing — RTRT start times (${rtrtCount} athletes matched)`
+    : hasWaveData
+    ? "✅ Physical passing — wave offsets applied"
     : "⚠️  Chip time only — same-wave comparisons only\n" +
-      "     To enable physical passing, provide --wave-offsets <file.json>";
+      "     Run fetch-rtrt-starts.mjs and pass --rtrt-starts for physical passing";
   console.log(`  Mode:      ${modeLabel}`);
   console.log("═".repeat(70));
 
@@ -537,30 +576,55 @@ function buildOutputCSV(athletes, passingMap) {
 
 const args = process.argv.slice(2);
 const csvFile = args.find((a) => !a.startsWith("--"));
-const waveOffsetsIdx = args.indexOf("--wave-offsets");
-const waveOffsetsFile = waveOffsetsIdx !== -1 ? args[waveOffsetsIdx + 1] : null;
+const waveOffsetsIdx  = args.indexOf("--wave-offsets");
+const waveOffsetsFile = waveOffsetsIdx  !== -1 ? args[waveOffsetsIdx  + 1] : null;
+const rtrtStartsIdx   = args.indexOf("--rtrt-starts");
+const rtrtStartsFile  = rtrtStartsIdx  !== -1 ? args[rtrtStartsIdx  + 1] : null;
 
 if (!csvFile) {
   console.error(`
-Usage: node scripts/analyze-passing.mjs <csv-file> [--wave-offsets <file.json>]
+Usage: node scripts/analyze-passing.mjs <csv-file> [options]
+
+Options:
+  --rtrt-starts <file.csv>    Per-athlete start times from fetch-rtrt-starts.mjs
+                              (most accurate — enables true physical passing)
+  --wave-offsets <file.json>  Per-division wave offsets in seconds (wave-start races)
 
 Examples:
-  node scripts/analyze-passing.mjs scripts/data/oceanside_2025.csv
+  # TT start race with RTRT start times (recommended)
+  node scripts/analyze-passing.mjs scripts/data/oceanside_2025.csv \\
+    --rtrt-starts scripts/data/irm-oceanside703-2025_starts.csv
+
+  # Wave start race with known wave schedule
   node scripts/analyze-passing.mjs scripts/data/oceanside_2025.csv \\
     --wave-offsets scripts/data/oceanside_2025_waves.json
 
-Wave offsets file maps division names → seconds after official gun:
-  { "MPRO": 0, "FPRO": 180, "M18-24": 600, "M25-29": 780, ... }
-  See scripts/data/wave-offsets-example.json for a full template.
+  # Chip time only (same-wave comparisons)
+  node scripts/analyze-passing.mjs scripts/data/oceanside_2025.csv
 `);
   process.exit(1);
 }
 
 (async () => {
   try {
-    // Load wave offsets if provided
+    // Load RTRT per-athlete start times if provided (highest priority)
+    let rtrtStarts = null;
+    if (rtrtStartsFile) {
+      console.log(`\n🏁 Loading RTRT start times from ${rtrtStartsFile}...`);
+      const raw = await fs.readFile(rtrtStartsFile, "utf-8");
+      const startRows = parseCSV(raw);
+      // Map bib (string) → startEpoch (float seconds)
+      rtrtStarts = new Map(
+        startRows
+          .filter((r) => r["Bib"] && r["StartEpoch"])
+          .map((r) => [String(r["Bib"]), parseFloat(r["StartEpoch"])])
+      );
+      console.log(`   ${rtrtStarts.size} athlete start times loaded`);
+    }
+
+    // Load wave offsets if provided (fallback for wave-start races)
     let externalWaveOffsets = null;
-    if (waveOffsetsFile) {
+    if (waveOffsetsFile && !rtrtStartsFile) {
       console.log(`\n🌊 Loading wave offsets from ${waveOffsetsFile}...`);
       const raw = await fs.readFile(waveOffsetsFile, "utf-8");
       const obj = JSON.parse(raw);
@@ -573,11 +637,17 @@ Wave offsets file maps division names → seconds after official gun:
     const rows = parseCSV(raw);
     console.log(`   ${rows.length} rows parsed`);
 
-    const { athletes, hasWaveData } = normaliseAthletes(rows, externalWaveOffsets);
-    const modeMsg = hasWaveData
-      ? "Wave offsets applied — physical passing mode active."
-      : "No wave offsets — using chip time (same-wave comparisons only).";
-    console.log(`   Normalised. ${modeMsg}`);
+    const { athletes, hasWaveData } = normaliseAthletes(rows, rtrtStarts, externalWaveOffsets);
+    let modeMsg;
+    if (rtrtStarts) {
+      const matched = athletes.filter((a) => a.startEpoch != null).length;
+      modeMsg = `RTRT start times matched to ${matched}/${athletes.length} athletes — physical passing mode active.`;
+    } else if (hasWaveData) {
+      modeMsg = "Wave offsets applied — physical passing mode active.";
+    } else {
+      modeMsg = "No start times — using chip time (same-wave comparisons only).";
+    }
+    console.log(`   ${modeMsg}`);
     console.log(`   Running passing algorithm...`);
 
     const passingMap = computePassingData(athletes);
