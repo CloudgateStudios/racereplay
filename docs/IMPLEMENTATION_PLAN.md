@@ -1,4 +1,4 @@
-# RaceTrace — Implementation Plan
+# RaceReplay — Implementation Plan
 
 **Version:** 1.0
 **Last Updated:** 2026-03-29
@@ -26,7 +26,7 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 
 - [ ] Scaffold Next.js app:
   ```bash
-  npx create-next-app@latest racetrace \
+  npx create-next-app@latest racereplay \
     --typescript --tailwind --app --src-dir \
     --import-alias "@/*"
   ```
@@ -105,8 +105,10 @@ Four phases. Each phase delivers a usable slice that can be tested independently
     2. Sort by cumulative time at start of leg → `beforeMap: Map<bib, rank>`
     3. Sort by cumulative time at end of leg → `afterMap: Map<bib, rank>`
     4. For each athlete X:
-       - `passedBibs` = bibs where `beforeMap[bib] > beforeMap[X.bib]` AND `afterMap[bib] < afterMap[X.bib]`
-       - `passedByBibs` = bibs where `beforeMap[bib] < beforeMap[X.bib]` AND `afterMap[bib] > afterMap[X.bib]`
+       - `passedBibs` = bibs where `beforeMap[bib] < beforeMap[X.bib]` AND `afterMap[bib] > afterMap[X.bib]`
+         (bib was ranked ahead of X before the leg, ranked behind X after — X overtook them)
+       - `passedByBibs` = bibs where `beforeMap[bib] > beforeMap[X.bib]` AND `afterMap[bib] < afterMap[X.bib]`
+         (bib was ranked behind X before the leg, ranked ahead of X after — they overtook X)
   - Tests: `src/lib/passing-calc.test.ts`
     - Use a toy field of 10 athletes with known split times
     - Assert exact passing relationships
@@ -167,7 +169,7 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 - [ ] `src/app/[raceSlug]/athletes/[id]/page.tsx` — Athlete analysis page
   - Server Component: fetch via `GET /api/races/:slug/athletes/:id`
   - Render `PassingAnalysis` with full data
-  - Page title: `<name> — <race name> — RaceTrace`
+  - Page title: `<name> — <race name> — RaceReplay`
 
 ### 3.3 Components
 

@@ -1,9 +1,9 @@
-# RaceTrace — API Specification
+# RaceReplay — API Specification
 
 **Version:** 1.0
 **Last Updated:** 2026-03-29
 
-All routes are Next.js App Router API routes under `src/app/api/`. Base URL: `https://racetrace.app` (or `http://localhost:3000` in development).
+All routes are Next.js App Router API routes under `src/app/api/`. Base URL: `https://racereplay.app` (or `http://localhost:3000` in development).
 
 ---
 
@@ -167,7 +167,7 @@ Get full result and passing analysis for one athlete.
       "passedByAthletes": []
     },
     "t1": {
-      "gained": 6,
+      "gained": 2,
       "lost": 0,
       "passedAthletes": [
         { "bib": "882", "fullName": "Alice Chen", "division": "F30-34" },
@@ -203,7 +203,7 @@ Get full result and passing analysis for one athlete.
 }
 ```
 
-**Note:** The `passing.*.passedAthletes` and `passedByAthletes` arrays are resolved from bibs to full athlete objects by joining on the athletes table. This resolution happens in the API route, not in the client.
+**Note:** The stored `PassingData` type (in `result.passingData` JSONB) uses `passedBibs` and `passedByBibs` (arrays of bib strings). The API route resolves these to full athlete objects and renames them to `passedAthletes` / `passedByAthletes` in the response. This resolution and renaming happens in the API route handler, not in the client.
 
 **Response `404 Not Found`:**
 ```json

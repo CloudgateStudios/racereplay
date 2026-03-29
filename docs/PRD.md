@@ -1,4 +1,4 @@
-# RaceTrace — Product Requirements Document
+# RaceReplay — Product Requirements Document
 
 **Version:** 1.0
 **Last Updated:** 2026-03-29
@@ -17,7 +17,7 @@ Endurance race results (Ironman triathlon, marathon, cycling) are published as f
 
 ## Solution
 
-RaceTrace ingests full race results (all split times for all athletes) and computes, for each athlete, a leg-by-leg passing analysis:
+RaceReplay ingests full race results (all split times for all athletes) and computes, for each athlete, a leg-by-leg passing analysis:
 
 - How many athletes they passed during each segment
 - How many athletes passed them during each segment
