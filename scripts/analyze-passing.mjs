@@ -255,16 +255,25 @@ function buildRankMap(athletes, getTime) {
  * passedByBibs = bibs where beforeRank > beforeRank[X]  AND afterRank < afterRank[X]
  *                (they were behind X before, ahead X after — they overtook X)
  *
- * Swim special case: everyone starts at cumulative 0 (tied). We treat this as
- * everyone starting equal — passedBibs = athletes with worse swim rank,
- * passedByBibs = athletes with better swim rank.
+ * Swim handling depends on start mode:
+ *
+ *   TT/wave start (hasWaveData = true):
+ *     "Before" = athlete's physical position when they entered the water,
+ *     ranked by their actual start time (waveOffset). Athletes who started
+ *     earlier were physically ahead in the water.
+ *     Uses the standard before→after comparison — no special case needed.
+ *
+ *   Simultaneous gun start (hasWaveData = false):
+ *     Everyone enters the water at the same instant, so there is no
+ *     meaningful "before" position. Passing = pure comparison of swim exit
+ *     ranks (who exited the water first).
  */
-function computePassingData(athletes) {
+function computePassingData(athletes, hasWaveData = false) {
   const legs = [
     {
       name: "swim",
-      // Swim: everyone starts equal at 0
-      getBefore: null, // special case — handled below
+      // getBefore: null in simultaneous-start mode; set to waveOffset in TT/wave mode below
+      getBefore: hasWaveData ? (a) => a.waveOffset : null,
       getAfter:  (a) => a.cumAfterSwim,
     },
     {
@@ -308,10 +317,11 @@ function computePassingData(athletes) {
     const eligible = athletes.filter((a) => afterMap.has(a.bib));
 
     let beforeMap;
-    if (leg.name === "swim") {
-      // Everyone starts equal: assign rank based on afterMap size so each athlete
-      // "started" at position N/2 — effectively everyone is tied at rank 1.
-      // Passing = pure comparison of swim result ranks.
+    const swimSimultaneous = leg.name === "swim" && !hasWaveData;
+
+    if (swimSimultaneous) {
+      // Simultaneous gun start: everyone enters the water together.
+      // No meaningful "before" position — passing = pure swim exit rank comparison.
       beforeMap = new Map(eligible.map((a) => [a.bib, 1]));
     } else {
       beforeMap = buildRankMap(athletes, leg.getBefore);
@@ -336,19 +346,19 @@ function computePassingData(athletes) {
         const yAfter  = afterMap.get(y.bib);
         if (yBefore == null || yAfter == null) continue;
 
-        if (leg.name === "swim") {
-          // Special case: everyone tied before, just compare swim result
+        if (swimSimultaneous) {
+          // Gun start: no before position — compare swim exits only
           if (yAfter > xAfter) {
-            // y finished swim behind x — x passed y
+            // y exited swim after x — x was faster, x "passed" y
             legData.passedBibs.push(y.bib);
             legData.gained++;
           } else if (yAfter < xAfter) {
-            // y finished swim ahead of x — y passed x
+            // y exited swim before x — y was faster, y "passed" x
             legData.passedByBibs.push(y.bib);
             legData.lost++;
           }
         } else {
-          // Standard case
+          // Standard case (all legs, plus swim when hasWaveData)
           if (yBefore < xBefore && yAfter > xAfter) {
             // y was ahead before, behind after — x passed y
             legData.passedBibs.push(y.bib);
@@ -650,7 +660,7 @@ Examples:
     console.log(`   ${modeMsg}`);
     console.log(`   Running passing algorithm...`);
 
-    const passingMap = computePassingData(athletes);
+    const passingMap = computePassingData(athletes, hasWaveData);
     console.log(`   Done. Computing report...`);
 
     printReport(athletes, passingMap, hasWaveData);
