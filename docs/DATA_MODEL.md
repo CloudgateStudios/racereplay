@@ -1,4 +1,4 @@
-# RaceTrace — Data Model
+# RaceReplay — Data Model
 
 **Version:** 1.0
 **Last Updated:** 2026-03-29
@@ -146,8 +146,8 @@ The `passingData` field on `Result` is typed as follows (see `src/types/index.ts
 export type LegPassingStats = {
   gained: number        // Net positions gained (positive = moved up the field)
   lost: number          // Positions lost (positive = dropped back)
-  passedBibs: string[]  // Bibs of athletes X passed (were behind before, ahead after)
-  passedByBibs: string[] // Bibs of athletes who passed X (were ahead before, behind after)
+  passedBibs: string[]  // Bibs of athletes X passed (were ahead of X before, behind X after)
+  passedByBibs: string[] // Bibs of athletes who passed X (were behind X before, ahead of X after)
 }
 
 export type PassingData = {
@@ -198,7 +198,7 @@ Passing analysis could be derived at query time from the `afterXRank` fields, bu
 
 ### 5. No user table
 
-RaceTrace has no user accounts. There is nothing to store per-user. Admin access is controlled by the `ADMIN_SECRET` env var, not a DB record.
+RaceReplay has no user accounts. There is nothing to store per-user. Admin access is controlled by the `ADMIN_SECRET` env var, not a DB record.
 
 ---
 

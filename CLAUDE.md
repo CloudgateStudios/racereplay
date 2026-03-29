@@ -1,7 +1,7 @@
-# RaceTrace
+# RaceReplay
 
 ## What this is
-RaceTrace is a public web service for endurance race results analysis. Users search for any athlete across any uploaded race and see a leg-by-leg "passing analysis": how many athletes they passed — and who specifically — during each segment (swim, T1, bike, T2, run).
+RaceReplay is a public web service for endurance race results analysis. Users search for any athlete across any uploaded race and see a leg-by-leg "passing analysis": how many athletes they passed — and who specifically — during each segment (swim, T1, bike, T2, run).
 
 ## Stack
 - **Framework:** Next.js 15 (App Router) — UI + API routes in one codebase
@@ -14,7 +14,7 @@ RaceTrace is a public web service for endurance race results analysis. Users sea
 
 ## Repo structure
 ```
-racetrace/
+racereplay/
 ├── prisma/
 │   ├── schema.prisma       Data model (source of truth)
 │   └── migrations/

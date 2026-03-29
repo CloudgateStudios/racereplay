@@ -1,4 +1,4 @@
-# RaceTrace — Architecture
+# RaceReplay — Architecture
 
 **Version:** 1.0
 **Last Updated:** 2026-03-29
@@ -7,7 +7,7 @@
 
 ## Overview
 
-RaceTrace is a single Next.js 15 application deployed to Vercel. It uses API Routes for the backend and Server Components for most pages. The database is PostgreSQL hosted on Supabase, accessed via Prisma.
+RaceReplay is a single Next.js 15 application deployed to Vercel. It uses API Routes for the backend and Server Components for most pages. The database is PostgreSQL hosted on Supabase, accessed via Prisma.
 
 There is no separate backend service — Next.js API routes handle all data access. This is appropriate because:
 - All data is static after upload (no real-time writes from users)
@@ -112,8 +112,8 @@ For each of the 5 legs (swim, T1, bike, T2, run):
 1. Build a **before snapshot**: sort all eligible athletes by cumulative time at the start of the leg
 2. Build an **after snapshot**: sort all eligible athletes by cumulative time at the end of the leg
 3. For each athlete X:
-   - `passedBibs` = athletes ranked behind X in before-snapshot AND ranked ahead of X in after-snapshot
-   - `passedByBibs` = athletes ranked ahead of X in before-snapshot AND ranked behind X in after-snapshot
+   - `passedBibs` = athletes ranked ahead of X in before-snapshot AND ranked behind X in after-snapshot (X overtook them)
+   - `passedByBibs` = athletes ranked behind X in before-snapshot AND ranked ahead of X in after-snapshot (they overtook X)
 
 Eligibility: Athletes who DNS/DNF/DSQ at a given leg are excluded from that leg's rankings and all subsequent legs.
 
@@ -147,7 +147,7 @@ Do not use a short or guessable secret. Rotate it if compromised.
 | Hosting | Vercel (single project) |
 | Database | Supabase — one project (prod); optionally a separate project for staging |
 | Env vars | Set in Vercel project settings per environment |
-| Custom domain | e.g. `racetrace.app` or subdomain |
+| Custom domain | e.g. `racereplay.app` or subdomain |
 | Vercel region | Match to Supabase region to minimise latency |
 
 ---
@@ -164,7 +164,7 @@ Do not use a short or guessable secret. Rotate it if compromised.
 
 ## Future Architecture Notes
 
-If RaceTrace grows to support:
+If RaceReplay grows to support:
 - **Many races / high traffic** — add Next.js `unstable_cache` or Redis for race/result reads
 - **Other race formats** — make leg definitions configurable per race (stored in DB), and make the passing calc algorithm leg-format-aware
 - **Athlinks integration** — add a scheduled job (Vercel cron or separate worker) that polls Athlinks API and auto-imports new races
