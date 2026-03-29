@@ -2,14 +2,34 @@
 /**
  * analyze-passing.mjs
  *
- * Reads an Ironman results CSV (from fetch-race.mjs) and runs the leg-by-leg
- * passing analysis algorithm. Prints a verification report to stdout.
+ * Reads an Ironman results CSV (from fetch-race.mjs), runs the leg-by-leg
+ * passing analysis algorithm, prints a verification report to stdout, and
+ * writes a full per-athlete passing CSV alongside the input file.
  *
  * Usage:
  *   node scripts/analyze-passing.mjs <csv-file>
  *
  * Example:
  *   node scripts/analyze-passing.mjs scripts/data/oceanside_2026.csv
+ *
+ * Output CSV:
+ *   scripts/data/oceanside_2026_passing.csv
+ *
+ * Output CSV columns:
+ *   Bib, Name, Gender, Country, Division, Status,
+ *   Overall Rank, Gender Rank, Division Rank,
+ *   Finish Time, Swim Time, T1 Time, Bike Time, T2 Time, Run Time,
+ *   Swim Gained, Swim Lost, Swim Net,
+ *   T1 Gained,   T1 Lost,   T1 Net,
+ *   Bike Gained, Bike Lost, Bike Net,
+ *   T2 Gained,   T2 Lost,   T2 Net,
+ *   Run Gained,  Run Lost,  Run Net,
+ *   Overall Net,
+ *   Swim Passed Bibs, Swim Passed By Bibs,
+ *   T1 Passed Bibs,   T1 Passed By Bibs,
+ *   Bike Passed Bibs, Bike Passed By Bibs,
+ *   T2 Passed Bibs,   T2 Passed By Bibs,
+ *   Run Passed Bibs,  Run Passed By Bibs
  */
 
 import fs from "fs/promises";
@@ -366,6 +386,63 @@ function printReport(athletes, passingMap) {
   console.log("\n" + "═".repeat(70) + "\n");
 }
 
+// ─── CSV Output ───────────────────────────────────────────────────────────────
+
+function buildOutputCSV(athletes, passingMap) {
+  const legNames = ["swim", "t1", "bike", "t2", "run"];
+  const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+
+  const headers = [
+    "Bib", "Name", "Gender", "Country", "Division", "Status",
+    "Overall Rank", "Gender Rank", "Division Rank",
+    "Finish Time", "Swim Time", "T1 Time", "Bike Time", "T2 Time", "Run Time",
+    "Swim Gained", "Swim Lost", "Swim Net",
+    "T1 Gained",   "T1 Lost",   "T1 Net",
+    "Bike Gained", "Bike Lost", "Bike Net",
+    "T2 Gained",   "T2 Lost",   "T2 Net",
+    "Run Gained",  "Run Lost",  "Run Net",
+    "Overall Net",
+    "Swim Passed Bibs",    "Swim Passed By Bibs",
+    "T1 Passed Bibs",      "T1 Passed By Bibs",
+    "Bike Passed Bibs",    "Bike Passed By Bibs",
+    "T2 Passed Bibs",      "T2 Passed By Bibs",
+    "Run Passed Bibs",     "Run Passed By Bibs",
+  ];
+
+  const rows = athletes.map((a) => {
+    const d = passingMap.get(a.bib);
+    const overallNet = d
+      ? legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0)
+      : 0;
+
+    const row = [
+      a.bib, a.name, a.gender, a.country, a.division, a.status,
+      a.overallRank ?? "", a.genderRank ?? "", a.divisionRank ?? "",
+      fmtTime(a.finishSecs), fmtTime(a.swimSecs), fmtTime(a.t1Secs),
+      fmtTime(a.bikeSecs),   fmtTime(a.t2Secs),   fmtTime(a.runSecs),
+    ];
+
+    if (d) {
+      for (const leg of legNames) {
+        const net = d[leg].gained - d[leg].lost;
+        row.push(d[leg].gained, d[leg].lost, net);
+      }
+      row.push(overallNet);
+      for (const leg of legNames) {
+        row.push(d[leg].passedBibs.join("|"));
+        row.push(d[leg].passedByBibs.join("|"));
+      }
+    } else {
+      // No passing data (shouldn't happen, but be safe)
+      for (let i = 0; i < 15 + 1 + 10; i++) row.push("");
+    }
+
+    return row.map(esc).join(",");
+  });
+
+  return [headers.join(","), ...rows].join("\n");
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const [, , csvFile] = process.argv;
@@ -394,6 +471,12 @@ Example:
     console.log(`   Done. Computing report...`);
 
     printReport(athletes, passingMap);
+
+    // Write output CSV alongside the input file
+    const outputFile = csvFile.replace(/\.csv$/i, "_passing.csv");
+    const outputCSV = buildOutputCSV(athletes, passingMap);
+    await fs.writeFile(outputFile, outputCSV);
+    console.log(`📄 Passing data written to: ${outputFile}\n`);
   } catch (err) {
     console.error(`\n❌ Error: ${err.message}\n`);
     if (process.env.DEBUG) console.error(err.stack);
