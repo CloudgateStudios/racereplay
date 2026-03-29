@@ -70,18 +70,27 @@ function parseCSVRow(line) {
 // ─── Data Normalisation ───────────────────────────────────────────────────────
 
 function normaliseAthletes(rows) {
-  return rows.map((r) => {
+  // First pass: parse all raw fields
+  const athletes = rows.map((r) => {
     const secs = (col) => {
       const v = parseInt(r[col], 10);
       return isNaN(v) || v <= 0 ? null : v;
     };
 
-    const swim = secs("Swim (Seconds)");
-    const t1   = secs("T1 (Seconds)");
-    const bike = secs("Bike (Seconds)");
-    const t2   = secs("T2 (Seconds)");
-    const run  = secs("Run (Seconds)");
+    const swim   = secs("Swim (Seconds)");
+    const t1     = secs("T1 (Seconds)");
+    const bike   = secs("Bike (Seconds)");
+    const t2     = secs("T2 (Seconds)");
+    const run    = secs("Run (Seconds)");
     const finish = secs("Finish (Seconds)");
+    const gunFinish = secs("Finish Gun (Seconds)");
+
+    // Wave start offset = how many seconds after the official gun this athlete
+    // started. For finishers with gun time data: gunFinish - chipFinish.
+    // For others: derived in second pass below.
+    const waveOffset = (gunFinish != null && finish != null)
+      ? gunFinish - finish
+      : null;
 
     return {
       bib:          r["Bib Number"] || "?",
@@ -89,24 +98,65 @@ function normaliseAthletes(rows) {
       division:     r["Division"] || "",
       gender:       r["Gender"] || "",
       country:      r["Country"] || "",
-      status:       r["Status"] || "FIN",         // FIN | DNF | DQ
+      status:       r["Status"] || "FIN",
       overallRank:  parseInt(r["Overall Rank"], 10) || null,
       genderRank:   parseInt(r["Gender Rank"], 10) || null,
       divisionRank: parseInt(r["Division Rank"], 10) || null,
-      swimSecs:  swim,
-      t1Secs:    t1,
-      bikeSecs:  bike,
-      t2Secs:    t2,
-      runSecs:   run,
+      swimSecs:   swim,
+      t1Secs:     t1,
+      bikeSecs:   bike,
+      t2Secs:     t2,
+      runSecs:    run,
       finishSecs: finish,
-      // Cumulative snapshots (null if athlete didn't reach that point)
-      cumAfterSwim:  swim != null ? swim : null,
-      cumAfterT1:    swim != null && t1 != null ? swim + t1 : null,
-      cumAfterBike:  swim != null && t1 != null && bike != null ? swim + t1 + bike : null,
-      cumAfterT2:    swim != null && t1 != null && bike != null && t2 != null ? swim + t1 + bike + t2 : null,
-      cumFinish:     finish,
+      gunFinishSecs: gunFinish,
+      waveOffset,   // filled in below for DNFs
     };
   });
+
+  // Second pass: for athletes without a wave offset (DNFs, DQs, or races
+  // where the API doesn't supply gun times), derive from division peers.
+  // Athletes in the same division start in the same wave, so their wave
+  // offsets should all be the same. Use the median of known offsets per div.
+  const offsetsByDiv = new Map();
+  for (const a of athletes) {
+    if (a.waveOffset == null) continue;
+    if (!offsetsByDiv.has(a.division)) offsetsByDiv.set(a.division, []);
+    offsetsByDiv.get(a.division).push(a.waveOffset);
+  }
+
+  const medianOffset = (arr) => {
+    if (!arr?.length) return 0;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
+      : sorted[mid];
+  };
+
+  const hasGunTimes = athletes.some((a) => a.waveOffset != null);
+
+  for (const a of athletes) {
+    if (a.waveOffset != null) continue;
+    const divOffsets = offsetsByDiv.get(a.division);
+    a.waveOffset = divOffsets?.length ? medianOffset(divOffsets) : 0;
+  }
+
+  // Third pass: compute gun time cumulative splits.
+  // gun_cum_X = waveOffset + chip_cum_X
+  // These represent actual clock time at each course boundary, so comparing
+  // two athletes' gun_cum values tells you who was physically ahead on course.
+  for (const a of athletes) {
+    const w = a.waveOffset;
+    const { swimSecs: sw, t1Secs: t1, bikeSecs: bk, t2Secs: t2, finishSecs: fin } = a;
+
+    a.cumAfterSwim  = sw != null                                         ? w + sw             : null;
+    a.cumAfterT1    = sw != null && t1 != null                           ? w + sw + t1        : null;
+    a.cumAfterBike  = sw != null && t1 != null && bk != null             ? w + sw + t1 + bk   : null;
+    a.cumAfterT2    = sw != null && t1 != null && bk != null && t2 != null ? w + sw + t1 + bk + t2 : null;
+    a.cumFinish     = fin != null                                        ? w + fin            : null;
+  }
+
+  return { athletes, hasGunTimes };
 }
 
 // ─── Passing Algorithm ────────────────────────────────────────────────────────
@@ -269,7 +319,7 @@ function rpad(str, len) {
 
 // ─── Report ───────────────────────────────────────────────────────────────────
 
-function printReport(athletes, passingMap) {
+function printReport(athletes, passingMap, hasGunTimes) {
   const finishers = athletes.filter((a) => a.status === "FIN" && a.finishSecs != null);
   const dnfs = athletes.filter((a) => a.status === "DNF");
 
@@ -279,6 +329,10 @@ function printReport(athletes, passingMap) {
   console.log(`  Athletes:  ${athletes.length}`);
   console.log(`  Finishers: ${finishers.length}`);
   console.log(`  DNFs:      ${dnfs.length}`);
+  const modeLabel = hasGunTimes
+    ? "✅ Gun time (physical — wave offsets applied)"
+    : "⚠️  Chip time only (gun times not in data — re-fetch to get physical passing)";
+  console.log(`  Mode:      ${modeLabel}`);
   console.log("═".repeat(70));
 
   // ── Invariant check ─────────────────────────────────────────────────────────
@@ -396,6 +450,7 @@ function buildOutputCSV(athletes, passingMap) {
     "Bib", "Name", "Gender", "Country", "Division", "Status",
     "Overall Rank", "Gender Rank", "Division Rank",
     "Finish Time", "Swim Time", "T1 Time", "Bike Time", "T2 Time", "Run Time",
+    "Wave Offset (Seconds)",
     "Swim Gained", "Swim Lost", "Swim Net",
     "T1 Gained",   "T1 Lost",   "T1 Net",
     "Bike Gained", "Bike Lost", "Bike Net",
@@ -420,6 +475,7 @@ function buildOutputCSV(athletes, passingMap) {
       a.overallRank ?? "", a.genderRank ?? "", a.divisionRank ?? "",
       fmtTime(a.finishSecs), fmtTime(a.swimSecs), fmtTime(a.t1Secs),
       fmtTime(a.bikeSecs),   fmtTime(a.t2Secs),   fmtTime(a.runSecs),
+      a.waveOffset ?? 0,
     ];
 
     if (d) {
@@ -464,13 +520,14 @@ Example:
     const rows = parseCSV(raw);
     console.log(`   ${rows.length} rows parsed`);
 
-    const athletes = normaliseAthletes(rows);
-    console.log(`   Normalised. Running passing algorithm...`);
+    const { athletes, hasGunTimes } = normaliseAthletes(rows);
+    console.log(`   Normalised. ${hasGunTimes ? "Gun times found — using physical passing mode." : "No gun times in data — using chip time mode (wave offsets not applied)."}`);
+    console.log(`   Running passing algorithm...`);
 
     const passingMap = computePassingData(athletes);
     console.log(`   Done. Computing report...`);
 
-    printReport(athletes, passingMap);
+    printReport(athletes, passingMap, hasGunTimes);
 
     // Write output CSV alongside the input file
     const outputFile = csvFile.replace(/\.csv$/i, "_passing.csv");

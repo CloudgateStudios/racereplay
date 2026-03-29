@@ -69,6 +69,9 @@ function convertToCSV(data) {
     "Run Rank (Overall)", "Run Rank (Gender)", "Run Rank (Division)",
     "Finish (Seconds)", "Swim (Seconds)", "T1 (Seconds)", "Bike (Seconds)",
     "T2 (Seconds)", "Run (Seconds)",
+    // Gun time = clock time from official race start (chip time + wave start offset).
+    // Used for physical passing calculations. Empty if not provided by the API.
+    "Finish Gun Time", "Finish Gun (Seconds)",
   ];
 
   const rows = data.map((r) => ({
@@ -105,6 +108,12 @@ function convertToCSV(data) {
     "Bike (Seconds)": r.wtc_biketime,
     "T2 (Seconds)": r.wtc_transition2time,
     "Run (Seconds)": r.wtc_runtime,
+    // Gun time fields — populated if the API provides them, empty otherwise.
+    // wtc_finishguntime / wtc_finishtimegunformatted are the typical field names
+    // in the competitor.com API. If blank after a fetch, the race may not publish
+    // gun times and wave offsets will need to be supplied another way.
+    "Finish Gun Time":     r.wtc_finishtimegunformatted || r.wtc_finishguntimeformatted || "",
+    "Finish Gun (Seconds)": r.wtc_finishguntime ?? "",
   }));
 
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
