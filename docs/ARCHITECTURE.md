@@ -1,6 +1,6 @@
 # RaceReplay — Architecture
 
-**Version:** 1.1
+**Version:** 1.3
 **Last Updated:** 2026-03-30
 
 ---
@@ -215,23 +215,188 @@ Every physical pass is counted once for the passer and once for the passed — t
 
 ## Admin Security
 
-Admin routes are protected by a single `ADMIN_SECRET` environment variable, checked via the `x-admin-secret` request header. No full auth system.
+Admin access uses a session-based login flow rather than sending a raw secret on every request. Protection is enforced centrally in `src/middleware.ts` — not in individual route handlers.
 
-The RTRT app ID (`RTRT_APP_ID`) is stored as an environment variable. It must never appear in client-side bundles, be returned in API responses, or be logged.
+### Login flow
+
+1. Admin navigates to `/admin/login` — a simple form with a single password field
+2. Form submits to `POST /api/admin/session` with the secret in the request body (HTTPS only)
+3. Server verifies the secret against `ADMIN_SECRET` env var
+4. On success: generates a `crypto.randomUUID()` session token, upserts the `AdminSession` singleton row in the DB, sets an **httpOnly, Secure, SameSite=Strict** cookie (`admin_session`) with a 4-hour expiry, redirects to `/admin`
+5. On failure: returns `401`; rate limiter increments the IP failure count
+
+The raw `ADMIN_SECRET` is only transmitted once (at login). All subsequent admin requests are authenticated by cookie.
+
+### Single active session
+
+The `AdminSession` table has a single row with a fixed primary key (`"singleton"`). A new login **replaces** the token in that row — the previous cookie becomes invalid immediately. There is never more than one valid session token at a time, across all Vercel function instances.
+
+### Middleware (`src/middleware.ts`)
+
+Matches all `/api/admin/*` and `/admin/*` paths (except `/admin/login` itself).
+
+- Reads the `admin_session` cookie
+- Queries `AdminSession WHERE id = "singleton" AND token = ? AND expiresAt > NOW()`
+- Hit → allow. Miss → redirect to `/admin/login` (for page routes) or return `401` (for API routes)
+
+Rate limiting is applied at the login endpoint only: max **5 failed attempts per IP per minute** on `POST /api/admin/session`. Returns `429 Too Many Requests` after the threshold. This is the only place the raw secret is checked, so it is the only place that needs brute-force protection.
+
+### Logout
+
+`POST /api/admin/logout` deletes the `AdminSession` singleton row and clears the cookie. After logout, no session token is valid until the next login.
+
+### SSRF protection
+
+`POST /api/admin/import` accepts a `competitorUrl` parameter that the server fetches. This field is validated against an allowlist before any outbound request is made:
+
+- Accepted: `https://labs-v2.competitor.com/*`
+- Rejected: anything else → `400 Bad Request` with `{ "error": "competitorUrl must be a labs-v2.competitor.com URL" }`
+
+This prevents a session holder from using the import endpoint to probe internal network resources (Supabase, AWS metadata, Vercel internals).
+
+### Destructive operations
+
+The `clearExisting` flag on import and upload routes requires an explicit confirmation string rather than a boolean to prevent accidental data wipes:
+
+```json
+{ "clearExisting": "CONFIRM_DELETE" }
+```
+
+Passing any other value is treated as `false`.
+
+### Audit logging
+
+All admin route invocations are logged to stdout (captured by Vercel logs):
+
+```
+[admin] POST /api/admin/import — auth=ok ip=1.2.3.4 ts=2026-03-30T12:00:00Z
+[admin] POST /api/admin/session — auth=fail ip=5.6.7.8 ts=2026-03-30T12:00:01Z
+```
+
+The `ADMIN_SECRET` value and session tokens are never logged.
+
+### RTRT app ID
+
+The `RTRT_APP_ID` is stored as an environment variable. It must never appear in client-side bundles, be returned in API responses, or be logged.
+
+---
+
+## Local Development
+
+Local dev uses the Supabase CLI, which spins up a full local Supabase stack in Docker. This matches the production service set and makes it easy to add Supabase-specific features (RLS, Edge Functions, etc.) later without changing the local workflow.
+
+### Prerequisites
+
+- Docker Desktop running
+- Supabase CLI: `brew install supabase/tap/supabase`
+
+### Starting the local stack
+
+```bash
+supabase start          # starts Postgres, Studio, Auth, and other services
+pnpm prisma migrate dev # applies Prisma migrations to local Postgres
+pnpm dev                # Next.js on localhost:3000
+```
+
+Local service URLs (printed by `supabase start`, also available via `supabase status`):
+
+| Service | URL |
+|---|---|
+| Next.js app | http://localhost:3000 |
+| Supabase Studio | http://localhost:54323 |
+| Postgres | postgresql://postgres:postgres@localhost:54322/postgres |
+| API / Auth | http://localhost:54321 |
+
+### Local `.env.local`
+
+`DATABASE_URL` and `DIRECT_URL` are the same locally — no PgBouncer is needed:
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres
+DIRECT_URL=postgresql://postgres:postgres@localhost:54322/postgres
+ADMIN_SECRET=dev-secret
+RTRT_APP_ID=5824c5c948fd08c23a8b4567
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### Useful scripts (in `package.json`)
+
+| Script | Command | Purpose |
+|---|---|---|
+| `pnpm db:start` | `supabase start` | Start local Supabase stack |
+| `pnpm db:stop` | `supabase stop` | Stop local stack |
+| `pnpm db:reset` | `prisma migrate reset --force` | Wipe and re-apply all migrations locally |
+| `pnpm db:studio` | `supabase studio` | Open Studio in the browser |
+
+### Migration source of truth
+
+**Prisma is the migration source of truth.** The `supabase/migrations/` folder is not used — all schema changes go through `pnpm prisma migrate dev`. The local Supabase Postgres is just the target database.
 
 ---
 
 ## Deployment
 
+### Environments
+
+| Environment | Trigger | Vercel target | Supabase project |
+|---|---|---|---|
+| Local | manual | none | Supabase CLI (Docker) |
+| Staging | merge to `main` | Preview (fixed URL) | `racereplay-staging` |
+| Production | manual workflow dispatch + tag | Production | `racereplay-prod` |
+
+PR branches get Vercel preview deployments automatically via the Vercel GitHub integration — no Actions config needed. These previews also use the staging Supabase project.
+
+### CI/CD — Staging (`.github/workflows/staging.yml`)
+
+Triggered on every push to `main`. Runs checks, migrates staging DB, deploys to Vercel preview.
+
+```
+push to main
+  → pnpm typecheck + lint + test
+  → prisma migrate deploy (STAGING_DIRECT_URL)
+  → vercel deploy            (no --prod flag → staging preview URL)
+```
+
+**GitHub secrets required:**
+
+| Secret | Purpose |
+|---|---|
+| `VERCEL_TOKEN` | Vercel CLI auth |
+| `VERCEL_ORG_ID` | Vercel project org |
+| `VERCEL_PROJECT_ID` | Vercel project ID |
+| `STAGING_DATABASE_URL` | Staging pooled connection (for app) |
+| `STAGING_DIRECT_URL` | Staging direct connection (for migrations) |
+
+The remaining staging env vars (`ADMIN_SECRET`, `RTRT_APP_ID`, `NEXT_PUBLIC_APP_URL`) are set in Vercel project settings under the Preview environment and are injected automatically into the build.
+
+### CI/CD — Production (`.github/workflows/production.yml`)
+
+Triggered manually via `workflow_dispatch`. Requires a `tag` input (e.g. `v1.2.0`) — the workflow checks out that exact git ref before deploying, giving a clean audit trail.
+
+```
+workflow_dispatch (tag input required)
+  → git checkout <tag>
+  → pnpm typecheck + lint + test
+  → prisma migrate deploy (PROD_DIRECT_URL)
+  → vercel deploy --prod
+```
+
+**Additional GitHub secrets required:**
+
+| Secret | Purpose |
+|---|---|
+| `PROD_DATABASE_URL` | Prod pooled connection (for app) |
+| `PROD_DIRECT_URL` | Prod direct connection (for migrations) |
+
+### Vercel project settings
+
 | Concern | Details |
 |---|---|
 | Hosting | Vercel Pro (single project) |
 | Vercel region | `iad1` (Washington D.C., US East) |
-| Database | Supabase — two projects: one for **production**, one for **staging** |
 | Supabase region | `us-east-1` (N. Virginia) — matches Vercel `iad1` |
-| Env vars | Set in Vercel project settings per environment (production + preview) |
-| Custom domain | `racereplay.app` |
-| Function timeout | `maxDuration: 300` on the import route (Vercel Pro) — RTRT fetch takes ~5 min for large races |
+| Custom domain | `racereplay.app` (Production environment only) |
+| Function timeout | `maxDuration: 300` on the import route (Vercel Pro) |
 
 ---
 

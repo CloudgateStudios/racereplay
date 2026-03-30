@@ -1,6 +1,6 @@
 # RaceReplay — API Specification
 
-**Version:** 1.2
+**Version:** 1.3
 **Last Updated:** 2026-03-30
 
 All routes are Next.js App Router API routes under `src/app/api/`. Base URL: `https://racereplay.app` (or `http://localhost:3000` in development).
@@ -11,11 +11,45 @@ All routes are Next.js App Router API routes under `src/app/api/`. Base URL: `ht
 
 Public routes require no authentication.
 
-Admin routes require the header:
+Admin routes require a valid session cookie (`admin_session`), obtained by logging in at `/admin/login`. The cookie is httpOnly, Secure, SameSite=Strict, and expires 4 hours after login.
+
+Auth is enforced centrally by `src/middleware.ts`, which matches all `/api/admin/*` and `/admin/*` paths (except `/admin/login`). Individual route handlers do not re-check credentials.
+
+The login endpoint (`POST /api/admin/session`) rate-limits failed attempts to **5 per IP per minute**, returning `429 Too Many Requests` thereafter. This is the only place the raw `ADMIN_SECRET` is checked.
+
+---
+
+## Admin Session Routes
+
+### POST /api/admin/session
+
+Authenticate and create a session. The only endpoint that accepts the raw admin secret.
+
+**Request body:**
+```json
+{ "secret": "<value of ADMIN_SECRET env var>" }
 ```
-x-admin-secret: <value of ADMIN_SECRET env var>
+
+**Response `200 OK`** — sets `admin_session` cookie (httpOnly, Secure, SameSite=Strict, 4h expiry):
+```json
+{ "ok": true }
 ```
-Return `401 Unauthorized` if missing or incorrect.
+
+**Response `401 Unauthorized`** if secret is wrong.
+**Response `429 Too Many Requests`** if rate limit exceeded.
+
+---
+
+### POST /api/admin/logout
+
+Invalidate the current session. Deletes the `AdminSession` singleton row and clears the cookie.
+
+**Response `200 OK`:**
+```json
+{ "ok": true }
+```
+
+---
 
 ---
 
@@ -282,8 +316,8 @@ Import a race from RTRT.me (and optionally competitor.com). This is the primary 
 |---|---|---|---|
 | `raceId` | string | Yes | cuid of the target race (must already exist) |
 | `rtrtEventId` | string | Yes | RTRT.me event ID (e.g. `IRM-OCEANSIDE703-2026`) |
-| `competitorUrl` | string | No | competitor.com event group URL for richer profile data (if published) |
-| `clearExisting` | boolean | No | Delete existing athletes/results before import (default: `false`) |
+| `competitorUrl` | string | No | competitor.com event group URL — must be a `labs-v2.competitor.com` URL; rejected with `400` otherwise |
+| `clearExisting` | string | No | Pass `"CONFIRM_DELETE"` to wipe existing athletes/results before import; any other value is treated as false |
 
 **Example:**
 ```json
@@ -353,7 +387,7 @@ Upload a pre-built CSV file directly. Use this when you have a CSV from the POC 
 | `raceId` | string | Yes | cuid of the target race |
 | `file` | File | Yes | CSV file (columns described below) |
 | `hasWaveData` | boolean | No | Set `true` if CSV has `Wave Offset (Seconds)` column — enables physical passing mode (default: `false`) |
-| `clearExisting` | boolean | No | Clear existing data before import (default: `false`) |
+| `clearExisting` | string | No | Pass `"CONFIRM_DELETE"` to wipe existing data before import; any other value is treated as false |
 
 **CSV column format (case-insensitive, flexible order):**
 
