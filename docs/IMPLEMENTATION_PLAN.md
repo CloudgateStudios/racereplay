@@ -1,7 +1,7 @@
 # RaceReplay — Implementation Plan
 
-**Version:** 1.0
-**Last Updated:** 2026-03-29
+**Version:** 1.2
+**Last Updated:** 2026-03-30
 
 ---
 
@@ -12,7 +12,7 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 | Phase | Focus | Deliverable |
 |---|---|---|
 | 1 | Scaffold + DB | Running app skeleton with DB connection |
-| 2 | Data pipeline | CSV import + passing calculation |
+| 2 | Data pipeline | RTRT fetch + passing calculation + import |
 | 3 | Public UI + API | Full athlete search and analysis UI |
 | 4 | Polish + Deploy | Production-ready app on Vercel |
 
@@ -30,7 +30,6 @@ Four phases. Each phase delivers a usable slice that can be tested independently
     --typescript --tailwind --app --src-dir \
     --import-alias "@/*"
   ```
-- [ ] Init pnpm (or keep npm — either works)
 - [ ] Install Prisma:
   ```bash
   pnpm add prisma @prisma/client
@@ -45,15 +44,13 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   npx shadcn@latest init
   ```
   Add components: `button`, `card`, `input`, `badge`, `table`, `skeleton`
-- [ ] Write `CLAUDE.md` at repo root (copy from seed docs)
-- [ ] Write `docs/` folder (copy from seed docs)
 
 ### 1.2 Database
 
 - [ ] Create two Supabase projects, both in region `us-east-1` (N. Virginia):
   - `racereplay-prod`
   - `racereplay-staging`
-- [ ] Copy staging connection strings to `.env.local` (use staging DB for local dev):
+- [ ] Copy staging connection strings to `.env.local`:
   ```
   DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
   DIRECT_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
@@ -73,7 +70,13 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   # Supabase — use staging credentials for local dev
   DATABASE_URL=
   DIRECT_URL=
+
+  # Admin protection
   ADMIN_SECRET=
+
+  # RTRT.me — IRONMAN Tracker app ID (server-side only, never expose client-side)
+  RTRT_APP_ID=5824c5c948fd08c23a8b4567
+
   NEXT_PUBLIC_APP_URL=
   ```
 - [ ] Add `.env.local` to `.gitignore`
@@ -83,40 +86,58 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 
 ## Phase 2 — Data Pipeline
 
-**Goal:** Admin can upload a CSV and all data + passing stats are correctly stored.
+**Goal:** Admin can trigger an import for a race and all data + passing stats are correctly stored.
 
 ### 2.1 Core utilities (write + unit-test before anything else)
 
 - [ ] `src/lib/time-utils.ts`
-  - `parseTime(str: string): number | null` — `"1:02:34"` → `3754` seconds; handles `"--"`, `""`, `null`
+  - `parseTime(str: string): number | null` — `"1:02:34"` → `3754`; handles `"--"`, `""`, `null`
   - `formatTime(secs: number): string` — `3754` → `"1:02:34"`
-  - `formatTimeMM(secs: number): string` — `154` → `"2:34"` (for short legs)
+  - `formatTimeMM(secs: number): string` — `154` → `"2:34"` (for short legs like T1/T2)
   - Tests: `src/lib/time-utils.test.ts`
 
-- [ ] `src/lib/csv-parser.ts`
-  - `parseCSV(buffer: Buffer): RawResult[]`
-  - Flexible column mapping: normalise header names (lowercase, remove spaces/punctuation), find best match
-  - Handle DNF/DNS by detecting `--` or empty time strings
-  - Infer gender from division string if no gender column (`M35-39` → `M`, `F30-34` → `F`, `PRO` → needs gender col)
-  - Tests: `src/lib/csv-parser.test.ts` using fixture CSV files in `src/lib/__fixtures__/`
+- [ ] `src/lib/rtrt-fetcher.ts`
+  - `fetchRtrtRace(eventId: string): Promise<RtrtRaceData>`
+  - Registers with RTRT API using `process.env.RTRT_APP_ID`
+  - Paginates through all 6 timing points: `START`, `SWIM`, `T1`, `BIKE`, `T2`, `FINISH`
+  - Handles the end-of-data quirk: `type=no_results` means pagination complete, not an error
+  - Rate limits: 300ms between pages, 5s between points
+  - Returns `Map<bib, AthleteRecord>` with `netTime` per point and `epochTime` at START
+  - See `scripts/fetch-rtrt-race.mjs` for the proven implementation
+  - No unit tests (external API) — integration tested via admin import flow
 
 - [ ] `src/lib/passing-calc.ts`
-  - `computePassingData(athletes: RawResult[]): Map<string, PassingData>`
+  - `computePassingData(athletes: RawResult[], legs: string[], hasWaveData: boolean): Map<string, PassingData>`
   - Pure function — no DB access, no side effects
-  - Algorithm (per leg):
-    1. Filter eligible athletes (completed that leg)
-    2. Sort by cumulative time at start of leg → `beforeMap: Map<bib, rank>`
-    3. Sort by cumulative time at end of leg → `afterMap: Map<bib, rank>`
-    4. For each athlete X:
-       - `passedBibs` = bibs where `beforeMap[bib] < beforeMap[X.bib]` AND `afterMap[bib] > afterMap[X.bib]`
-         (bib was ranked ahead of X before the leg, ranked behind X after — X overtook them)
-       - `passedByBibs` = bibs where `beforeMap[bib] > beforeMap[X.bib]` AND `afterMap[bib] < afterMap[X.bib]`
-         (bib was ranked behind X before the leg, ranked ahead of X after — they overtook X)
+  - `legs` is the ordered array from `race.legs` / csv-parser output — no hardcoded leg names
+  - Two modes controlled by `hasWaveData`:
+    - **Physical (hasWaveData = true):** `waveOffset` is the "before" position for the first leg; all legs use `waveOffset + cumulativeSecs` for position comparisons
+    - **Chip-only (hasWaveData = false):** First leg uses chip-rank comparison; all other legs use cumulative chip time
+  - Algorithm per leg:
+    1. Filter eligible athletes (have both before and after positions in `splits`)
+    2. Build `beforeMap: Map<bib, position>` — position at start of leg
+    3. Build `afterMap: Map<bib, position>` — position at end of leg
+    4. For each athlete X: `passedBibs` = bibs where `before[bib] < before[X]` AND `after[bib] > after[X]`
+  - Returns `Map<bib, PassingData>` where `PassingData` keys match `legs` (plus `overall`)
   - Tests: `src/lib/passing-calc.test.ts`
-    - Use a toy field of 10 athletes with known split times
-    - Assert exact passing relationships
-    - Verify: `sum(all gained) === sum(all lost)` across the field
-    - Verify DNF athletes excluded at correct leg
+    - Use a toy field of 10 athletes with known split times and wave offsets
+    - Assert exact passing relationships for both `hasWaveData = true` and `false`
+    - Verify invariant: `sum(gained) === sum(lost)` across full field for every leg
+    - Verify DNF athletes excluded at correct leg and all subsequent legs
+    - Run tests with both a 5-leg config and a 2-leg config to confirm no hardcoding
+    - See `scripts/test-algorithm.mjs` for the full 21-case test suite to port
+
+- [ ] `src/lib/csv-parser.ts`
+  - `parseCSV(buffer: Buffer): { legs: string[], results: RawResult[] }`
+  - Flexible column mapping: normalise headers (lowercase, strip spaces/punctuation), best match
+  - **Leg detection:** any column ending in `(Seconds)` except `Finish (Seconds)`, `Finish Gun (Seconds)`, `Wave Offset (Seconds)` → treat as a leg, in column order. Returns the discovered `legs` array alongside results.
+  - Handle DNF/DNS by detecting `--` or empty time strings; absent legs omitted from `splits` map
+  - Reads `Wave Offset (Seconds)` column if present → `waveOffset` field
+  - Reads pre-computed `<LegName> (Seconds)` columns directly (avoids re-parsing time strings)
+  - Tests: `src/lib/csv-parser.test.ts` using fixture CSV files in `src/lib/__fixtures__/`
+    - Fixture 1: triathlon CSV (5 legs) — assert correct `legs` array and `splits` shape
+    - Fixture 2: road race CSV (2 legs) — assert leg detection works with non-triathlon columns
+    - Fixture 3: DNF athlete — assert legs after dropout are absent from `splits`
 
 - [ ] `src/lib/admin-auth.ts`
   - `verifyAdminSecret(req: NextRequest): boolean`
@@ -124,20 +145,43 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 ### 2.2 Admin API routes
 
 - [ ] `src/app/api/admin/races/route.ts` — `POST` create race
-- [ ] `src/app/api/admin/upload/route.ts` — `POST` full import pipeline
-  - Use `next/server` `Request.formData()` to receive multipart
-  - Parse CSV, run utilities, bulk-upsert via Prisma `createMany`
-  - Chunked insert: batch athletes in groups of 500 to avoid memory issues
-  - Return import summary
+
+- [ ] `src/app/api/admin/import/route.ts` — `POST` full RTRT-based import pipeline
+  - Accept `{ raceId, rtrtEventId, competitorUrl? }` JSON body
+  - Call `rtrt-fetcher.ts` to fetch all 6 points (this takes ~5 min — route needs `maxDuration: 300`)
+  - Optionally fetch competitor.com if `competitorUrl` provided
+  - Merge by bib
+  - Compute `waveOffset` for each athlete
+  - Derive `legs` array from the fetched timing point names (in order)
+  - Bulk upsert athletes + results via Prisma `createMany` in chunks of 500
+    - Store split seconds as `splits` JSON: `{ [legName]: secs }`
+    - Store `finishSecs` as typed integer
+  - Compute `splitRanks` per athlete (overall rank by cumulative time at each leg exit)
+  - Bulk update `result.splitRanks`
+  - Run `passing-calc.ts` with the derived `legs` array
+  - Bulk update `result.passingData`
+  - Run invariant check and include results in response
+  - Update `race.passingMode`, `race.legs`, and `race.rtrtEventId`
+
+- [ ] `src/app/api/admin/upload/route.ts` — `POST` legacy CSV upload
+  - For importing pre-built CSVs from the POC scripts
+  - Use `Request.formData()` for multipart upload
+  - Parse CSV → `{ legs, results }` via `csv-parser.ts`
+  - Run pipeline: upsert athletes + results, compute `splitRanks`, run passing-calc
+  - Update `race.legs` from detected legs
+  - Return summary
 
 ### 2.3 Admin UI
 
-- [ ] `src/app/admin/page.tsx` — list races with link to upload for each
-- [ ] `src/app/admin/upload/page.tsx` — form with:
+- [ ] `src/app/admin/page.tsx` — list races with links to import for each
+
+- [ ] `src/app/admin/import/page.tsx` — import form with:
   - Race selector (dropdown of existing races) + "Create new race" inline
-  - File input for CSV
-  - Admin secret input (type="password")
-  - Progress/result display after submit
+  - RTRT event ID input (e.g. `IRM-OCEANSIDE703-2026`) with link to `track.rtrt.me`
+  - Optional competitor.com URL input
+  - Admin secret input (`type="password"`)
+  - Progress display — the RTRT fetch takes ~5 minutes; show a spinner with status updates
+  - Result display: finisher count, DNF count, invariant check pass/fail, passing mode
 
 ---
 
@@ -154,15 +198,16 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   - Also match bibs: `bib: { startsWith: q }`
   - Combine with `OR`
 - [ ] `src/app/api/races/[slug]/athletes/[id]/route.ts`
-  - Fetch result with `passingData`
-  - Resolve bib arrays in `passedBibs`/`passedByBibs` → full athlete objects
-  - Return full `AthleteAnalysisResponse` shape
+  - Fetch result with `splits`, `splitRanks`, `passingData`; fetch race for `legs`
+  - Resolve all bibs across all legs: single `WHERE bib IN (...) AND raceId = ?` query
+  - Build bib → athlete map; inject into `passedAthletes`/`passedByAthletes` per leg
+  - Return full `AthleteAnalysisResponse` shape (see `API_SPEC.md`)
 
 ### 3.2 Pages
 
 - [ ] `src/app/page.tsx` — Home
-  - Server Component: fetch all races via Prisma directly (not via API)
-  - `RaceCard` component: race name, date, location, finisher count, link
+  - Server Component: fetch all races via Prisma directly
+  - `RaceCard` component: race name, date, location, finisher count, passing mode badge, link
 
 - [ ] `src/app/[raceSlug]/page.tsx` — Race page
   - Server Component: fetch race metadata
@@ -172,7 +217,7 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 - [ ] `src/app/[raceSlug]/athletes/[id]/page.tsx` — Athlete analysis page
   - Server Component: fetch via `GET /api/races/:slug/athletes/:id`
   - Render `PassingAnalysis` with full data
-  - Page title: `<name> — <race name> — RaceReplay`
+  - Show `waveOffset` as "Start time: +Xm Ys after first wave" when physical mode
 
 ### 3.3 Components
 
@@ -180,24 +225,25 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 - [ ] `src/components/AthleteSearch.tsx` (Client Component)
   - Debounce 300ms
   - Show skeleton while loading
-  - Clear button
 - [ ] `src/components/PassingAnalysis.tsx`
-  - Summary bar: overall rank, net positions gained, positions gained vs lost
-  - Five `LegCard` components in a row (or stack on mobile)
+  - Summary: overall rank, net positions, passing mode indicator
+  - Iterates `race.legs` to render one `LegCard` per leg — never hardcodes leg names
 - [ ] `src/components/LegCard.tsx`
-  - Leg name, split time, rank after leg
-  - "+N gained / -N lost" badge
-  - "Show who I passed" / "Show who passed me" expandable sections
+  - Leg name (from `race.legs`), split time from `result.splits[legName]`, rank from `result.splitRanks[legName]`
+  - "+N gained / −N lost" badge
+  - Expandable "who I passed" / "who passed me" sections
 - [ ] `src/components/PassedAthleteList.tsx`
   - Compact list: `#BIB Name (Division)`
-  - Collapsed by default if > 10 entries, with "Show all N" toggle
+  - Collapsed if > 10 entries, "Show all N" toggle
 
 ### 3.4 Types
 
-- [ ] `src/types/index.ts` — define and export all shared types:
-  - `RawResult`, `PassingData`, `LegPassingStats`
+- [ ] `src/types/index.ts`:
+  - `RawResult` — input to passing-calc; includes `splits: Record<string, number>`, optional `waveOffset`
+  - `PassingData` — keys are leg names from `race.legs` plus `overall`; no hardcoded leg names
+  - `LegPassingStats`
   - `AthleteSearchResult`, `AthleteAnalysisResponse`
-  - `RaceListItem`, `RaceDetail`
+  - `RaceListItem`, `RaceDetail` — both include `legs: string[]`
 
 ---
 
@@ -216,40 +262,33 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 
 ### 4.2 Performance
 
-- [ ] Add Next.js `cache()` or `unstable_cache` to race list and race detail reads (data doesn't change)
+- [ ] Add `unstable_cache` to race list and race detail reads
 - [ ] Set `Cache-Control: public, max-age=3600` on public API routes
 - [ ] Confirm athlete search is fast on a real 3000-athlete dataset
 
 ### 4.3 Deploy
 
-- [ ] Create Vercel project (Pro plan), connect GitHub repo, set region to `iad1` (US East)
-- [ ] Set environment variables in Vercel dashboard for **Production** environment:
-  - `DATABASE_URL` — prod Supabase pooled connection
-  - `DIRECT_URL` — prod Supabase direct connection
-  - `ADMIN_SECRET`
-  - `NEXT_PUBLIC_APP_URL=https://racereplay.app`
-- [ ] Set environment variables in Vercel dashboard for **Preview** environment:
-  - `DATABASE_URL` — staging Supabase pooled connection
-  - `DIRECT_URL` — staging Supabase direct connection
-  - `ADMIN_SECRET`
-  - `NEXT_PUBLIC_APP_URL` — Vercel preview URL
-- [ ] Add `maxDuration: 60` to the upload API route config (Vercel Pro required):
+- [ ] Create Vercel project (Pro plan), connect GitHub repo, set region to `iad1`
+- [ ] Set environment variables in Vercel dashboard for **Production**:
+  ```
+  DATABASE_URL          (prod Supabase pooled)
+  DIRECT_URL            (prod Supabase direct)
+  ADMIN_SECRET
+  RTRT_APP_ID=5824c5c948fd08c23a8b4567
+  NEXT_PUBLIC_APP_URL=https://racereplay.app
+  ```
+- [ ] Set environment variables for **Preview** (same but staging Supabase)
+- [ ] Add `maxDuration: 300` to the import API route (Vercel Pro required):
   ```ts
-  export const maxDuration = 60
+  export const maxDuration = 300
   ```
-- [ ] Run production migration against prod Supabase:
+- [ ] Run migrations against prod and staging Supabase:
   ```bash
-  # Set DIRECT_URL to prod before running
   pnpm prisma migrate deploy
   ```
-- [ ] Run staging migration against staging Supabase:
-  ```bash
-  # Set DIRECT_URL to staging before running
-  pnpm prisma migrate deploy
-  ```
-- [ ] Attach custom domain `racereplay.app` in Vercel project settings
-- [ ] Upload a real Ironman CSV via the deployed admin UI
-- [ ] Smoke test: find a known athlete, verify ranks and passing stats against source
+- [ ] Attach custom domain `racereplay.app`
+- [ ] Import a real race via the deployed admin UI (e.g. `IRM-OCEANSIDE703-2026`)
+- [ ] Smoke test: find a known athlete, verify ranks, passing stats, and invariant pass
 
 ---
 
@@ -260,14 +299,12 @@ Before shipping Phase 3/4:
 - [ ] `pnpm test` — all unit tests pass
 - [ ] `pnpm typecheck` — zero TypeScript errors
 - [ ] `pnpm lint` — zero lint errors
-- [ ] Upload a real Ironman CSV (≥500 athletes) — import completes cleanly
+- [ ] Import a triathlon race (≥500 athletes) — `race.legs` = 5 entries, all splits stored correctly
+- [ ] Import a road race (e.g. BASS2026) — `race.legs` = 2 entries, same pipeline works without modification
+- [ ] Invariant check passes: `sum(gained) === sum(lost)` per leg (returned in import response)
 - [ ] Search for an athlete by name and by bib — both work
-- [ ] Open athlete analysis — all split times and ranks display correctly
-- [ ] Verify passing math:
-  - Pick one athlete, manually compute their after-swim rank from raw data
-  - Cross-check `afterSwimRank` in DB matches
-  - Verify "gained" count on the bike matches expected field cross-reference
-- [ ] Invariant check: `sum of gained === sum of lost` across all athletes in a race
-  (write a one-off script `scripts/verify-passing.ts` to assert this)
-- [ ] Mobile layout looks correct at 375px
-- [ ] DNF athlete: their `passingData` stops at the leg they dropped, all subsequent legs are null/zero
+- [ ] Open athlete analysis — split times render for each leg in `race.legs` order; no hardcoded leg names in UI
+- [ ] `result.splits` and `result.splitRanks` keys match `race.legs` exactly
+- [ ] Physical passing mode: confirm `waveOffset` is shown on athlete page, passing mode badge on race page
+- [ ] DNF athlete: `result.splits` stops at the leg they dropped; `passingData` stops at same point
+- [ ] Mobile layout correct at 375px

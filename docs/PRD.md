@@ -1,7 +1,7 @@
 # RaceReplay — Product Requirements Document
 
-**Version:** 1.0
-**Last Updated:** 2026-03-29
+**Version:** 1.1
+**Last Updated:** 2026-03-30
 
 ---
 
@@ -23,7 +23,7 @@ RaceReplay ingests full race results (all split times for all athletes) and comp
 - How many athletes passed them during each segment
 - The specific names and bibs of those athletes
 
-Data is loaded once by an admin (CSV upload), then the app is read-only and fully public.
+Data is loaded once by an admin (via the import pipeline), then the app is read-only and fully public.
 
 ---
 
@@ -48,7 +48,7 @@ No account required. The service is entirely public.
 | Athlete results view | Full split times + official rankings for one athlete |
 | Passing analysis | Per-leg breakdown: positions gained/lost + who specifically |
 | Overall summary | Net position change across the full race |
-| Admin CSV upload | Protected upload form; import pipeline with validation |
+| Admin import pipeline | Protected admin UI; imports race data from RTRT.me + competitor.com |
 | Multi-race support | New races can be added at any time; each has its own slug |
 
 ### Post-MVP (future)
@@ -59,7 +59,6 @@ No account required. The service is entirely public.
 | Field-wide heatmaps | Visual showing where in the field bulk passing happened |
 | Head-to-head comparison | Pick two athletes and compare their leg-by-leg trajectories |
 | Race series tracking | Same athlete across multiple races over time |
-| Athlinks import | Automated pull via Athlinks API instead of manual CSV |
 | Shareable athlete cards | OG image + shareable URL for social media |
 
 ---
@@ -67,7 +66,7 @@ No account required. The service is entirely public.
 ## Non-Goals
 
 - No user accounts, logins, or profiles
-- No real-time data (races are static once uploaded)
+- No real-time data (races are static once imported)
 - No athlete-submitted corrections
 - Not limited to Ironman — any timed race with swim/T1/bike/T2/run splits qualifies (or any multi-leg race format with configurable legs in future)
 
@@ -83,23 +82,44 @@ No account required. The service is entirely public.
 
 ## Data Ingestion
 
-No official Ironman API exists. CSV export is the primary mechanism.
+Ironman race data comes from two separate systems that together provide everything the passing algorithm needs.
 
-**Recommended CSV source:**
-1. Export from [ironman.com](https://www.ironman.com) results page manually
-2. Use the Node.js scraper: [github.com/colinlord/ironman-results](https://github.com/colinlord/ironman-results) (zero-dependency, exports 30+ column CSV)
-3. Export from [athlinks.com](https://www.athlinks.com) (aggregates Ironman results)
+### Source 1 — competitor.com (chip split times)
 
-**Expected columns:** `Pos, Bib, Name, Country, Division, Swim, T1, Bike, T2, Run, Finish, Points`
-Times in `HH:MM:SS` format. The import parser normalises to integer seconds.
+`labs-v2.competitor.com` is the public-facing results site backed by Microsoft Dynamics 365 CRM. It provides chip-elapsed split times (swim, T1, bike, T2, run, finish) for every athlete, official rankings, and athlete profile data.
 
-The column mapper is flexible — header names are mapped by case-insensitive fuzzy match, so minor variation between race exports is handled automatically.
+**Does not provide:** gun times, wave start offsets, or per-athlete start times of any kind. This was confirmed by scanning all API fields across a full race field (2,071 athletes). The field simply does not exist in the API response.
+
+### Source 2 — RTRT.me (per-athlete start times)
+
+`api.rtrt.me` is the backend behind the official IRONMAN Tracker mobile app. It records a precise Unix epoch timestamp (`epochTime`) when each athlete crosses every timing mat, including the **start mat**.
+
+**Why start times matter:** In a time-trial (TT) start race, athletes enter the water individually over a 30–60 minute window. Two athletes with the same chip-swim-time could have started 5 minutes apart — without knowing who started first, you cannot tell who was physically ahead. RTRT's epoch timestamps resolve this exactly:
+
+```
+epochTime[any_point] = startEpoch + chipSplitSeconds
+```
+
+Comparing two athletes' `epochTime` at any checkpoint directly answers "who was physically ahead?"
+
+### Passing modes
+
+| Mode | When used | Swim handling | All other legs |
+|---|---|---|---|
+| **Physical passing** | RTRT start times available (all modern TT-start Ironman races) | `waveOffset` as before position → swim exit as after | Physical position before → after each leg |
+| **Chip-only** | No start time data | All start together → swim exit chip rank | Cumulative chip time before → after each leg |
+
+Physical passing is always preferred. Chip-only is a correct fallback for traditional gun-start races or when RTRT data is unavailable.
+
+### When data is available
+
+RTRT.me retains data after the race and is typically available within hours. competitor.com results are often published 1–3 days after the race. For fresh races, RTRT alone is sufficient to build complete split data and run the full passing analysis.
 
 ---
 
 ## Success Metrics
 
-- Any uploaded race CSV imports cleanly and passing stats are correct (verifiable against raw split ranks)
+- Any imported race has correct passing stats (verified via invariant: sum of gained = sum of lost per leg across all athletes)
 - Athlete search returns results in <200ms
 - Passing analysis page loads in <500ms
-- Admin can upload a 3000-athlete CSV and have it fully processed in <30 seconds
+- Admin can import a 3000-athlete race and have it fully processed in <10 minutes

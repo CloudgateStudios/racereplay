@@ -1,0 +1,15 @@
+# Environment
+.env.local
+.env.*.local
+
+# Race data — never commit CSVs or wave offset files
+scripts/data/
+!scripts/data/wave-offsets-example.json
+
+# Node
+node_modules/
+.next/
+dist/
+
+# OS
+.DS_Store
