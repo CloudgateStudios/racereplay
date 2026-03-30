@@ -338,13 +338,21 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Environments
 
-| Environment | Trigger | Vercel target | Supabase project |
+| Environment | Trigger | Vercel target | Database |
 |---|---|---|---|
 | Local | manual | none | Supabase CLI (Docker) |
-| Staging | merge to `main` | Preview (fixed URL) | `racereplay-staging` |
-| Production | manual workflow dispatch + tag | Production | `racereplay-prod` |
+| Staging | merge to `main` | Preview (fixed URL) | Supabase cloud — `racereplay-staging` (free tier) |
+| Production | manual workflow dispatch + tag | Production | Neon |
 
 PR branches get Vercel preview deployments automatically via the Vercel GitHub integration — no Actions config needed. These previews also use the staging Supabase project.
+
+### Why different databases per environment
+
+- **Local**: Supabase CLI gives a full local stack including Studio — best DX for development
+- **Staging**: Supabase free tier is sufficient (pausing is tolerable, 0.5GB is plenty for test data)
+- **Production**: Neon instead of Supabase Pro — Neon's free tier doesn't pause and covers minimal production usage at no cost; Neon Pro ($19/mo) is available if storage or compute limits are hit, and is still cheaper than Supabase Pro ($25/mo)
+
+Prisma doesn't care which Postgres it connects to — only the connection strings change between environments.
 
 ### CI/CD — Staging (`.github/workflows/staging.yml`)
 
@@ -385,8 +393,8 @@ workflow_dispatch (tag input required)
 
 | Secret | Purpose |
 |---|---|
-| `PROD_DATABASE_URL` | Prod pooled connection (for app) |
-| `PROD_DIRECT_URL` | Prod direct connection (for migrations) |
+| `PROD_DATABASE_URL` | Neon pooled connection (for app) |
+| `PROD_DIRECT_URL` | Neon direct connection (for migrations) |
 
 ### Vercel project settings
 
@@ -394,9 +402,23 @@ workflow_dispatch (tag input required)
 |---|---|
 | Hosting | Vercel Pro (single project) |
 | Vercel region | `iad1` (Washington D.C., US East) |
-| Supabase region | `us-east-1` (N. Virginia) — matches Vercel `iad1` |
+| Staging DB region | Supabase `us-east-1` (N. Virginia) — matches Vercel `iad1` |
+| Production DB region | Neon `us-east-2` (Ohio) — closest available to Vercel `iad1` |
 | Custom domain | `racereplay.app` (Production environment only) |
 | Function timeout | `maxDuration: 300` on the import route (Vercel Pro) |
+
+### Estimated monthly cost
+
+| Service | Plan | Cost |
+|---|---|---|
+| Vercel | Pro | $20/mo |
+| Neon (production) | Free tier | $0 |
+| Supabase (staging) | Free tier | $0 |
+| Domain | — | ~$1.50/mo |
+| GitHub Actions | Free (public repo) | $0 |
+| **Total** | | **~$21.50/mo** |
+
+If Neon free tier limits are reached (0.5GB storage), upgrading to Neon Pro is $19/mo — keeping the total under $42/mo vs the $47/mo Supabase Pro alternative.
 
 ---
 

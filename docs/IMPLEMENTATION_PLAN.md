@@ -58,9 +58,11 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   supabase start
   ```
   Note the Postgres URL printed by `supabase status` — default: `postgresql://postgres:postgres@localhost:54322/postgres`
-- [ ] Create two Supabase **cloud** projects, both in region `us-east-1` (N. Virginia):
-  - `racereplay-prod`
-  - `racereplay-staging`
+- [ ] Create one Supabase **cloud** project in region `us-east-1` (N. Virginia):
+  - `racereplay-staging` (free tier)
+- [ ] Create a **Neon** project for production:
+  - Sign up at neon.tech, create project `racereplay-prod`, select region `us-east-2` (Ohio — closest to Vercel `iad1`)
+  - Note both the pooled connection string (`DATABASE_URL`) and direct connection string (`DIRECT_URL`) from the Neon dashboard
 
 ### 1.3 Schema + migrations
 
@@ -303,21 +305,21 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 ### 4.3 Vercel setup
 
 - [ ] Create Vercel project (Pro plan), connect GitHub repo, set region to `iad1`
-- [ ] Set environment variables in Vercel dashboard for **Production**:
+- [ ] Set environment variables in Vercel dashboard for **Production** (Neon):
   ```
-  DATABASE_URL=          (prod Supabase pooled)
-  DIRECT_URL=            (prod Supabase direct)
+  DATABASE_URL=          (Neon pooled connection string)
+  DIRECT_URL=            (Neon direct connection string)
   ADMIN_SECRET=
   RTRT_APP_ID=5824c5c948fd08c23a8b4567
   NEXT_PUBLIC_APP_URL=https://racereplay.app
   ```
-- [ ] Set environment variables for **Preview** (staging Supabase, same keys):
+- [ ] Set environment variables for **Preview** (Supabase staging, same keys):
   ```
   DATABASE_URL=          (staging Supabase pooled)
   DIRECT_URL=            (staging Supabase direct)
   ADMIN_SECRET=
   RTRT_APP_ID=5824c5c948fd08c23a8b4567
-  NEXT_PUBLIC_APP_URL=   (Vercel preview URL — leave blank, Vercel sets VERCEL_URL automatically)
+  NEXT_PUBLIC_APP_URL=   (leave blank — Vercel sets VERCEL_URL automatically)
   ```
 - [ ] Add `maxDuration: 300` to the import API route (Vercel Pro required):
   ```ts
