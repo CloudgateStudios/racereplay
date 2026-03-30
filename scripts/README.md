@@ -61,7 +61,78 @@ Node.js 18+ (native `fetch`). No dependencies to install.
 
 ---
 
-## Step 1 — Find the competitor.com event URL
+## Workflow A — Generic RTRT fetch (any race type)
+
+Use this for any RTRT-tracked event — road races, triathlons, trail runs, etc.
+A single script auto-discovers timing points and writes a ready-to-analyze CSV.
+
+### A1 — Find the RTRT event ID and app ID
+
+1. Go to **https://track.rtrt.me** and search for the race
+2. The URL will be `https://track.rtrt.me/e/<EVENT-ID>` — that segment is the event ID
+3. View the page source (`Cmd+U`) and search for `"appid"` — you'll find something like:
+   ```json
+   "appid":"4d9df5bf9f36bc4a1dc8fce2"
+   ```
+   Each race organizer has their own app ID. The IRONMAN Tracker default is
+   `5824c5c948fd08c23a8b4567` (no need to pass `--appid` for IRM-* events).
+
+### A2 — Fetch splits
+
+```bash
+node scripts/fetch-rtrt-event.mjs <event-id> [--appid <id>]
+```
+
+Examples:
+```bash
+# Bank of America Shamrock Shuffle 2026 (different app ID)
+node scripts/fetch-rtrt-event.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+
+# Any IRONMAN event (uses default IRONMAN app ID)
+node scripts/fetch-rtrt-event.mjs IRM-OCEANSIDE703-2026
+```
+
+**Flags:**
+```bash
+--appid <id>          RTRT tracker app ID (default: IRONMAN app ID)
+--output-dir <dir>    Write files here (default: scripts/data/)
+--points A,B,C        Manual point override — skip auto-discovery
+```
+
+**Output:**
+- `scripts/data/<EVENT-ID>.csv` — full results with leg columns named after timing segments
+- `scripts/data/<event-id>_starts.csv` — per-athlete start epoch times
+
+**Timing:** ~300ms/page + 5s between points. A 24K-athlete event with 3 points takes ~18 min.
+
+### A3 — Run the analysis
+
+```bash
+node scripts/analyze-passing.mjs scripts/data/<EVENT-ID>.csv \
+  --rtrt-starts scripts/data/<event-id>_starts.csv
+```
+
+`analyze-passing.mjs` detects leg names automatically from CSV column headers — no
+configuration needed. Any column ending in `(Seconds)` (except Finish, Finish Gun,
+Wave Offset) is treated as a leg.
+
+**For large races (>5K athletes), cap stored bib lists:**
+```bash
+node scripts/analyze-passing.mjs scripts/data/<EVENT-ID>.csv \
+  --rtrt-starts scripts/data/<event-id>_starts.csv \
+  --max-bibs 50
+```
+Counts remain accurate; only the stored bib lists are capped.
+
+---
+
+## Workflow B — IRONMAN triathlon (competitor.com + RTRT)
+
+Use this for IRONMAN races where competitor.com has published detailed results.
+Two sources are merged: competitor.com provides clean chip splits; RTRT provides
+per-athlete start times for physical passing mode.
+
+### B1 — Find the competitor.com event URL
 
 1. Go to the race results page on **ironman.com**
    e.g. `https://www.ironman.com/im703-oceanside-results`
@@ -76,7 +147,7 @@ Node.js 18+ (native `fetch`). No dependencies to install.
 
 ---
 
-## Step 2 — Fetch the results CSV
+### B2 — Fetch the results CSV
 
 ```bash
 node scripts/fetch-race.mjs <competitor-url> <year>
@@ -105,7 +176,7 @@ seconds for every split.
 
 ---
 
-## Step 3 — Find the RTRT event ID
+### B3 — Find the RTRT event ID
 
 Go to **https://track.rtrt.me** and search for the race. The URL will be:
 ```
@@ -117,7 +188,7 @@ The segment after `/e/` is the RTRT event ID. Common patterns:
 
 ---
 
-## Step 4 — Fetch per-athlete start times
+### B4 — Fetch per-athlete start times
 
 ```bash
 node scripts/fetch-rtrt-starts.mjs <rtrt-event-id>
@@ -135,7 +206,7 @@ node scripts/fetch-rtrt-starts.mjs IRM-OCEANSIDE703-2025
 
 ---
 
-## Step 5 — Run the passing analysis
+### B5 — Run the passing analysis
 
 ```bash
 node scripts/analyze-passing.mjs <results-csv> --rtrt-starts <starts-csv>
@@ -166,7 +237,7 @@ node scripts/analyze-passing.mjs scripts/data/<file>.csv \
 
 ---
 
-## Step 6 — Run algorithm unit tests
+## Unit tests
 
 ```bash
 node scripts/test-algorithm.mjs
@@ -181,8 +252,10 @@ All must pass before trusting real-race output.
 
 | Script | Purpose |
 |---|---|
-| `fetch-race.mjs` | Fetches results CSV from competitor.com |
-| `fetch-rtrt-starts.mjs` | Fetches per-athlete start epoch times from RTRT.me |
+| `fetch-race.mjs` | Fetches results CSV from competitor.com (IRONMAN) |
+| `fetch-rtrt-race.mjs` | Fetches full splits + starts from RTRT for IRONMAN triathlon |
+| `fetch-rtrt-event.mjs` | Generic RTRT fetcher — works with any race type, auto-discovers timing points |
+| `fetch-rtrt-starts.mjs` | Fetches only per-athlete start epoch times from RTRT |
 | `analyze-passing.mjs` | Runs the passing algorithm, prints report, writes passing CSV |
 | `test-algorithm.mjs` | Unit tests for the passing algorithm |
 | `data/wave-offsets-example.json` | Template for wave-start offset files |
@@ -190,6 +263,28 @@ All must pass before trusting real-race output.
 ---
 
 ## Verified results
+
+### 2026 Bank of America Shamrock Shuffle (BASS2026)
+**Script:** `fetch-rtrt-event.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2`
+
+24,216 athletes · 24,152 finishers · 64 DNFs · 2 legs (5K, Finish)
+
+Both leg invariants pass:
+- 5K: gained = lost = 8,805,358 ✅
+- Finish: gained = lost = 7,864,006 ✅
+
+First verified non-triathlon race. Confirmed `fetch-rtrt-event.mjs` auto-discovers the 5K intermediate mat and FINISH, names legs from point labels, and handles a 24K field in physical passing mode. Bib list storage capped with `--max-bibs 50`.
+
+---
+
+### 2026 IM 70.3 Oceanside (IRM-OCEANSIDE703-2026)
+**Script:** `fetch-rtrt-race.mjs IRM-OCEANSIDE703-2026`
+
+3,171 athletes · 2,973 finishers · 198 DNFs · 3,170 RTRT start times matched
+
+All 5 leg invariants pass. competitor.com results not yet published at time of fetch — RTRT `netTime` values used for all splits.
+
+---
 
 ### 2025 IM 70.3 Oceanside
 2,962 athletes · 2,540 finishers · 196 DNFs · 2,564 RTRT start times matched
