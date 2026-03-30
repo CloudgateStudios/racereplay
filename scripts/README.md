@@ -224,13 +224,6 @@ node scripts/analyze-passing.mjs \
 node scripts/analyze-passing.mjs scripts/data/<file>.csv
 ```
 
-**With wave offsets instead of RTRT** (wave-start races):
-```bash
-node scripts/analyze-passing.mjs scripts/data/<file>.csv \
-  --wave-offsets scripts/data/<file>_waves.json
-# See scripts/data/wave-offsets-example.json for the format
-```
-
 **Output:**
 - Terminal report: invariant check, top 5 finishers, biggest climbers/fallers
 - `<input>_passing.csv`: full per-athlete breakdown written alongside input file
@@ -252,13 +245,11 @@ All must pass before trusting real-race output.
 
 | Script | Purpose |
 |---|---|
-| `fetch-race.mjs` | Fetches results CSV from competitor.com (IRONMAN) |
-| `fetch-rtrt-race.mjs` | Fetches full splits + starts from RTRT for IRONMAN triathlon |
 | `fetch-rtrt-event.mjs` | Generic RTRT fetcher — works with any race type, auto-discovers timing points |
-| `fetch-rtrt-starts.mjs` | Fetches only per-athlete start epoch times from RTRT |
+| `fetch-race.mjs` | Fetches results CSV from competitor.com (IRONMAN, Workflow B only) |
+| `fetch-rtrt-starts.mjs` | Fetches only per-athlete start epoch times from RTRT (Workflow B only) |
 | `analyze-passing.mjs` | Runs the passing algorithm, prints report, writes passing CSV |
 | `test-algorithm.mjs` | Unit tests for the passing algorithm |
-| `data/wave-offsets-example.json` | Template for wave-start offset files |
 
 ---
 
@@ -278,7 +269,7 @@ First verified non-triathlon race. Confirmed `fetch-rtrt-event.mjs` auto-discove
 ---
 
 ### 2026 IM 70.3 Oceanside (IRM-OCEANSIDE703-2026)
-**Script:** `fetch-rtrt-race.mjs IRM-OCEANSIDE703-2026`
+**Script:** `fetch-rtrt-event.mjs IRM-OCEANSIDE703-2026`
 
 3,171 athletes · 2,973 finishers · 198 DNFs · 3,170 RTRT start times matched
 
