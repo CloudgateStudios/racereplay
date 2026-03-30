@@ -1,7 +1,7 @@
 # RaceReplay — Data Model
 
-**Version:** 1.0
-**Last Updated:** 2026-03-29
+**Version:** 1.1
+**Last Updated:** 2026-03-30
 
 ---
 
@@ -39,18 +39,27 @@ enum Gender {
   X  // Non-binary / unspecified
 }
 
+enum PassingMode {
+  PHYSICAL   // Per-athlete start times from RTRT — true physical passing
+  CHIP_ONLY  // No start time data — chip-time rank comparison (gun-start fallback)
+}
+
 // ─── Race ─────────────────────────────────────────────────────────────────────
 
 model Race {
-  id        String    @id @default(cuid())
-  slug      String    @unique   // URL-safe identifier, e.g. "kona-2024"
-  name      String              // Full display name, e.g. "IRONMAN World Championship 2024"
-  location  String              // e.g. "Kailua-Kona, Hawaii"
-  date      DateTime  @db.Date
-  distance  Distance
-  createdAt DateTime  @default(now())
+  id          String      @id @default(cuid())
+  slug        String      @unique   // URL-safe identifier, e.g. "oceanside703-2026"
+  name        String                // Full display name, e.g. "IRONMAN 70.3 Oceanside 2026"
+  location    String                // e.g. "Oceanside, California"
+  date        DateTime    @db.Date
+  distance    Distance
+  passingMode PassingMode @default(CHIP_ONLY)
+  // RTRT event ID used to fetch this race (e.g. "IRM-OCEANSIDE703-2026").
+  // Stored for re-import and audit. Not exposed via public API.
+  rtrtEventId String?
+  createdAt   DateTime    @default(now())
 
-  athletes  Athlete[]
+  athletes    Athlete[]
 
   @@map("races")
 }
@@ -62,7 +71,7 @@ model Athlete {
   raceId   String
   bib      String            // As printed on race bib
   fullName String
-  country  String?           // ISO 3166-1 alpha-3, e.g. "USA"
+  country  String?           // ISO 3166-1 alpha-2, e.g. "US"
   division String            // Age group + gender, e.g. "M35-39", "FPRO", "M18-24"
   gender   Gender
 
@@ -96,7 +105,20 @@ model Result {
   dnf Boolean @default(false)  // Did Not Finish
   dsq Boolean @default(false)  // Disqualified
 
-  // ── Official rankings (from source CSV) ──────────────────────────────────
+  // ── Physical start data (from RTRT.me) ───────────────────────────────────
+  //
+  // waveOffset: seconds after the earliest starter in the race that this
+  // athlete crossed the start mat. This is the key input to the physical
+  // passing algorithm.
+  //
+  // Example: if the first athlete started at epoch 1774704000 and this athlete
+  // started at epoch 1774704120, their waveOffset = 120.0 seconds.
+  //
+  // Null when race.passingMode = CHIP_ONLY (no RTRT data available).
+
+  waveOffset Float?
+
+  // ── Official rankings (from source data) ─────────────────────────────────
 
   overallRank   Int?
   genderRank    Int?
@@ -104,8 +126,8 @@ model Result {
 
   // ── Computed rankings at each transition (populated by import pipeline) ──
   //
-  // These are ranks by cumulative time at each transition point, among all
-  // athletes who were still active at that point.
+  // Ranks by cumulative chip time at each transition point, among athletes
+  // still active at that point. Used for display and indexed queries.
   //
   // afterSwimRank  = rank by swimSecs
   // afterT1Rank    = rank by swimSecs + t1Secs
@@ -144,10 +166,10 @@ The `passingData` field on `Result` is typed as follows (see `src/types/index.ts
 
 ```typescript
 export type LegPassingStats = {
-  gained: number        // Net positions gained (positive = moved up the field)
-  lost: number          // Positions lost (positive = dropped back)
-  passedBibs: string[]  // Bibs of athletes X passed (were ahead of X before, behind X after)
-  passedByBibs: string[] // Bibs of athletes who passed X (were behind X before, ahead of X after)
+  gained: number         // Positions gained (athletes X passed)
+  lost: number           // Positions lost (athletes who passed X)
+  passedBibs: string[]   // Bibs of athletes X passed during this leg
+  passedByBibs: string[] // Bibs of athletes who passed X during this leg
 }
 
 export type PassingData = {
@@ -158,7 +180,7 @@ export type PassingData = {
   run:     LegPassingStats
   overall: {
     finishRank: number   // = overallRank
-    netGained: number    // Sum of gained - lost across all legs
+    netGained: number    // Sum of (gained - lost) across all legs
   }
 }
 ```
@@ -169,7 +191,7 @@ export type PassingData = {
 
 ## Design Decisions
 
-### 1. All times stored as integer seconds
+### 1. All split times stored as integer seconds
 
 `swimSecs: Int?` rather than `swimTime: String`. Reasons:
 - Sort and compare operations are trivially correct on integers
@@ -177,28 +199,48 @@ export type PassingData = {
 - Easy to add/subtract for cumulative calculations
 - Display formatting (`HH:MM:SS`, `MM:SS`) happens at the component layer via `time-utils.ts`
 
-### 2. Pre-computed passing data as JSONB
+### 2. `waveOffset` stored as Float (not epoch)
+
+`waveOffset` is the seconds after the earliest starter that this athlete began. This is computed once at import time from RTRT's raw `epochTime` values:
+
+```
+waveOffset = athleteStartEpoch - min(allStartEpochs)
+```
+
+We store the relative offset rather than the raw epoch because:
+- The passing algorithm only needs relative differences between athletes — absolute epoch time is irrelevant
+- Float seconds are simpler to work with in SQL and TypeScript than large epoch integers
+- The raw epoch timestamps are not stored — we do not redistribute RTRT's raw tracking data
+
+### 3. `passingMode` on Race (not Result)
+
+All athletes in a race are processed with the same mode — either RTRT data is available for the whole race or it isn't. Storing the mode on `Race` rather than each `Result` avoids the inconsistency of a race where some athletes have physical passing and others don't.
+
+### 4. Pre-computed passing data as JSONB
 
 Passing analysis could be derived at query time from the `afterXRank` fields, but:
 - The "who specifically passed you" question requires O(n) cross-athlete comparison
 - Pre-computing once at import (O(n²) one-time cost) keeps every subsequent read O(1)
 - JSONB is flexible — the shape can evolve without a migration for the heavy data
-- The `afterXRank` integer fields are kept anyway for indexed range queries
 
-### 3. Division stored as a plain string
+### 5. `rtrtEventId` stored on Race (not exposed publicly)
+
+Stored for audit and re-import purposes. Not returned by the public API. The RTRT event ID is an internal operational detail, not user-facing information.
+
+### 6. Division stored as a plain string
 
 `division: String` rather than a structured enum. Reasons:
 - Division naming varies between race organisations ("M35-39" vs "M 35-39" vs "35-39M")
 - Not used in any joins or FK relationships
-- Full structured division parsing (for filtered leaderboards) is a post-MVP feature
+- Full structured division parsing is a post-MVP feature
 
-### 4. Cascade deletes
+### 7. Cascade deletes
 
 `onDelete: Cascade` on both `Athlete → Race` and `Result → Athlete`. Deleting a race cleans up all associated athletes and results automatically.
 
-### 5. No user table
+### 8. No user table
 
-RaceReplay has no user accounts. There is nothing to store per-user. Admin access is controlled by the `ADMIN_SECRET` env var, not a DB record.
+RaceReplay has no user accounts. Admin access is controlled by the `ADMIN_SECRET` env var, not a DB record.
 
 ---
 
@@ -218,6 +260,8 @@ RaceReplay has no user accounts. There is nothing to store per-user. Admin acces
 
 ## Seed / Import
 
-There is no traditional seed file. Data enters the system exclusively through the admin CSV upload pipeline (`POST /api/admin/upload`). The import pipeline is the canonical way to populate the database.
+There is no traditional seed file. Data enters the system exclusively through the admin import pipeline (`POST /api/admin/import`). The pipeline fetches from RTRT.me (and optionally competitor.com), merges sources, and populates the database.
 
-For development, use a real Ironman results CSV (e.g. download from [coachcox.co.uk/imstats](https://www.coachcox.co.uk/imstats/) or export via the ironman-results Node.js scraper).
+For development, you can import any recent Ironman 70.3 race using the RTRT event ID:
+- Find the event at `track.rtrt.me` — search for the race name
+- Use the event ID with the admin import UI or the POC scripts in `scripts/`

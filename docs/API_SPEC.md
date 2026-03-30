@@ -1,7 +1,7 @@
 # RaceReplay — API Specification
 
-**Version:** 1.0
-**Last Updated:** 2026-03-29
+**Version:** 1.1
+**Last Updated:** 2026-03-30
 
 All routes are Next.js App Router API routes under `src/app/api/`. Base URL: `https://racereplay.app` (or `http://localhost:3000` in development).
 
@@ -31,13 +31,14 @@ List all races, ordered by date descending.
   "races": [
     {
       "id": "clx...",
-      "slug": "kona-2024",
-      "name": "IRONMAN World Championship 2024",
-      "location": "Kailua-Kona, Hawaii",
-      "date": "2024-10-26",
-      "distance": "FULL",
-      "athleteCount": 2531,
-      "finisherCount": 2418
+      "slug": "oceanside703-2026",
+      "name": "Athletic Brewing IRONMAN 70.3 Oceanside 2026",
+      "location": "Oceanside, California",
+      "date": "2026-03-28",
+      "distance": "HALF",
+      "passingMode": "PHYSICAL",
+      "athleteCount": 3171,
+      "finisherCount": 2973
     }
   ]
 }
@@ -49,21 +50,22 @@ List all races, ordered by date descending.
 
 Get metadata for a single race.
 
-**Path params:** `slug` — race slug (e.g. `kona-2024`)
+**Path params:** `slug` — race slug (e.g. `oceanside703-2026`)
 
 **Response `200 OK`:**
 ```json
 {
   "race": {
     "id": "clx...",
-    "slug": "kona-2024",
-    "name": "IRONMAN World Championship 2024",
-    "location": "Kailua-Kona, Hawaii",
-    "date": "2024-10-26",
-    "distance": "FULL",
-    "athleteCount": 2531,
-    "finisherCount": 2418,
-    "dnfCount": 113,
+    "slug": "oceanside703-2026",
+    "name": "Athletic Brewing IRONMAN 70.3 Oceanside 2026",
+    "location": "Oceanside, California",
+    "date": "2026-03-28",
+    "distance": "HALF",
+    "passingMode": "PHYSICAL",
+    "athleteCount": 3171,
+    "finisherCount": 2973,
+    "dnfCount": 198,
     "dnsCount": 0
   }
 }
@@ -94,16 +96,16 @@ Search athletes within a race. Used by the debounced search box.
   "athletes": [
     {
       "id": "clx...",
-      "bib": "1234",
-      "fullName": "Jane Smith",
-      "country": "USA",
-      "division": "F35-39",
-      "gender": "F",
+      "bib": "361",
+      "fullName": "Tom Arra",
+      "country": "US",
+      "division": "M35-39",
+      "gender": "M",
       "result": {
-        "finishSecs": 36842,
-        "overallRank": 127,
-        "genderRank": 14,
-        "divisionRank": 3,
+        "finishSecs": 16218,
+        "overallRank": 751,
+        "genderRank": 690,
+        "divisionRank": 120,
         "dns": false,
         "dnf": false,
         "dsq": false
@@ -129,81 +131,83 @@ Get full result and passing analysis for one athlete.
 {
   "athlete": {
     "id": "clx...",
-    "bib": "1234",
-    "fullName": "Jane Smith",
-    "country": "USA",
-    "division": "F35-39",
-    "gender": "F"
+    "bib": "361",
+    "fullName": "Tom Arra",
+    "country": "US",
+    "division": "M35-39",
+    "gender": "M"
   },
   "race": {
-    "slug": "kona-2024",
-    "name": "IRONMAN World Championship 2024",
-    "date": "2024-10-26",
-    "distance": "FULL"
+    "slug": "oceanside703-2026",
+    "name": "Athletic Brewing IRONMAN 70.3 Oceanside 2026",
+    "date": "2026-03-28",
+    "distance": "HALF",
+    "passingMode": "PHYSICAL"
   },
   "result": {
-    "swimSecs": 3842,
-    "t1Secs": 412,
-    "bikeSecs": 19800,
-    "t2Secs": 305,
-    "runSecs": 12483,
-    "finishSecs": 36842,
+    "swimSecs": 1842,
+    "t1Secs": 210,
+    "bikeSecs": 8340,
+    "t2Secs": 180,
+    "runSecs": 5646,
+    "finishSecs": 16218,
+    "waveOffset": 611.2,
     "dns": false,
     "dnf": false,
     "dsq": false,
-    "overallRank": 127,
-    "genderRank": 14,
-    "divisionRank": 3,
-    "afterSwimRank": 201,
-    "afterT1Rank": 195,
-    "afterBikeRank": 134,
-    "afterT2Rank": 131
+    "overallRank": 751,
+    "genderRank": 690,
+    "divisionRank": 120,
+    "afterSwimRank": 820,
+    "afterT1Rank": 800,
+    "afterBikeRank": 760,
+    "afterT2Rank": 755
   },
   "passing": {
     "swim": {
-      "gained": 0,
-      "lost": 0,
-      "passedAthletes": [],
-      "passedByAthletes": []
+      "gained": 39,
+      "lost": 2,
+      "passedAthletes": [ ... ],
+      "passedByAthletes": [ ... ]
     },
     "t1": {
-      "gained": 2,
+      "gained": 4,
       "lost": 0,
       "passedAthletes": [
-        { "bib": "882", "fullName": "Alice Chen", "division": "F30-34" },
-        { "bib": "1105", "fullName": "Sarah Park", "division": "F35-39" }
+        { "bib": "882", "fullName": "Alice Chen", "division": "F30-34" }
       ],
       "passedByAthletes": []
     },
     "bike": {
-      "gained": 61,
-      "lost": 0,
+      "gained": 37,
+      "lost": 8,
       "passedAthletes": [ ... ],
-      "passedByAthletes": []
+      "passedByAthletes": [ ... ]
     },
     "t2": {
-      "gained": 3,
-      "lost": 0,
-      "passedAthletes": [ ... ],
-      "passedByAthletes": []
+      "gained": 0,
+      "lost": 1,
+      "passedAthletes": [],
+      "passedByAthletes": [ ... ]
     },
     "run": {
-      "gained": 0,
-      "lost": 4,
-      "passedAthletes": [],
-      "passedByAthletes": [
-        { "bib": "990", "fullName": "Marie Dupont", "division": "F35-39" }
-      ]
+      "gained": 8,
+      "lost": 12,
+      "passedAthletes": [ ... ],
+      "passedByAthletes": [ ... ]
     },
     "overall": {
-      "finishRank": 127,
-      "netGained": 70
+      "finishRank": 751,
+      "netGained": 66
     }
   }
 }
 ```
 
-**Note:** The stored `PassingData` type (in `result.passingData` JSONB) uses `passedBibs` and `passedByBibs` (arrays of bib strings). The API route resolves these to full athlete objects and renames them to `passedAthletes` / `passedByAthletes` in the response. This resolution and renaming happens in the API route handler, not in the client.
+**Notes:**
+- `waveOffset` is the athlete's start time in seconds after the earliest starter in the race. Present when `race.passingMode = "PHYSICAL"`, null otherwise.
+- The stored `PassingData` JSONB uses `passedBibs`/`passedByBibs` (arrays of bib strings). The API route resolves these to full athlete objects and renames them to `passedAthletes`/`passedByAthletes`. This resolution happens in the route handler, not the client.
+- `passing` is `null` for DNS athletes.
 
 **Response `404 Not Found`:**
 ```json
@@ -214,22 +218,22 @@ Get full result and passing analysis for one athlete.
 
 ## Admin Routes
 
-All admin routes require `x-admin-secret` header.
+All admin routes require the `x-admin-secret` header.
 
 ---
 
 ### POST /api/admin/races
 
-Create a new race record (without importing results yet).
+Create a new race record (without importing results yet). Used to pre-register a race before the import runs.
 
 **Request body:**
 ```json
 {
-  "slug": "kona-2024",
-  "name": "IRONMAN World Championship 2024",
-  "location": "Kailua-Kona, Hawaii",
-  "date": "2024-10-26",
-  "distance": "FULL"
+  "slug": "oceanside703-2026",
+  "name": "Athletic Brewing IRONMAN 70.3 Oceanside 2026",
+  "location": "Oceanside, California",
+  "date": "2026-03-28",
+  "distance": "HALF"
 }
 ```
 
@@ -243,11 +247,12 @@ Create a new race record (without importing results yet).
 {
   "race": {
     "id": "clx...",
-    "slug": "kona-2024",
-    "name": "IRONMAN World Championship 2024",
-    "location": "Kailua-Kona, Hawaii",
-    "date": "2024-10-26",
-    "distance": "FULL",
+    "slug": "oceanside703-2026",
+    "name": "Athletic Brewing IRONMAN 70.3 Oceanside 2026",
+    "location": "Oceanside, California",
+    "date": "2026-03-28",
+    "distance": "HALF",
+    "passingMode": "CHIP_ONLY",
     "createdAt": "2026-03-29T12:00:00.000Z"
   }
 }
@@ -257,68 +262,132 @@ Create a new race record (without importing results yet).
 
 ---
 
-### POST /api/admin/upload
+### POST /api/admin/import
 
-Upload a CSV file of race results. Parses, imports, and pre-computes all passing data.
+Import a race from RTRT.me (and optionally competitor.com). This is the primary import route — it fetches data, merges sources, computes passing stats, and persists everything.
+
+**Request body (JSON):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `raceId` | string | Yes | cuid of the target race (must already exist) |
+| `rtrtEventId` | string | Yes | RTRT.me event ID (e.g. `IRM-OCEANSIDE703-2026`) |
+| `competitorUrl` | string | No | competitor.com event group URL for richer profile data (if published) |
+| `clearExisting` | boolean | No | Delete existing athletes/results before import (default: `false`) |
+
+**Example:**
+```json
+{
+  "raceId": "clx...",
+  "rtrtEventId": "IRM-OCEANSIDE703-2026",
+  "competitorUrl": "https://labs-v2.competitor.com/results/event/4798aa20-f278-e111-b16a-005056956277"
+}
+```
+
+**Processing steps (in order):**
+
+1. Fetch RTRT.me splits at START, SWIM, T1, BIKE, T2, FINISH (server-side, paginated, rate-limited — ~5 min for 3000-athlete race)
+2. If `competitorUrl` provided, fetch competitor.com chip times
+3. Merge records by bib — competitor.com split times take precedence over RTRT `netTime` values when both are present
+4. Compute `waveOffset` per athlete = `startEpoch - min(allStartEpochs)` (from RTRT START splits)
+5. Update `race.passingMode = PHYSICAL` (or `CHIP_ONLY` if RTRT start data missing)
+6. Update `race.rtrtEventId`
+7. Upsert athletes (by bib + raceId)
+8. Upsert results with `waveOffset`, split seconds, status
+9. Compute `afterSwimRank`, `afterT1Rank`, `afterBikeRank`, `afterT2Rank`
+10. Run passing-calc algorithm with `hasWaveData = true`
+11. Bulk update `result.passingData`
+
+**Response `200 OK`:**
+```json
+{
+  "athletesImported": 3171,
+  "finishers": 2973,
+  "dnfCount": 198,
+  "dnsCount": 0,
+  "rtrtStartsMatched": 3170,
+  "passingMode": "PHYSICAL",
+  "invariantCheck": {
+    "swim": true,
+    "t1": true,
+    "bike": true,
+    "t2": true,
+    "run": true
+  },
+  "durationMs": 312840
+}
+```
+
+**Response `400 Bad Request`:**
+```json
+{ "error": "rtrtEventId is required" }
+```
+
+**Response `404 Not Found`** if `raceId` does not exist.
+
+**Response `502 Bad Gateway`** if RTRT.me fetch fails after retries:
+```json
+{ "error": "RTRT fetch failed: No splits found at SWIM after 3 retries" }
+```
+
+---
+
+### POST /api/admin/upload (legacy CSV upload)
+
+Upload a pre-built CSV file directly. Use this when you have a CSV from the POC scripts (`scripts/fetch-rtrt-race.mjs` or `scripts/fetch-race.mjs`) and want to import it without re-fetching from external APIs.
 
 **Request:** `multipart/form-data`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `raceId` | string | Yes | cuid of the target race (must already exist) |
-| `file` | File | Yes | CSV file — see column format below |
-| `clearExisting` | boolean | No | If `true`, delete existing athletes/results for this race before import (default: `false`) |
+| `raceId` | string | Yes | cuid of the target race |
+| `file` | File | Yes | CSV file (columns described below) |
+| `hasWaveData` | boolean | No | Set `true` if CSV has `Wave Offset (Seconds)` column — enables physical passing mode (default: `false`) |
+| `clearExisting` | boolean | No | Clear existing data before import (default: `false`) |
 
 **CSV column format (case-insensitive, flexible order):**
 
 | Column name variants | Required | Description |
 |---|---|---|
-| `Pos`, `Position`, `Overall` | No | Overall finish position |
-| `Bib`, `BibNumber`, `Bib #` | Yes | Bib number |
-| `Name`, `Athlete`, `Athlete Name` | Yes | Full name |
-| `Country`, `Nationality` | No | Country code or name |
+| `Bib Number`, `Bib`, `BibNumber` | Yes | Bib number |
+| `Athlete Name`, `Name`, `Athlete` | Yes | Full name |
+| `Gender`, `Sex` | No | M/F (inferred from division if absent) |
+| `Country`, `Nationality` | No | Country code |
 | `Division`, `Div`, `Age Group` | No | Age group string |
-| `Gender`, `Sex` | No | M/F/X (inferred from division if absent) |
-| `Swim`, `Swim Time` | Yes | Split time in `HH:MM:SS` |
-| `T1`, `Trans1`, `Transition 1` | Yes | Transition 1 time |
-| `Bike`, `Bike Time`, `Cycle` | Yes | Bike split time |
-| `T2`, `Trans2`, `Transition 2` | Yes | Transition 2 time |
-| `Run`, `Run Time` | Yes | Run split time |
-| `Finish`, `Finish Time`, `Total` | Yes | Total finish time |
-| `Points`, `AWA Points` | No | Qualification points (stored but not used) |
+| `Status` | No | `FIN`, `DNF`, `DNS`, `DSQ` |
+| `Swim Time`, `Swim` | Yes | Split time `HH:MM:SS` or `MM:SS` |
+| `T1 Time`, `T1` | Yes | Transition 1 time |
+| `Bike Time`, `Bike` | Yes | Bike split time |
+| `T2 Time`, `T2` | Yes | Transition 2 time |
+| `Run Time`, `Run` | Yes | Run split time |
+| `Finish Time`, `Finish` | Yes | Total finish time |
+| `Overall Rank`, `Pos`, `Position` | No | Overall finish position |
+| `Gender Rank` | No | Gender rank |
+| `Division Rank` | No | Division rank |
+| `Wave Offset (Seconds)` | No | Seconds after earliest starter (from RTRT start data) |
+| `Swim (Seconds)` ... `Run (Seconds)` | No | Pre-computed seconds (used instead of parsing time strings if present) |
 
-DNF/DNS/DSQ athletes should have `--` or empty strings in time fields.
+DNF/DNS/DSQ athletes have `--` or empty strings in time fields.
 
-**Processing steps (in order):**
+**Processing steps:**
 1. Parse CSV → `RawResult[]`
 2. Validate required columns present
-3. Convert all time strings to seconds
-4. Upsert athletes (by bib + raceId)
-5. Upsert results
-6. Compute `afterSwimRank`, `afterT1Rank`, `afterBikeRank`, `afterT2Rank`
-7. Run passing-calc algorithm → `Map<athleteId, PassingData>`
-8. Bulk update `result.passingData`
+3. Convert time strings → seconds (or use pre-computed seconds columns)
+4. Upsert athletes + results
+5. Compute `afterXRank` fields
+6. Run passing-calc → `Map<bib, PassingData>`
+7. Bulk update `result.passingData`
 
 **Response `200 OK`:**
 ```json
 {
-  "athletesImported": 2531,
-  "finishers": 2418,
-  "dnfCount": 113,
-  "dnsCount": 0,
+  "athletesImported": 3171,
+  "finishers": 2973,
+  "dnfCount": 198,
+  "passingMode": "PHYSICAL",
   "durationMs": 8234
 }
 ```
-
-**Response `400 Bad Request`** with validation errors:
-```json
-{
-  "error": "Missing required columns: Swim, T1",
-  "missingColumns": ["Swim", "T1"]
-}
-```
-
-**Response `404 Not Found`** if `raceId` does not exist.
 
 ---
 
@@ -335,7 +404,7 @@ All error responses follow this shape:
 
 ## Pagination
 
-Routes that return lists use cursor-free offset pagination:
+Routes that return lists use offset pagination:
 ```
 ?page=1&limit=20
 ```
