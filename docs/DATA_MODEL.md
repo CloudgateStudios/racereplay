@@ -1,6 +1,6 @@
 # RaceReplay — Data Model
 
-**Version:** 1.1
+**Version:** 1.2
 **Last Updated:** 2026-03-30
 
 ---
@@ -54,6 +54,11 @@ model Race {
   date        DateTime    @db.Date
   distance    Distance
   passingMode PassingMode @default(CHIP_ONLY)
+  // Ordered list of leg names for this race, e.g. ["Swim","T1","Bike","T2","Run"]
+  // or ["5K","Finish"]. Populated at import time from the timing points fetched.
+  // Drives UI rendering — the frontend iterates this array to display leg cards
+  // in the correct order without hardcoding race formats.
+  legs        Json?
   // RTRT event ID used to fetch this race (e.g. "IRM-OCEANSIDE703-2026").
   // Stored for re-import and audit. Not exposed via public API.
   rtrtEventId String?
@@ -90,14 +95,21 @@ model Result {
   athleteId String @unique
   raceId    String
 
-  // ── Raw split times (seconds, null if athlete did not complete that leg) ──
+  // ── Split times (seconds per leg) ────────────────────────────────────────
+  //
+  // splits: keyed by leg name, value is integer seconds. Null legs (DNF) are
+  // omitted from the object entirely rather than stored as null values.
+  // Example (triathlon): { "Swim": 1842, "T1": 210, "Bike": 8340, "T2": 180, "Run": 5646 }
+  // Example (road race):  { "5K": 1423, "Finish": 2891 }
+  // The set of keys always matches race.legs in order.
 
-  swimSecs   Int?
-  t1Secs     Int?
-  bikeSecs   Int?
-  t2Secs     Int?
-  runSecs    Int?
-  finishSecs Int?    // Total elapsed = swim + t1 + bike + t2 + run
+  splits     Json?
+
+  // finishSecs: total elapsed seconds (sum of all legs). Stored as a typed
+  // integer column — not inside the splits JSON — because it's the primary
+  // sort key for leaderboard ordering and needs a DB index.
+
+  finishSecs Int?
 
   // ── Race status ───────────────────────────────────────────────────────────
 
@@ -124,21 +136,18 @@ model Result {
   genderRank    Int?
   divisionRank  Int?
 
-  // ── Computed rankings at each transition (populated by import pipeline) ──
+  // ── Computed rankings at each leg exit (populated by import pipeline) ────
   //
-  // Ranks by cumulative chip time at each transition point, among athletes
-  // still active at that point. Used for display and indexed queries.
+  // splitRanks: keyed by leg name, value is overall rank by cumulative chip
+  // time among athletes still active at that point. Keys match race.legs
+  // (excluding the final leg, whose rank == overallRank).
+  // Example: { "Swim": 820, "T1": 800, "Bike": 760, "T2": 755 }
   //
-  // afterSwimRank  = rank by swimSecs
-  // afterT1Rank    = rank by swimSecs + t1Secs
-  // afterBikeRank  = rank by swimSecs + t1Secs + bikeSecs
-  // afterT2Rank    = rank by swimSecs + t1Secs + bikeSecs + t2Secs
-  // (finish rank == overallRank)
+  // Stored as JSONB rather than typed columns so the schema works for any
+  // number of legs. Not indexed — rank lookups are done via passingData or
+  // by sorting on finishSecs; mid-race rank display reads from this field.
 
-  afterSwimRank  Int?
-  afterT1Rank    Int?
-  afterBikeRank  Int?
-  afterT2Rank    Int?
+  splitRanks Json?
 
   // ── Pre-computed passing analysis (populated by import pipeline) ──────────
   //
@@ -150,10 +159,7 @@ model Result {
   athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   @@index([raceId, overallRank])
-  @@index([raceId, afterSwimRank])
-  @@index([raceId, afterT1Rank])
-  @@index([raceId, afterBikeRank])
-  @@index([raceId, afterT2Rank])
+  @@index([raceId, finishSecs])
   @@map("results")
 }
 ```
@@ -191,7 +197,24 @@ export type PassingData = {
 
 ## Design Decisions
 
-### 1. All split times stored as integer seconds
+### 1. Split times and intermediate ranks stored as JSONB, not typed columns
+
+Early versions of the schema used typed columns (`swimSecs`, `t1Secs`, `bikeSecs`,
+`t2Secs`, `runSecs`, `afterSwimRank`, `afterT1Rank`, `afterBikeRank`, `afterT2Rank`).
+This hardcoded the triathlon format into the schema — a Shamrock Shuffle result row
+would have 8 NULL columns, and a race with 8 legs would overflow the schema entirely.
+
+The replacement:
+- `splits Json?` — `{ legName: seconds }`, keys match `race.legs` in order
+- `splitRanks Json?` — `{ legName: rank }`, same keys (excluding final leg)
+- `finishSecs Int?` — kept as a typed column for indexed leaderboard sorting
+
+The only query that needs a column index on results is "sort all athletes in a race
+by finish time." Everything else is a single-row read by athlete ID, where JSONB
+deserialization is negligible. No other result column is ever used as a sort or
+filter key in practice.
+
+### 2. All split times stored as integer seconds
 
 `swimSecs: Int?` rather than `swimTime: String`. Reasons:
 - Sort and compare operations are trivially correct on integers
@@ -238,7 +261,24 @@ Stored for audit and re-import purposes. Not returned by the public API. The RTR
 
 `onDelete: Cascade` on both `Athlete → Race` and `Result → Athlete`. Deleting a race cleans up all associated athletes and results automatically.
 
-### 8. No user table
+### 8. Passing data stores bibs, not denormalized athlete objects
+
+`passedBibs`/`passedByBibs` store bib strings rather than full athlete records.
+When the athlete analysis API route responds, it resolves these to names via a single
+`WHERE bib IN (...) AND raceId = ?` query against the indexed `(raceId, bib)` column.
+
+The alternative — storing `{ bib, fullName, division }` inline in the JSONB — was
+considered and rejected. It would make the JSONB 3–5× larger, duplicate data that
+already lives in `athletes`, and create staleness risk if an athlete record is
+corrected post-import.
+
+The resolution query is one indexed round trip per athlete page load. For a typical
+athlete resolving ~100 bibs across all legs, this is under 10ms. For mass-start
+races (e.g. Shamrock Shuffle 24K field), bib lists are capped at import time with
+`--max-bibs` to keep both storage and UI rendering reasonable — the resolution cost
+remains the same regardless of list length.
+
+### 9. No user table
 
 RaceReplay has no user accounts. Admin access is controlled by the `ADMIN_SECRET` env var, not a DB record.
 
@@ -250,11 +290,12 @@ RaceReplay has no user accounts. Admin access is controlled by the `ADMIN_SECRET
 |---|---|---|
 | athletes | `(raceId, fullName)` | Name search within a race |
 | athletes | `(raceId, bib)` UNIQUE | Bib lookup + uniqueness constraint |
-| results | `(raceId, overallRank)` | Ordered results list |
-| results | `(raceId, afterSwimRank)` | Rank lookups at swim exit |
-| results | `(raceId, afterT1Rank)` | Rank lookups at T1 exit |
-| results | `(raceId, afterBikeRank)` | Rank lookups at bike exit |
-| results | `(raceId, afterT2Rank)` | Rank lookups at T2 exit |
+| results | `(raceId, overallRank)` | Ordered results list by finish position |
+| results | `(raceId, finishSecs)` | Ordered results list by elapsed time |
+
+Mid-race rank lookups (e.g. "rank after swim") use `splitRanks` JSONB, which is
+read from the pre-fetched result row — no additional index is needed because the
+query is always for a single athlete, never a sorted scan across the field.
 
 ---
 

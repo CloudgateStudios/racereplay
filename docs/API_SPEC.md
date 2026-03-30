@@ -1,6 +1,6 @@
 # RaceReplay — API Specification
 
-**Version:** 1.1
+**Version:** 1.2
 **Last Updated:** 2026-03-30
 
 All routes are Next.js App Router API routes under `src/app/api/`. Base URL: `https://racereplay.app` (or `http://localhost:3000` in development).
@@ -37,6 +37,7 @@ List all races, ordered by date descending.
       "date": "2026-03-28",
       "distance": "HALF",
       "passingMode": "PHYSICAL",
+      "legs": ["Swim", "T1", "Bike", "T2", "Run"],
       "athleteCount": 3171,
       "finisherCount": 2973
     }
@@ -63,6 +64,7 @@ Get metadata for a single race.
     "date": "2026-03-28",
     "distance": "HALF",
     "passingMode": "PHYSICAL",
+    "legs": ["Swim", "T1", "Bike", "T2", "Run"],
     "athleteCount": 3171,
     "finisherCount": 2973,
     "dnfCount": 198,
@@ -142,14 +144,23 @@ Get full result and passing analysis for one athlete.
     "name": "Athletic Brewing IRONMAN 70.3 Oceanside 2026",
     "date": "2026-03-28",
     "distance": "HALF",
-    "passingMode": "PHYSICAL"
+    "passingMode": "PHYSICAL",
+    "legs": ["Swim", "T1", "Bike", "T2", "Run"]
   },
   "result": {
-    "swimSecs": 1842,
-    "t1Secs": 210,
-    "bikeSecs": 8340,
-    "t2Secs": 180,
-    "runSecs": 5646,
+    "splits": {
+      "Swim": 1842,
+      "T1": 210,
+      "Bike": 8340,
+      "T2": 180,
+      "Run": 5646
+    },
+    "splitRanks": {
+      "Swim": 820,
+      "T1": 800,
+      "Bike": 760,
+      "T2": 755
+    },
     "finishSecs": 16218,
     "waveOffset": 611.2,
     "dns": false,
@@ -157,20 +168,16 @@ Get full result and passing analysis for one athlete.
     "dsq": false,
     "overallRank": 751,
     "genderRank": 690,
-    "divisionRank": 120,
-    "afterSwimRank": 820,
-    "afterT1Rank": 800,
-    "afterBikeRank": 760,
-    "afterT2Rank": 755
+    "divisionRank": 120
   },
   "passing": {
-    "swim": {
+    "Swim": {
       "gained": 39,
       "lost": 2,
       "passedAthletes": [ ... ],
       "passedByAthletes": [ ... ]
     },
-    "t1": {
+    "T1": {
       "gained": 4,
       "lost": 0,
       "passedAthletes": [
@@ -178,19 +185,19 @@ Get full result and passing analysis for one athlete.
       ],
       "passedByAthletes": []
     },
-    "bike": {
+    "Bike": {
       "gained": 37,
       "lost": 8,
       "passedAthletes": [ ... ],
       "passedByAthletes": [ ... ]
     },
-    "t2": {
+    "T2": {
       "gained": 0,
       "lost": 1,
       "passedAthletes": [],
       "passedByAthletes": [ ... ]
     },
-    "run": {
+    "Run": {
       "gained": 8,
       "lost": 12,
       "passedAthletes": [ ... ],
@@ -205,9 +212,12 @@ Get full result and passing analysis for one athlete.
 ```
 
 **Notes:**
+- `race.legs` is an ordered array of leg names. The UI iterates this to render leg cards in the correct order — it never hardcodes `["Swim", "T1", "Bike", "T2", "Run"]` or any other fixed list.
+- `result.splits` keys match `race.legs`. For a DNF athlete, legs after the point they dropped are absent from the object.
+- `result.splitRanks` keys match `race.legs` excluding the final leg (whose rank equals `overallRank`).
 - `waveOffset` is the athlete's start time in seconds after the earliest starter in the race. Present when `race.passingMode = "PHYSICAL"`, null otherwise.
-- The stored `PassingData` JSONB uses `passedBibs`/`passedByBibs` (arrays of bib strings). The API route resolves these to full athlete objects and renames them to `passedAthletes`/`passedByAthletes`. This resolution happens in the route handler, not the client.
-- `passing` is `null` for DNS athletes.
+- The stored `PassingData` JSONB uses `passedBibs`/`passedByBibs` (arrays of bib strings). The API route resolves these to full athlete objects via a single `WHERE bib IN (...) AND raceId = ?` query and renames them to `passedAthletes`/`passedByAthletes`. This resolution happens in the route handler, not the client.
+- `passing` keys match `race.legs`. The object is `null` for DNS athletes.
 
 **Response `404 Not Found`:**
 ```json
@@ -355,19 +365,22 @@ Upload a pre-built CSV file directly. Use this when you have a CSV from the POC 
 | `Country`, `Nationality` | No | Country code |
 | `Division`, `Div`, `Age Group` | No | Age group string |
 | `Status` | No | `FIN`, `DNF`, `DNS`, `DSQ` |
-| `Swim Time`, `Swim` | Yes | Split time `HH:MM:SS` or `MM:SS` |
-| `T1 Time`, `T1` | Yes | Transition 1 time |
-| `Bike Time`, `Bike` | Yes | Bike split time |
-| `T2 Time`, `T2` | Yes | Transition 2 time |
-| `Run Time`, `Run` | Yes | Run split time |
-| `Finish Time`, `Finish` | Yes | Total finish time |
+| `Finish Time`, `Finish` | Yes | Total finish time `HH:MM:SS` |
 | `Overall Rank`, `Pos`, `Position` | No | Overall finish position |
 | `Gender Rank` | No | Gender rank |
 | `Division Rank` | No | Division rank |
 | `Wave Offset (Seconds)` | No | Seconds after earliest starter (from RTRT start data) |
-| `Swim (Seconds)` ... `Run (Seconds)` | No | Pre-computed seconds (used instead of parsing time strings if present) |
+| `Finish (Seconds)` | No | Pre-computed finish seconds |
+| `<LegName> (Seconds)` | No | Pre-computed seconds for any leg (e.g. `Swim (Seconds)`, `5K (Seconds)`) |
 
-DNF/DNS/DSQ athletes have `--` or empty strings in time fields.
+**Leg detection:** any column ending in `(Seconds)` except `Finish (Seconds)`,
+`Finish Gun (Seconds)`, and `Wave Offset (Seconds)` is treated as a race leg, in
+column order. This drives both `race.legs` and the keys in `result.splits`. There is
+no fixed list of leg names — the same parser handles triathlon CSVs (5 legs) and
+road race CSVs (2 legs) without modification.
+
+DNF/DNS/DSQ athletes have `--` or empty strings in time fields; those legs are
+omitted from `result.splits` rather than stored as null.
 
 **Processing steps:**
 1. Parse CSV → `RawResult[]`

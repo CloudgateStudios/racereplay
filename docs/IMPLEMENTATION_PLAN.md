@@ -1,6 +1,6 @@
 # RaceReplay — Implementation Plan
 
-**Version:** 1.1
+**Version:** 1.2
 **Last Updated:** 2026-03-30
 
 ---
@@ -107,30 +107,37 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   - No unit tests (external API) — integration tested via admin import flow
 
 - [ ] `src/lib/passing-calc.ts`
-  - `computePassingData(athletes: RawResult[], hasWaveData: boolean): Map<string, PassingData>`
+  - `computePassingData(athletes: RawResult[], legs: string[], hasWaveData: boolean): Map<string, PassingData>`
   - Pure function — no DB access, no side effects
+  - `legs` is the ordered array from `race.legs` / csv-parser output — no hardcoded leg names
   - Two modes controlled by `hasWaveData`:
-    - **Physical (hasWaveData = true):** `waveOffset` is the "before" position for swim; all legs use `waveOffset + cumulativeSecs` for position comparisons
-    - **Chip-only (hasWaveData = false):** Swim uses chip-rank comparison; all other legs use cumulative chip time
+    - **Physical (hasWaveData = true):** `waveOffset` is the "before" position for the first leg; all legs use `waveOffset + cumulativeSecs` for position comparisons
+    - **Chip-only (hasWaveData = false):** First leg uses chip-rank comparison; all other legs use cumulative chip time
   - Algorithm per leg:
-    1. Filter eligible athletes (have both before and after positions)
+    1. Filter eligible athletes (have both before and after positions in `splits`)
     2. Build `beforeMap: Map<bib, position>` — position at start of leg
     3. Build `afterMap: Map<bib, position>` — position at end of leg
     4. For each athlete X: `passedBibs` = bibs where `before[bib] < before[X]` AND `after[bib] > after[X]`
+  - Returns `Map<bib, PassingData>` where `PassingData` keys match `legs` (plus `overall`)
   - Tests: `src/lib/passing-calc.test.ts`
     - Use a toy field of 10 athletes with known split times and wave offsets
     - Assert exact passing relationships for both `hasWaveData = true` and `false`
     - Verify invariant: `sum(gained) === sum(lost)` across full field for every leg
     - Verify DNF athletes excluded at correct leg and all subsequent legs
+    - Run tests with both a 5-leg config and a 2-leg config to confirm no hardcoding
     - See `scripts/test-algorithm.mjs` for the full 21-case test suite to port
 
 - [ ] `src/lib/csv-parser.ts`
-  - `parseCSV(buffer: Buffer): RawResult[]`
+  - `parseCSV(buffer: Buffer): { legs: string[], results: RawResult[] }`
   - Flexible column mapping: normalise headers (lowercase, strip spaces/punctuation), best match
-  - Handle DNF/DNS by detecting `--` or empty time strings
+  - **Leg detection:** any column ending in `(Seconds)` except `Finish (Seconds)`, `Finish Gun (Seconds)`, `Wave Offset (Seconds)` → treat as a leg, in column order. Returns the discovered `legs` array alongside results.
+  - Handle DNF/DNS by detecting `--` or empty time strings; absent legs omitted from `splits` map
   - Reads `Wave Offset (Seconds)` column if present → `waveOffset` field
-  - Reads pre-computed `Swim (Seconds)` etc. columns if present (avoids re-parsing)
+  - Reads pre-computed `<LegName> (Seconds)` columns directly (avoids re-parsing time strings)
   - Tests: `src/lib/csv-parser.test.ts` using fixture CSV files in `src/lib/__fixtures__/`
+    - Fixture 1: triathlon CSV (5 legs) — assert correct `legs` array and `splits` shape
+    - Fixture 2: road race CSV (2 legs) — assert leg detection works with non-triathlon columns
+    - Fixture 3: DNF athlete — assert legs after dropout are absent from `splits`
 
 - [ ] `src/lib/admin-auth.ts`
   - `verifyAdminSecret(req: NextRequest): boolean`
@@ -145,16 +152,24 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   - Optionally fetch competitor.com if `competitorUrl` provided
   - Merge by bib
   - Compute `waveOffset` for each athlete
+  - Derive `legs` array from the fetched timing point names (in order)
   - Bulk upsert athletes + results via Prisma `createMany` in chunks of 500
-  - Run `passing-calc.ts`
-  - Bulk update `passingData`
+    - Store split seconds as `splits` JSON: `{ [legName]: secs }`
+    - Store `finishSecs` as typed integer
+  - Compute `splitRanks` per athlete (overall rank by cumulative time at each leg exit)
+  - Bulk update `result.splitRanks`
+  - Run `passing-calc.ts` with the derived `legs` array
+  - Bulk update `result.passingData`
   - Run invariant check and include results in response
-  - Update `race.passingMode` and `race.rtrtEventId`
+  - Update `race.passingMode`, `race.legs`, and `race.rtrtEventId`
 
 - [ ] `src/app/api/admin/upload/route.ts` — `POST` legacy CSV upload
   - For importing pre-built CSVs from the POC scripts
   - Use `Request.formData()` for multipart upload
-  - Parse CSV, run pipeline, return summary
+  - Parse CSV → `{ legs, results }` via `csv-parser.ts`
+  - Run pipeline: upsert athletes + results, compute `splitRanks`, run passing-calc
+  - Update `race.legs` from detected legs
+  - Return summary
 
 ### 2.3 Admin UI
 
@@ -183,9 +198,10 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   - Also match bibs: `bib: { startsWith: q }`
   - Combine with `OR`
 - [ ] `src/app/api/races/[slug]/athletes/[id]/route.ts`
-  - Fetch result with `passingData`
-  - Resolve bib arrays in `passedBibs`/`passedByBibs` → full athlete objects
-  - Return full `AthleteAnalysisResponse` shape
+  - Fetch result with `splits`, `splitRanks`, `passingData`; fetch race for `legs`
+  - Resolve all bibs across all legs: single `WHERE bib IN (...) AND raceId = ?` query
+  - Build bib → athlete map; inject into `passedAthletes`/`passedByAthletes` per leg
+  - Return full `AthleteAnalysisResponse` shape (see `API_SPEC.md`)
 
 ### 3.2 Pages
 
@@ -211,9 +227,9 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   - Show skeleton while loading
 - [ ] `src/components/PassingAnalysis.tsx`
   - Summary: overall rank, net positions, passing mode indicator
-  - Five `LegCard` components
+  - Iterates `race.legs` to render one `LegCard` per leg — never hardcodes leg names
 - [ ] `src/components/LegCard.tsx`
-  - Leg name, split time, rank after leg
+  - Leg name (from `race.legs`), split time from `result.splits[legName]`, rank from `result.splitRanks[legName]`
   - "+N gained / −N lost" badge
   - Expandable "who I passed" / "who passed me" sections
 - [ ] `src/components/PassedAthleteList.tsx`
@@ -223,10 +239,11 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 ### 3.4 Types
 
 - [ ] `src/types/index.ts`:
-  - `RawResult` — input to passing-calc (includes optional `waveOffset`)
-  - `PassingData`, `LegPassingStats`
+  - `RawResult` — input to passing-calc; includes `splits: Record<string, number>`, optional `waveOffset`
+  - `PassingData` — keys are leg names from `race.legs` plus `overall`; no hardcoded leg names
+  - `LegPassingStats`
   - `AthleteSearchResult`, `AthleteAnalysisResponse`
-  - `RaceListItem`, `RaceDetail`
+  - `RaceListItem`, `RaceDetail` — both include `legs: string[]`
 
 ---
 
@@ -282,10 +299,12 @@ Before shipping Phase 3/4:
 - [ ] `pnpm test` — all unit tests pass
 - [ ] `pnpm typecheck` — zero TypeScript errors
 - [ ] `pnpm lint` — zero lint errors
-- [ ] Import a real Ironman race (≥500 athletes) — completes cleanly
+- [ ] Import a triathlon race (≥500 athletes) — `race.legs` = 5 entries, all splits stored correctly
+- [ ] Import a road race (e.g. BASS2026) — `race.legs` = 2 entries, same pipeline works without modification
 - [ ] Invariant check passes: `sum(gained) === sum(lost)` per leg (returned in import response)
 - [ ] Search for an athlete by name and by bib — both work
-- [ ] Open athlete analysis — all split times, ranks, and passing stats display correctly
+- [ ] Open athlete analysis — split times render for each leg in `race.legs` order; no hardcoded leg names in UI
+- [ ] `result.splits` and `result.splitRanks` keys match `race.legs` exactly
 - [ ] Physical passing mode: confirm `waveOffset` is shown on athlete page, passing mode badge on race page
-- [ ] DNF athlete: `passingData` stops at the leg they dropped; subsequent legs show zero/null
+- [ ] DNF athlete: `result.splits` stops at the leg they dropped; `passingData` stops at same point
 - [ ] Mobile layout correct at 375px
