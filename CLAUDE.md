@@ -82,3 +82,4 @@ All design documents live in `/docs`:
 | `docs/DATA_MODEL.md` | Full Prisma schema with design decisions |
 | `docs/API_SPEC.md` | All API routes, request/response shapes |
 | `docs/IMPLEMENTATION_PLAN.md` | Phased build plan with task checklists |
+| `docs/USER_FLOWS.md` | Step-by-step flows for public and admin users |

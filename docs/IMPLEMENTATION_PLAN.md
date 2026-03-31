@@ -1,6 +1,6 @@
 # RaceReplay — Implementation Plan
 
-**Version:** 1.2
+**Version:** 1.3
 **Last Updated:** 2026-03-30
 
 ---
@@ -45,41 +45,64 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   ```
   Add components: `button`, `card`, `input`, `badge`, `table`, `skeleton`
 
-### 1.2 Database
+### 1.2 Local database (Supabase CLI)
 
-- [ ] Create two Supabase projects, both in region `us-east-1` (N. Virginia):
-  - `racereplay-prod`
-  - `racereplay-staging`
-- [ ] Copy staging connection strings to `.env.local`:
+- [ ] Install Supabase CLI: `brew install supabase/tap/supabase`
+- [ ] Initialise Supabase in the repo root:
+  ```bash
+  supabase init
   ```
-  DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
-  DIRECT_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
+  This creates `supabase/config.toml`. Commit it — it defines the local service config.
+- [ ] Start the local stack (requires Docker Desktop running):
+  ```bash
+  supabase start
   ```
-- [ ] Write `prisma/schema.prisma` (copy from `DATA_MODEL.md`)
-- [ ] Run first migration:
+  Note the Postgres URL printed by `supabase status` — default: `postgresql://postgres:postgres@localhost:54322/postgres`
+- [ ] Create one Supabase **cloud** project in region `us-east-1` (N. Virginia):
+  - `racereplay-staging` (free tier)
+- [ ] Create a **Neon** project for production:
+  - Sign up at neon.tech, create project `racereplay-prod`, select region `us-east-2` (Ohio — closest to Vercel `iad1`)
+  - Note both the pooled connection string (`DATABASE_URL`) and direct connection string (`DIRECT_URL`) from the Neon dashboard
+
+### 1.3 Schema + migrations
+
+- [ ] Write `prisma/schema.prisma` (copy from `DATA_MODEL.md`) — includes `Race`, `Athlete`, `Result`, and `AdminSession`
+- [ ] Run first migration against local Supabase:
   ```bash
   pnpm prisma migrate dev --name init
   pnpm prisma generate
   ```
 - [ ] Write `src/lib/prisma.ts` singleton
 
-### 1.3 Env + config
+### 1.4 Env + config
 
 - [ ] Write `.env.example`:
   ```
-  # Supabase — use staging credentials for local dev
-  DATABASE_URL=
-  DIRECT_URL=
+  # Local dev — Supabase CLI (supabase start)
+  # DATABASE_URL and DIRECT_URL are the same locally (no PgBouncer)
+  DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres
+  DIRECT_URL=postgresql://postgres:postgres@localhost:54322/postgres
+
+  # Staging/prod — replace with Supabase cloud connection strings
+  # DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+  # DIRECT_URL=postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
 
   # Admin protection
-  ADMIN_SECRET=
+  ADMIN_SECRET=dev-secret
 
   # RTRT.me — IRONMAN Tracker app ID (server-side only, never expose client-side)
   RTRT_APP_ID=5824c5c948fd08c23a8b4567
 
-  NEXT_PUBLIC_APP_URL=
+  NEXT_PUBLIC_APP_URL=http://localhost:3000
   ```
 - [ ] Add `.env.local` to `.gitignore`
+- [ ] Add convenience scripts to `package.json`:
+  ```json
+  "db:start":  "supabase start",
+  "db:stop":   "supabase stop",
+  "db:reset":  "prisma migrate reset --force",
+  "db:studio": "supabase studio"
+  ```
 - [ ] Verify `pnpm dev` starts without errors
 
 ---
@@ -139,15 +162,27 @@ Four phases. Each phase delivers a usable slice that can be tested independently
     - Fixture 2: road race CSV (2 legs) — assert leg detection works with non-triathlon columns
     - Fixture 3: DNF athlete — assert legs after dropout are absent from `splits`
 
-- [ ] `src/lib/admin-auth.ts`
-  - `verifyAdminSecret(req: NextRequest): boolean`
+- [ ] `src/middleware.ts`
+  - Match `/api/admin/*` and `/admin/*`; exclude `/admin/login` from session check
+  - Read `admin_session` cookie; query `AdminSession WHERE id = "singleton" AND token = ? AND expiresAt > NOW()`
+  - Hit → allow. Miss → redirect to `/admin/login` (page routes) or return `401` (API routes)
+  - Log all admin route invocations to stdout: method, path, auth result, IP, timestamp — never log the secret or token
+
+- [ ] `src/app/api/admin/session/route.ts` — session login/logout
+  - `POST`: verify request body `secret` against `ADMIN_SECRET`; rate-limit failures to 5/IP/min (module-level `Map` keyed by IP); on success upsert `AdminSession { id: "singleton", token: crypto.randomUUID(), expiresAt: now + 4h }`; set httpOnly Secure SameSite=Strict cookie; return `{ ok: true }`
+  - `DELETE` (logout): delete `AdminSession` singleton row; clear cookie
+
+- [ ] `src/app/admin/login/page.tsx` — login form
+  - Single password field; submits to `POST /api/admin/session`; redirects to `/admin` on success; shows error on 401; shows "too many attempts" on 429
 
 ### 2.2 Admin API routes
 
 - [ ] `src/app/api/admin/races/route.ts` — `POST` create race
 
 - [ ] `src/app/api/admin/import/route.ts` — `POST` full RTRT-based import pipeline
-  - Accept `{ raceId, rtrtEventId, competitorUrl? }` JSON body
+  - Accept `{ raceId, rtrtEventId, competitorUrl?, clearExisting? }` JSON body
+  - If `competitorUrl` is present, validate it starts with `https://labs-v2.competitor.com/` before making any outbound request — return `400` otherwise (SSRF protection)
+  - `clearExisting` requires value `"CONFIRM_DELETE"` to take effect; any other value is a no-op
   - Call `rtrt-fetcher.ts` to fetch all 6 points (this takes ~5 min — route needs `maxDuration: 300`)
   - Optionally fetch competitor.com if `competitorUrl` provided
   - Merge by bib
@@ -167,6 +202,7 @@ Four phases. Each phase delivers a usable slice that can be tested independently
   - For importing pre-built CSVs from the POC scripts
   - Use `Request.formData()` for multipart upload
   - Parse CSV → `{ legs, results }` via `csv-parser.ts`
+  - `clearExisting` requires value `"CONFIRM_DELETE"` to take effect
   - Run pipeline: upsert athletes + results, compute `splitRanks`, run passing-calc
   - Update `race.legs` from detected legs
   - Return summary
@@ -266,29 +302,55 @@ Four phases. Each phase delivers a usable slice that can be tested independently
 - [ ] Set `Cache-Control: public, max-age=3600` on public API routes
 - [ ] Confirm athlete search is fast on a real 3000-athlete dataset
 
-### 4.3 Deploy
+### 4.3 Vercel setup
 
 - [ ] Create Vercel project (Pro plan), connect GitHub repo, set region to `iad1`
-- [ ] Set environment variables in Vercel dashboard for **Production**:
+- [ ] Set environment variables in Vercel dashboard for **Production** (Neon):
   ```
-  DATABASE_URL          (prod Supabase pooled)
-  DIRECT_URL            (prod Supabase direct)
-  ADMIN_SECRET
+  DATABASE_URL=          (Neon pooled connection string)
+  DIRECT_URL=            (Neon direct connection string)
+  ADMIN_SECRET=
   RTRT_APP_ID=5824c5c948fd08c23a8b4567
   NEXT_PUBLIC_APP_URL=https://racereplay.app
   ```
-- [ ] Set environment variables for **Preview** (same but staging Supabase)
+- [ ] Set environment variables for **Preview** (Supabase staging, same keys):
+  ```
+  DATABASE_URL=          (staging Supabase pooled)
+  DIRECT_URL=            (staging Supabase direct)
+  ADMIN_SECRET=
+  RTRT_APP_ID=5824c5c948fd08c23a8b4567
+  NEXT_PUBLIC_APP_URL=   (leave blank — Vercel sets VERCEL_URL automatically)
+  ```
 - [ ] Add `maxDuration: 300` to the import API route (Vercel Pro required):
   ```ts
   export const maxDuration = 300
   ```
-- [ ] Run migrations against prod and staging Supabase:
-  ```bash
-  pnpm prisma migrate deploy
-  ```
-- [ ] Attach custom domain `racereplay.app`
-- [ ] Import a real race via the deployed admin UI (e.g. `IRM-OCEANSIDE703-2026`)
+- [ ] Attach custom domain `racereplay.app` to the Production environment
+
+### 4.4 GitHub Actions — Staging
+
+- [ ] Create `.github/workflows/staging.yml`
+  - Trigger: `push` to `main`
+  - Steps: install → typecheck → lint → test → `prisma migrate deploy` (using `STAGING_DIRECT_URL`) → `vercel deploy`
+- [ ] Add GitHub repository secrets:
+  - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+  - `STAGING_DATABASE_URL`, `STAGING_DIRECT_URL`
+- [ ] Verify: merge a trivial change to `main`, confirm staging deploy completes and migrations ran
+
+### 4.5 GitHub Actions — Production
+
+- [ ] Create `.github/workflows/production.yml`
+  - Trigger: `workflow_dispatch` with required string input `tag`
+  - Steps: `git checkout <tag>` → install → typecheck → lint → test → `prisma migrate deploy` (using `PROD_DIRECT_URL`) → `vercel deploy --prod`
+- [ ] Add GitHub repository secrets:
+  - `PROD_DATABASE_URL`, `PROD_DIRECT_URL`
+- [ ] Verify: run workflow manually with a test tag, confirm production deploy and migrations
+
+### 4.6 Smoke test
+
+- [ ] Import a real race via the deployed staging admin UI (e.g. `IRM-OCEANSIDE703-2026`)
 - [ ] Smoke test: find a known athlete, verify ranks, passing stats, and invariant pass
+- [ ] Repeat smoke test on production after first production deploy
 
 ---
 

@@ -1,6 +1,6 @@
 # RaceReplay — Data Model
 
-**Version:** 1.2
+**Version:** 1.3
 **Last Updated:** 2026-03-30
 
 ---
@@ -162,6 +162,20 @@ model Result {
   @@index([raceId, finishSecs])
   @@map("results")
 }
+
+// ─── AdminSession ─────────────────────────────────────────────────────────────
+//
+// Single-row table enforcing one active admin session at a time.
+// The fixed primary key "singleton" ensures only one row can ever exist.
+// A new login replaces the token, instantly invalidating any previous session.
+
+model AdminSession {
+  id        String   @id @default("singleton")
+  token     String               // crypto.randomUUID() — rotated on every login
+  expiresAt DateTime             // login time + 4 hours
+
+  @@map("admin_sessions")
+}
 ```
 
 ---
@@ -280,7 +294,11 @@ remains the same regardless of list length.
 
 ### 9. No user table
 
-RaceReplay has no user accounts. Admin access is controlled by the `ADMIN_SECRET` env var, not a DB record.
+RaceReplay has no user accounts. Admin access is controlled by the `ADMIN_SECRET` env var verified at login time, with the resulting session token stored in `AdminSession`.
+
+### 10. `AdminSession` uses a fixed primary key
+
+The `id` field defaults to `"singleton"`, making it impossible to insert a second row — Postgres will reject the insert with a unique violation. An upsert on login atomically replaces the token. This enforces a single active session without any cleanup job or TTL logic beyond the `expiresAt` check in middleware.
 
 ---
 
@@ -292,6 +310,7 @@ RaceReplay has no user accounts. Admin access is controlled by the `ADMIN_SECRET
 | athletes | `(raceId, bib)` UNIQUE | Bib lookup + uniqueness constraint |
 | results | `(raceId, overallRank)` | Ordered results list by finish position |
 | results | `(raceId, finishSecs)` | Ordered results list by elapsed time |
+| admin_sessions | `id` PRIMARY KEY | Enforces single-row constraint (fixed value `"singleton"`) |
 
 Mid-race rank lookups (e.g. "rank after swim") use `splitRanks` JSONB, which is
 read from the pre-fetched result row — no additional index is needed because the
