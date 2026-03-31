@@ -1,0 +1,44 @@
+{
+  "name": "racereplay",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "prisma migrate reset --force",
+    "db:studio": "supabase studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^6",
+    "class-variance-authority": "^0.7",
+    "clsx": "^2",
+    "lucide-react": "^0.469",
+    "next": "^15",
+    "react": "^19",
+    "react-dom": "^19",
+    "tailwind-merge": "^2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "@vitest/ui": "^2",
+    "autoprefixer": "^10",
+    "eslint": "^9",
+    "eslint-config-next": "^15",
+    "postcss": "^8",
+    "prisma": "^6",
+    "tailwindcss": "^3.4",
+    "tsx": "^4",
+    "typescript": "^5",
+    "vitest": "^2"
+  }
+}
