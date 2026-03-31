@@ -93,7 +93,7 @@ export function AthleteSearch({ raceSlug }: AthleteSearchProps) {
       )}
 
       {!loading && results.length > 0 && (
-        <div className="max-w-2xl">
+        <div className="max-w-2xl overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

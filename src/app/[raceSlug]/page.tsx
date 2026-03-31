@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
 import { AthleteSearch } from '@/components/AthleteSearch'
@@ -8,6 +9,24 @@ export const revalidate = 3600
 
 interface RacePageProps {
   params: Promise<{ raceSlug: string }>
+}
+
+export async function generateMetadata({ params }: RacePageProps): Promise<Metadata> {
+  const { raceSlug } = await params
+
+  const race = await prisma.race.findUnique({
+    where: { slug: raceSlug },
+    select: { name: true },
+  })
+
+  if (!race) {
+    return { title: 'Race not found' }
+  }
+
+  return {
+    title: race.name,
+    description: `Leg-by-leg passing analysis for ${race.name}`,
+  }
 }
 
 export default async function RacePage({ params }: RacePageProps) {
@@ -33,7 +52,7 @@ export default async function RacePage({ params }: RacePageProps) {
   })
 
   return (
-    <main className="min-h-screen p-8 max-w-4xl mx-auto">
+    <main className="min-h-screen p-4 sm:p-8 max-w-4xl mx-auto">
       <div className="mb-6">
         <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
           ← All races

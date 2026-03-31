@@ -22,9 +22,9 @@ export default async function AdminDashboardPage() {
   })
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold">RaceReplay Admin</h1>
             <p className="text-muted-foreground mt-1">Manage races and imports</p>
@@ -48,6 +48,7 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -89,6 +90,7 @@ export default async function AdminDashboardPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         )}
       </div>
     </div>

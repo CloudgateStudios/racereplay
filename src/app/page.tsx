@@ -41,7 +41,7 @@ export default async function HomePage() {
   })
 
   return (
-    <main className="min-h-screen p-8 max-w-4xl mx-auto">
+    <main className="min-h-screen p-4 sm:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">RaceReplay</h1>
         <p className="text-muted-foreground mt-1">

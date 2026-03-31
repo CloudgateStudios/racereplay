@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { PassingAnalysis } from '@/components/PassingAnalysis'
 import { formatTime } from '@/lib/time-utils'
@@ -9,6 +10,24 @@ export const revalidate = 3600
 
 interface AthletePageProps {
   params: Promise<{ raceSlug: string; id: string }>
+}
+
+export async function generateMetadata({ params }: AthletePageProps): Promise<Metadata> {
+  const { raceSlug, id } = await params
+
+  const [race, athlete] = await Promise.all([
+    prisma.race.findUnique({ where: { slug: raceSlug }, select: { name: true } }),
+    prisma.athlete.findUnique({ where: { id }, select: { fullName: true } }),
+  ])
+
+  if (!race || !athlete) {
+    return { title: 'Athlete not found' }
+  }
+
+  return {
+    title: `${athlete.fullName} — ${race.name}`,
+    description: `Passing analysis for ${athlete.fullName} at ${race.name}`,
+  }
 }
 
 export default async function AthletePage({ params }: AthletePageProps) {
@@ -135,7 +154,7 @@ export default async function AthletePage({ params }: AthletePageProps) {
       : null
 
   return (
-    <main className="min-h-screen p-8 max-w-4xl mx-auto">
+    <main className="min-h-screen p-4 sm:p-8 max-w-4xl mx-auto">
       {/* Back link */}
       <div className="mb-6">
         <Link
