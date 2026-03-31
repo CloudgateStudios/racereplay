@@ -11,7 +11,9 @@
     "test": "vitest",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:reset": "prisma migrate reset --force",
+    "db:migrate": "prisma migrate dev --env-file .env.local",
+    "db:reset": "prisma migrate reset --force --env-file .env.local",
+    "db:generate": "prisma generate --env-file .env.local",
     "db:studio": "supabase studio"
   },
   "dependencies": {
