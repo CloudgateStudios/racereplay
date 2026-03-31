@@ -1,0 +1,162 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Distance {
+  FULL   // Full-distance Ironman (3.8km swim / 180km bike / 42.2km run)
+  HALF   // 70.3 / half-distance (1.9km / 90km / 21.1km)
+}
+
+enum Gender {
+  M
+  F
+  X  // Non-binary / unspecified
+}
+
+enum PassingMode {
+  PHYSICAL   // Per-athlete start times from RTRT — true physical passing
+  CHIP_ONLY  // No start time data — chip-time rank comparison (gun-start fallback)
+}
+
+// ─── Race ─────────────────────────────────────────────────────────────────────
+
+model Race {
+  id          String      @id @default(cuid())
+  slug        String      @unique   // URL-safe identifier, e.g. "oceanside703-2026"
+  name        String                // Full display name, e.g. "IRONMAN 70.3 Oceanside 2026"
+  location    String                // e.g. "Oceanside, California"
+  date        DateTime    @db.Date
+  distance    Distance
+  passingMode PassingMode @default(CHIP_ONLY)
+  // Ordered list of leg names for this race, e.g. ["Swim","T1","Bike","T2","Run"]
+  // or ["5K","Finish"]. Populated at import time from the timing points fetched.
+  // Drives UI rendering — the frontend iterates this array to display leg cards
+  // in the correct order without hardcoding race formats.
+  legs        Json?
+  // RTRT event ID used to fetch this race (e.g. "IRM-OCEANSIDE703-2026").
+  // Stored for re-import and audit. Not exposed via public API.
+  rtrtEventId String?
+  createdAt   DateTime    @default(now())
+
+  athletes    Athlete[]
+
+  @@map("races")
+}
+
+// ─── Athlete ──────────────────────────────────────────────────────────────────
+
+model Athlete {
+  id       String  @id @default(cuid())
+  raceId   String
+  bib      String            // As printed on race bib
+  fullName String
+  country  String?           // ISO 3166-1 alpha-2, e.g. "US"
+  division String            // Age group + gender, e.g. "M35-39", "FPRO", "M18-24"
+  gender   Gender
+
+  race     Race    @relation(fields: [raceId], references: [id], onDelete: Cascade)
+  result   Result?
+
+  @@unique([raceId, bib])    // Bibs are unique within a race
+  @@index([raceId, fullName]) // Powers name search
+  @@map("athletes")
+}
+
+// ─── Result ───────────────────────────────────────────────────────────────────
+
+model Result {
+  id        String @id @default(cuid())
+  athleteId String @unique
+  raceId    String
+
+  // ── Split times (seconds per leg) ────────────────────────────────────────
+  //
+  // splits: keyed by leg name, value is integer seconds. Null legs (DNF) are
+  // omitted from the object entirely rather than stored as null values.
+  // Example (triathlon): { "Swim": 1842, "T1": 210, "Bike": 8340, "T2": 180, "Run": 5646 }
+  // Example (road race):  { "5K": 1423, "Finish": 2891 }
+  // The set of keys always matches race.legs in order.
+
+  splits     Json?
+
+  // finishSecs: total elapsed seconds (sum of all legs). Stored as a typed
+  // integer column — not inside the splits JSON — because it's the primary
+  // sort key for leaderboard ordering and needs a DB index.
+
+  finishSecs Int?
+
+  // ── Race status ───────────────────────────────────────────────────────────
+
+  dns Boolean @default(false)  // Did Not Start
+  dnf Boolean @default(false)  // Did Not Finish
+  dsq Boolean @default(false)  // Disqualified
+
+  // ── Physical start data (from RTRT.me) ───────────────────────────────────
+  //
+  // waveOffset: seconds after the earliest starter in the race that this
+  // athlete crossed the start mat. This is the key input to the physical
+  // passing algorithm.
+  //
+  // Example: if the first athlete started at epoch 1774704000 and this athlete
+  // started at epoch 1774704120, their waveOffset = 120.0 seconds.
+  //
+  // Null when race.passingMode = CHIP_ONLY (no RTRT data available).
+
+  waveOffset Float?
+
+  // ── Official rankings (from source data) ─────────────────────────────────
+
+  overallRank   Int?
+  genderRank    Int?
+  divisionRank  Int?
+
+  // ── Computed rankings at each leg exit (populated by import pipeline) ────
+  //
+  // splitRanks: keyed by leg name, value is overall rank by cumulative chip
+  // time among athletes still active at that point. Keys match race.legs
+  // (excluding the final leg, whose rank == overallRank).
+  // Example: { "Swim": 820, "T1": 800, "Bike": 760, "T2": 755 }
+  //
+  // Stored as JSONB rather than typed columns so the schema works for any
+  // number of legs. Not indexed — rank lookups are done via passingData or
+  // by sorting on finishSecs; mid-race rank display reads from this field.
+
+  splitRanks Json?
+
+  // ── Pre-computed passing analysis (populated by import pipeline) ──────────
+  //
+  // Shape: PassingData (see src/types/index.ts)
+  // Stored as JSONB. Never re-derived at query time.
+
+  passingData Json?
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([raceId, overallRank])
+  @@index([raceId, finishSecs])
+  @@map("results")
+}
+
+// ─── AdminSession ─────────────────────────────────────────────────────────────
+//
+// Single-row table enforcing one active admin session at a time.
+// The fixed primary key "singleton" ensures only one row can ever exist.
+// A new login replaces the token, instantly invalidating any previous session.
+
+model AdminSession {
+  id        String   @id @default("singleton")
+  token     String               // crypto.randomUUID() — rotated on every login
+  expiresAt DateTime             // login time + 4 hours
+
+  @@map("admin_sessions")
+}
