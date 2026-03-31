@@ -1,3 +1,12 @@
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Node
+node_modules/
+
 # Environment
 .env.local
 .env.*.local
@@ -6,10 +15,23 @@
 scripts/data/
 !scripts/data/wave-offsets-example.json
 
-# Node
-node_modules/
-.next/
-dist/
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase local data
+.supabase/
+supabase/.temp/
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
