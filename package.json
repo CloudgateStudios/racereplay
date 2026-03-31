@@ -11,9 +11,9 @@
     "test": "vitest",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:migrate": "prisma migrate dev --env-file .env.local",
-    "db:reset": "prisma migrate reset --force --env-file .env.local",
-    "db:generate": "prisma generate --env-file .env.local",
+    "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
+    "db:reset": "dotenv -e .env.local -- prisma migrate reset --force",
+    "db:generate": "dotenv -e .env.local -- prisma generate",
     "db:studio": "supabase studio"
   },
   "dependencies": {
@@ -34,6 +34,7 @@
     "@vitejs/plugin-react": "^4",
     "@vitest/ui": "^2",
     "autoprefixer": "^10",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "^15",
     "postcss": "^8",
