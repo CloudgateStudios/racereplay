@@ -274,11 +274,14 @@ Examples:
       if (!startPoint) throw new Error("No START point found for this event");
       if (!finishPoint) throw new Error("No FINISH point found for this event");
 
-      // Intermediate = published, not hidden from badges, not the start or finish
+      // Intermediate = published, not hidden from badges, not the start or finish.
+      // Exception: T1/T2 transitions in triathlon events use hide_in_badges="1"
+      // but are meaningful splits — always include them if published.
+      const isTransition = (p) => /^T\d+$/i.test(p.name) || /^T\d+$/i.test(p.label);
       const intermediate = allPoints.filter(
         (p) =>
           p.publish === "1" &&
-          p.hide_in_badges !== "1" &&
+          (p.hide_in_badges !== "1" || isTransition(p)) &&
           p.isStart !== "1" &&
           p.isFinish !== "1"
       );
