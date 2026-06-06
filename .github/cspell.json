@@ -10,5 +10,5 @@
       "addWords": true
     }
   ],
-  "ignorePaths": [".github/workflows/**", ".gitignore"]
+  "ignorePaths": [".github/workflows/**", ".gitignore", "app/src/generated/**"]
 }
