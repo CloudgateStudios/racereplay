@@ -76,6 +76,20 @@ export default async function EventPage({ params, searchParams }: Props) {
   const orderBy = SORTABLE_COLUMNS[sort] ?? { overallRank: "asc" as const };
   const orderByWithDir = Object.fromEntries(Object.entries(orderBy).map(([k]) => [k, dir]));
 
+  // Per-segment athlete counts (non-null timeSeconds = athlete reached that gate)
+  const segmentCounts = await Promise.all(
+    event.segments.map((seg) =>
+      prisma.athleteSegment
+        .count({ where: { segmentId: seg.id, timeSeconds: { not: null } } })
+        .then((count) => ({ segmentId: seg.id, name: seg.name, count }))
+    )
+  );
+
+  const totalAthletes = await prisma.athlete.count({ where: { eventId: event.id } });
+  const finisherCount = await prisma.athlete.count({
+    where: { eventId: event.id, status: "FIN" },
+  });
+
   const [total, athletes, genders, divisions] = await Promise.all([
     prisma.athlete.count({ where }),
     prisma.athlete.findMany({
@@ -139,10 +153,55 @@ export default async function EventPage({ params, searchParams }: Props) {
         {race.name} <span className="text-muted-foreground font-normal">{year}</span>
       </h1>
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      {/* Event type badge */}
+      <div className="mb-4">
         <Badge variant="secondary">{event.type === "TRIATHLON" ? "Triathlon" : "Road Race"}</Badge>
-        <Badge variant="secondary">{total.toLocaleString()} athletes</Badge>
-        <Badge variant="secondary">{event.segments.map((s) => s.name).join(" · ")}</Badge>
+      </div>
+
+      {/* Athlete funnel */}
+      <div className="mb-6">
+        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
+          Participation
+        </p>
+        <div className="bg-muted/40 flex flex-wrap items-center justify-center gap-y-3 rounded-lg border p-4">
+          {/* Starters */}
+          <div className="flex flex-col items-center px-4 text-center">
+            <span className="text-2xl font-bold tabular-nums">
+              {totalAthletes.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground mt-0.5 text-xs">Started</span>
+            <span className="text-muted-foreground mt-0.5 text-xs">100%</span>
+          </div>
+
+          {/* Arrow + gate for each segment */}
+          {segmentCounts.map((seg) => {
+            const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
+            return (
+              <div key={seg.segmentId} className="flex items-center">
+                <span className="text-muted-foreground px-1 text-lg select-none">→</span>
+                <div className="flex flex-col items-center px-4 text-center">
+                  <span className="text-2xl font-bold tabular-nums">
+                    {seg.count.toLocaleString()}
+                  </span>
+                  <span className="text-muted-foreground mt-0.5 text-xs">{seg.name}</span>
+                  <span className="text-muted-foreground mt-0.5 text-xs">{pct}%</span>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Arrow + Finishers */}
+          <span className="text-muted-foreground px-1 text-lg select-none">→</span>
+          <div className="flex flex-col items-center px-4 text-center">
+            <span className="text-primary text-2xl font-bold tabular-nums">
+              {finisherCount.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
+            <span className="text-muted-foreground mt-0.5 text-xs">
+              {totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0}%
+            </span>
+          </div>
+        </div>
       </div>
 
       <Suspense>
