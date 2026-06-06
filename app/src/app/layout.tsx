@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import pkg from "../../package.json";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,9 +44,7 @@ export default function RootLayout({
         <footer className="bg-card mt-8 border-t">
           <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4">
             <p className="text-muted-foreground text-sm">RaceReplay</p>
-            <p className="text-muted-foreground text-xs">
-              See who you passed — and who passed you.
-            </p>
+            <p className="text-muted-foreground text-xs">v{pkg.version}</p>
           </div>
         </footer>
       </body>
