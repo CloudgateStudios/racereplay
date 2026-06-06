@@ -42,9 +42,9 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-muted-foreground mb-8 max-w-xl text-lg leading-relaxed">
-            Race Replay calculates every physical pass that happened on course
-            using per-athlete start times so the numbers reflect what actually happened on the road,
-            not just chip time rank.
+            Race Replay calculates every physical pass that happened on course using per-athlete
+            start times so the numbers reflect what actually happened on the road, not just chip
+            time rank.
           </p>
 
           <div className="flex flex-wrap gap-3">
