@@ -109,12 +109,12 @@ function detectLegs(sampleRow) {
     .map((k) => k.replace(/ \(Seconds\)$/, ""));
 }
 
-// ─── Data Normalisation ───────────────────────────────────────────────────────
+// ─── Data Normalization ───────────────────────────────────────────────────────
 
 /**
- * normaliseAthletes(rows, legNames, rtrtStarts?, externalWaveOffsets?)
+ * normalizeAthletes(rows, legNames, rtrtStarts?, externalWaveOffsets?)
  *
- * Parses every athlete row and produces a normalised athlete object with:
+ * Parses every athlete row and produces a normalized athlete object with:
  *   - legSecs: { [legName]: seconds }  — time for each individual leg
  *   - waveOffset: seconds after the first athlete started (from RTRT, wave file,
  *     or gun-time field in priority order)
@@ -132,7 +132,7 @@ function detectLegs(sampleRow) {
  * externalWaveOffsets: Map<division, offsetSeconds> — fallback for wave-start
  *   races without RTRT data. Loaded from --wave-offsets JSON.
  */
-function normaliseAthletes(
+function normalizeAthletes(
   rows,
   legNames,
   rtrtStarts = null,
@@ -321,7 +321,7 @@ function computePassingData(
     getAfter: (a) => a.cumPositions[name],
   }));
 
-  // Initialise result map: bib → { [legName]: stats }
+  // Initialize result map: bib → { [legName]: stats }
   const results = new Map();
   for (const a of athletes) {
     const entry = {};
@@ -727,7 +727,7 @@ Examples:
       );
     console.log(`   Legs detected: ${legNames.join(", ")}`);
 
-    const { athletes, hasWaveData } = normaliseAthletes(
+    const { athletes, hasWaveData } = normalizeAthletes(
       rows,
       legNames,
       rtrtStarts,
