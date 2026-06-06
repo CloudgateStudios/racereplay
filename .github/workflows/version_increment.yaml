@@ -46,20 +46,22 @@ jobs:
         working-directory: app
         run: standard-version --release-as ${{ github.event.inputs.release_type }} --tag-prefix ""
 
+      - name: Get new version
+        working-directory: app
+        run: |
+          TAG=$(node -p "require('./package.json').version")
+          echo "tag=$TAG" >> $GITHUB_ENV
+
       - name: Format CHANGELOG
         working-directory: app
         run: npx prettier --write CHANGELOG.md
 
-      - name: Stage formatted CHANGELOG
+      - name: Stage formatted CHANGELOG and re-tag
         working-directory: app
         run: |
           git add CHANGELOG.md
           git commit --amend --no-edit
-
-      - name: Get tag
-        run: |
-          export TAG=$(git describe --tags --abbrev=0)
-          echo "tag=$TAG" >> $GITHUB_ENV
+          git tag -f "${{ env.tag }}"
 
       - name: Disable repository rulesets
         env:
@@ -96,6 +98,8 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           tag_name: ${{ env.tag }}
           generate_release_notes: true
