@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RaceTrace",
+  title: "RaceReplay",
   description: "See who you passed — and who passed you.",
 };
 
@@ -36,7 +36,7 @@ export default function RootLayout({
               href="/"
               className="font-bold text-lg tracking-tight hover:text-primary transition-colors"
             >
-              RaceTrace
+              RaceReplay
             </Link>
           </div>
         </header>
@@ -47,7 +47,7 @@ export default function RootLayout({
 
         <footer className="border-t bg-card mt-8">
           <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">RaceTrace</p>
+            <p className="text-sm text-muted-foreground">RaceReplay</p>
             <p className="text-xs text-muted-foreground">See who you passed — and who passed you.</p>
           </div>
         </footer>

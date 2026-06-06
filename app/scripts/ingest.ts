@@ -3,7 +3,7 @@
  * ingest.ts
  *
  * Reads a _passing.csv produced by analyze-passing.mjs and upserts all data
- * into the RaceTrace database via Prisma.
+ * into the RaceReplay database via Prisma.
  *
  * Usage (run from the app/ directory):
  *   npx tsx scripts/ingest.ts <passing-csv> \
