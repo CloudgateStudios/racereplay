@@ -163,7 +163,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
           Participation
         </p>
-        <div className="bg-muted/40 flex flex-wrap items-center justify-center gap-y-3 rounded-lg border p-4">
+        <div className="bg-muted/40 flex flex-col items-center gap-y-3 rounded-lg border p-4 sm:flex-row sm:flex-wrap sm:justify-center">
           {/* Starters */}
           <div className="flex flex-col items-center px-4 text-center">
             <span className="text-2xl font-bold tabular-nums">
@@ -177,8 +177,11 @@ export default async function EventPage({ params, searchParams }: Props) {
           {segmentCounts.map((seg) => {
             const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
             return (
-              <div key={seg.segmentId} className="flex items-center">
-                <span className="text-muted-foreground px-1 text-lg select-none">→</span>
+              <div key={seg.segmentId} className="flex flex-col items-center sm:flex-row">
+                <span className="text-muted-foreground px-1 text-lg select-none">
+                  <span className="sm:hidden">↓</span>
+                  <span className="hidden sm:inline">→</span>
+                </span>
                 <div className="flex flex-col items-center px-4 text-center">
                   <span className="text-2xl font-bold tabular-nums">
                     {seg.count.toLocaleString()}
@@ -191,15 +194,20 @@ export default async function EventPage({ params, searchParams }: Props) {
           })}
 
           {/* Arrow + Finishers */}
-          <span className="text-muted-foreground px-1 text-lg select-none">→</span>
-          <div className="flex flex-col items-center px-4 text-center">
-            <span className="text-primary text-2xl font-bold tabular-nums">
-              {finisherCount.toLocaleString()}
+          <div className="flex flex-col items-center sm:flex-row">
+            <span className="text-muted-foreground px-1 text-lg select-none">
+              <span className="sm:hidden">↓</span>
+              <span className="hidden sm:inline">→</span>
             </span>
-            <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
-            <span className="text-muted-foreground mt-0.5 text-xs">
-              {totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0}%
-            </span>
+            <div className="flex flex-col items-center px-4 text-center">
+              <span className="text-primary text-2xl font-bold tabular-nums">
+                {finisherCount.toLocaleString()}
+              </span>
+              <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
+              <span className="text-muted-foreground mt-0.5 text-xs">
+                {totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0}%
+              </span>
+            </div>
           </div>
         </div>
       </div>
