@@ -119,7 +119,21 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef) {
   while (true) {
     const qs = `appid=${appid}&token=${tokenRef.value}`;
     const url = `/events/${eventId}/points/${pointName}/splits?${qs}&start=${start}`;
-    const data = await rtrtFetch(url);
+
+    let data;
+    try {
+      data = await rtrtFetch(url);
+    } catch (networkErr) {
+      if (retries < 3) {
+        retries++;
+        const wait = retries * 5000;
+        process.stdout.write(` [network retry ${retries} in ${wait / 1000}s: ${networkErr.message}]`);
+        await new Promise((r) => setTimeout(r, wait));
+        tokenRef.value = await register(appid);
+        continue;
+      }
+      throw networkErr;
+    }
 
     if (data.error) {
       const type = data.error.type ?? "";
@@ -662,7 +676,10 @@ Next step:
 `);
   } catch (err) {
     console.error(`\n❌ Error: ${err.message}\n`);
-    if (process.env.DEBUG) console.error(err.stack);
+    if (process.env.DEBUG) {
+      console.error(err.stack);
+      if (err.cause) console.error("Cause:", err.cause);
+    }
     process.exit(1);
   }
 })();
