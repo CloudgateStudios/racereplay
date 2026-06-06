@@ -159,11 +159,11 @@ export default async function EventPage({ params, searchParams }: Props) {
       </div>
 
       {/* Athlete funnel */}
-      <div className="bg-muted/40 mb-6 rounded-lg border p-4">
-        <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+      <div className="mb-6">
+        <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wider">
           Participation
         </p>
-        <div className="flex flex-wrap items-center gap-x-0 gap-y-3">
+        <div className="bg-muted/40 flex flex-wrap items-center justify-center gap-y-3 rounded-lg border p-4">
           {/* Starters */}
           <div className="flex flex-col items-center px-4 text-center">
             <span className="text-2xl font-bold tabular-nums">
