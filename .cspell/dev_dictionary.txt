@@ -1,8 +1,5 @@
-# Project-specific words for RaceReplay
+# Dev/tech terms specific to the RaceReplay stack
 racereplay
-triathlon
-triathlons
-ironman
 prisma
 neon
 nextjs
@@ -10,20 +7,6 @@ shadcn
 tailwindcss
 oklch
 depcheck
-upsert
-upserts
-upserted
-rtrt
-bib
-bibs
-DNF
-DNFs
-IRM
-BASS
-Oceanside
-Chattanooga
-Rockford
-Shamrock
 noEmit
 cspell
 postgres
@@ -47,6 +30,5 @@ overallRank
 genderRank
 divisionRank
 timeSeconds
-swimtime
 ECONNREFUSED
 Turbopack
