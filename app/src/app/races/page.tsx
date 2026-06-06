@@ -7,7 +7,7 @@ import { RaceTypeIcon } from "@/components/race-type-icon";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "All Races — RaceReplay",
+  title: "All Races — Race Replay",
 };
 
 export default async function RacesPage() {
@@ -31,7 +31,7 @@ export default async function RacesPage() {
       <div className="mb-10">
         <h1 className="mb-2 text-4xl font-black tracking-tight">All Races</h1>
         <p className="text-muted-foreground text-lg">
-          Browse every race in the RaceReplay database.
+          Browse every race in the Race Replay database.
         </p>
       </div>
 

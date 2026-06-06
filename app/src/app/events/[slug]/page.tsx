@@ -12,7 +12,7 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const race = await prisma.race.findUnique({ where: { slug } });
-  return { title: race ? `${race.name} — RaceReplay` : "Not Found" };
+  return { title: race ? `${race.name} — Race Replay` : "Not Found" };
 }
 
 export default async function RacePage({ params }: Props) {

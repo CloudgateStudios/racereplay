@@ -42,7 +42,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-muted-foreground mb-8 max-w-xl text-lg leading-relaxed">
-            RaceReplay calculates every physical pass that happened on course
+            Race Replay calculates every physical pass that happened on course
             using per-athlete start times so the numbers reflect what actually happened on the road,
             not just chip time rank.
           </p>
@@ -118,7 +118,7 @@ export default async function HomePage() {
             {
               step: "01",
               title: "Per-athlete start times",
-              body: "For time-trial starts, every athlete has a different start time. RaceReplay uses per-athlete epoch timestamps from live tracking data to reconstruct the real on-course order at every checkpoint.",
+              body: "For time-trial starts, every athlete has a different start time. Race Replay uses per-athlete epoch timestamps from live tracking data to reconstruct the real on-course order at every checkpoint.",
             },
             {
               step: "02",

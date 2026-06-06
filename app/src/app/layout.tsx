@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RaceReplay",
+  title: "Race Replay",
   description: "See who you passed — and who passed you, leg by leg.",
 };
 
@@ -70,7 +70,7 @@ export default function RootLayout({
         {/* ── Footer ──────────────────────────────────────────────────────── */}
         <footer className="bg-card border-t">
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-[clamp(1.5rem,5vw,5rem)]">
-            <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} RaceReplay</p>
+            <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} Race Replay</p>
             <p className="text-muted-foreground font-mono text-xs">v{pkg.version}</p>
           </div>
         </footer>
