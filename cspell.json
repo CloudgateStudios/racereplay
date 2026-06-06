@@ -6,12 +6,12 @@
   "dictionaryDefinitions": [
     {
       "name": "dev_dictionary",
-      "path": "./.cspell/dev_dictionary.txt",
+      "path": ".cspell/dev_dictionary.txt",
       "addWords": true
     },
     {
       "name": "triathlon_dictionary",
-      "path": "./.cspell/triathlon_dictionary.txt",
+      "path": ".cspell/triathlon_dictionary.txt",
       "addWords": true
     }
   ],

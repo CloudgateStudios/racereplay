@@ -35,7 +35,7 @@ jobs:
         uses: streetsidesoftware/cspell-action@v8
         with:
           files: "**/*.{md,ts,tsx,yaml,yml,css,mjs}"
-          config: .github/cspell.json
+          config: cspell.json
 
   validate_code:
     name: Validate Code
