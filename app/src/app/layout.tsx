@@ -29,9 +29,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <header className="border-b">
-          <div className="max-w-6xl mx-auto px-4 h-14 flex items-center">
-            <Link href="/" className="font-semibold text-lg tracking-tight">
+        <header className="border-b bg-card shadow-sm sticky top-0 z-10">
+          <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-2">
+            <span className="text-primary font-black text-xl tracking-tight">⬡</span>
+            <Link
+              href="/"
+              className="font-bold text-lg tracking-tight hover:text-primary transition-colors"
+            >
               RaceTrace
             </Link>
           </div>
@@ -41,9 +45,10 @@ export default function RootLayout({
           {children}
         </main>
 
-        <footer className="border-t">
-          <div className="max-w-6xl mx-auto px-4 h-12 flex items-center">
+        <footer className="border-t bg-card mt-8">
+          <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">RaceTrace</p>
+            <p className="text-xs text-muted-foreground">See who you passed — and who passed you.</p>
           </div>
         </footer>
       </body>

@@ -72,18 +72,18 @@ export default async function AthletePage({ params }: Props) {
     <div>
       {/* Breadcrumb */}
       <div className="mb-1 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">All races</Link>
+        <Link href="/" className="hover:text-primary transition-colors">All races</Link>
         <span className="mx-1">›</span>
-        <Link href={`/events/${slug}`} className="hover:text-foreground">{race.name}</Link>
+        <Link href={`/events/${slug}`} className="hover:text-primary transition-colors">{race.name}</Link>
         <span className="mx-1">›</span>
-        <Link href={`/events/${slug}/${year}`} className="hover:text-foreground">{year}</Link>
+        <Link href={`/events/${slug}/${year}`} className="hover:text-primary transition-colors">{year}</Link>
         <span className="mx-1">›</span>
         <span className="text-foreground">Bib {bib}</span>
       </div>
 
       {/* Athlete header */}
       <div className="mt-3 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">{athlete.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight">{athlete.name}</h1>
         <div className="flex flex-wrap gap-2 mt-3">
           <Badge variant="secondary">Bib {athlete.bib}</Badge>
           {athlete.division && <Badge variant="secondary">{athlete.division}</Badge>}
@@ -103,7 +103,7 @@ export default async function AthletePage({ params }: Props) {
           { label: "Gender Rank", value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—" },
           { label: "Division Rank", value: athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—" },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-lg border p-4">
+          <div key={label} className="rounded-xl border bg-card shadow-sm p-4">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="text-2xl font-bold tabular-nums mt-1">{value}</p>
           </div>

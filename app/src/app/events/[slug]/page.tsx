@@ -23,7 +23,10 @@ export default async function RacePage({ params }: Props) {
         orderBy: { year: "desc" },
         include: {
           _count: { select: { athletes: true } },
-          segments: { orderBy: { displayOrder: "asc" }, select: { name: true } },
+          segments: {
+            orderBy: { displayOrder: "asc" },
+            select: { name: true },
+          },
         },
       },
     },
@@ -34,26 +37,28 @@ export default async function RacePage({ params }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
           ← All races
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight mt-2">{race.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight mt-3">{race.name}</h1>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {race.events.map((event) => (
           <Link
             key={event.year}
             href={`/events/${slug}/${event.year}`}
-            className="block rounded-lg border p-5 hover:bg-muted/50 transition-colors"
+            className="group block rounded-xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/50 transition-all"
           >
-            <div className="flex items-start justify-between mb-3">
-              <span className="text-2xl font-bold">{event.year}</span>
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-3xl font-black group-hover:text-primary transition-colors">
+                {event.year}
+              </span>
               <Badge variant="outline">
                 {event.type === "TRIATHLON" ? "Triathlon" : "Road Race"}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">
+            <p className="text-sm text-muted-foreground mb-4">
               {new Date(event.date).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
