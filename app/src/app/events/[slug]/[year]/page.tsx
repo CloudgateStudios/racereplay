@@ -174,17 +174,9 @@ export default async function EventPage({ params, searchParams }: Props) {
                 <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
               </TableHead>
               {event.segments.map((seg) => (
-                <>
-                  <TableHead key={`${seg.id}-passed`} className="text-center">
-                    {seg.name} +
-                  </TableHead>
-                  <TableHead key={`${seg.id}-lost`} className="text-center">
-                    {seg.name} −
-                  </TableHead>
-                  <TableHead key={`${seg.id}-net`} className="text-center">
-                    {seg.name} Net
-                  </TableHead>
-                </>
+                <TableHead key={`${seg.id}-net`} className="text-center">
+                  {seg.name} Net
+                </TableHead>
               ))}
               <TableHead className="text-center">Overall Net</TableHead>
             </TableRow>
@@ -218,26 +210,12 @@ export default async function EventPage({ params, searchParams }: Props) {
                   {event.segments.map((seg) => {
                     const s = athlete.segments.find((as) => as.segmentId === seg.id);
                     return (
-                      <>
-                        <TableCell
-                          key={`${athlete.id}-${seg.id}-g`}
-                          className="text-center text-green-600 tabular-nums"
-                        >
-                          {s?.gained != null ? `+${s.gained}` : "—"}
-                        </TableCell>
-                        <TableCell
-                          key={`${athlete.id}-${seg.id}-l`}
-                          className="text-center text-red-500 tabular-nums"
-                        >
-                          {s?.lost != null ? `-${s.lost}` : "—"}
-                        </TableCell>
-                        <TableCell
-                          key={`${athlete.id}-${seg.id}-n`}
-                          className={`text-center font-medium tabular-nums ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
-                        >
-                          {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
-                        </TableCell>
-                      </>
+                      <TableCell
+                        key={`${athlete.id}-${seg.id}-net`}
+                        className={`text-center font-medium tabular-nums ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
+                      >
+                        {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
+                      </TableCell>
                     );
                   })}
                   <TableCell
