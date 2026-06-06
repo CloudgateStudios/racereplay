@@ -9,7 +9,5 @@
     "@types/react-dom",
     "depcheck"
   ],
-  "ignorePatterns": [
-    "src/generated/**"
-  ]
+  "ignorePatterns": ["src/generated/**"]
 }
