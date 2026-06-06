@@ -10,5 +10,16 @@
       "addWords": true
     }
   ],
-  "ignorePaths": [".github/workflows/**", ".gitignore", "app/src/generated/**"]
+  "ignorePaths": [
+    ".github/workflows/**",
+    ".gitignore",
+    "app/src/generated/**",
+    "app/node_modules/**",
+    "app/prisma/migrations/**",
+    "app/.next/**",
+    "app/src/components/ui/**",
+    "scripts/data/**",
+    "**/*.lock",
+    "**/package-lock.json"
+  ]
 }
