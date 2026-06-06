@@ -113,18 +113,19 @@ async function fetchAllPoints(eventId, appid, token) {
   );
 }
 
-async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTotal = 0) {
+async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTotal = 0, logPrefix = "   ") {
   const map = new Map();
   let start = 1;
   let retries = 0;
   const estPages = hintTotal > 0 ? Math.ceil(hintTotal / PAGE) : 0;
   const pointStart = Date.now();
+  const LOG_EVERY = 50; // print a progress line every N pages
 
-  // Overwrite the current progress line
   const progress = (page, records) => {
+    if (page % LOG_EVERY !== 0 && page !== 1) return;
     const elapsed = ((Date.now() - pointStart) / 1000).toFixed(0);
     const pageStr = estPages > 0 ? `page ${page}/${estPages}` : `page ${page}`;
-    process.stdout.write(`\r   ⏳ ${pageStr}  •  ${records} records  •  ${elapsed}s elapsed    `);
+    console.log(`${logPrefix}⏳ ${pageStr}  •  ${records} records  •  ${elapsed}s elapsed`);
   };
 
   while (true) {
@@ -177,6 +178,7 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTo
     const page = Math.ceil(start / PAGE);
     progress(page, map.size);
     if (data.list.length < PAGE) break;
+
     start = parseInt(data.info?.last ?? start) + 1;
     await new Promise((r) => setTimeout(r, DELAY));
   }
@@ -677,47 +679,60 @@ Examples:
       try { await fs.access(splitFile(ptName)); return true; } catch { return false; }
     }
 
-    // ── Fetch splits (skip points whose cache file already exists) ────────────
-    const hintTotal = event.finishers ? parseInt(event.finishers, 10) : 0;
-    const fetchStart = Date.now();
-    let fetchedCount = 0;
+    // ── Fetch splits (parallel, skip cached points) ───────────────────────────
+    const CONCURRENCY  = 4; // points fetched simultaneously
+    const hintTotal    = event.finishers ? parseInt(event.finishers, 10) : 0;
+    const fetchStart   = Date.now();
+    let   completed    = 0;
 
+    // Check which points still need fetching
+    const toFetch = [];
     for (let i = 0; i < pointsToFetch.length; i++) {
       const pt = pointsToFetch[i];
-
       if (await splitFileExists(pt.name)) {
-        console.log(`\n   [${i + 1}/${pointsToFetch.length}] ${pt.name} — using cached splits (${splitFile(pt.name)})`);
-        continue;
+        console.log(`   [${i + 1}/${pointsToFetch.length}] ${pt.name} — cached ✓`);
+      } else {
+        toFetch.push({ pt, idx: i });
+      }
+    }
+
+    if (toFetch.length === 0) {
+      console.log("\n   All points cached — skipping fetch.");
+    } else {
+      console.log(`\n   Fetching ${toFetch.length} point(s) with concurrency=${CONCURRENCY}...\n`);
+
+      // Register one token per concurrent worker slot
+      const tokens = await Promise.all(
+        Array.from({ length: Math.min(CONCURRENCY, toFetch.length) }, () => register(appid))
+      );
+      const tokenRefs = tokens.map((value) => ({ value }));
+
+      // Simple concurrency pool
+      let slotIdx = 0;
+      const queue = [...toFetch];
+
+      async function runWorker(workerToken) {
+        while (queue.length > 0) {
+          const { pt, idx } = queue.shift();
+          const prefix = `   [${idx + 1}/${pointsToFetch.length}] ${pt.name.padEnd(8)} `;
+          console.log(`${prefix}starting...`);
+          const ptStart = Date.now();
+          const map = await fetchAllSplitsAtPoint(
+            eventId, pt.name, appid, workerToken, hintTotal, prefix
+          );
+          await saveSplits(pt.name, map);
+          completed++;
+          const ptSecs   = ((Date.now() - ptStart) / 1000).toFixed(1);
+          const elapsed  = ((Date.now() - fetchStart) / 1000).toFixed(0);
+          const left     = toFetch.length - completed;
+          const avgSecs  = (Date.now() - fetchStart) / 1000 / completed;
+          const etaSecs  = Math.round(left * avgSecs);
+          const eta      = etaSecs > 60 ? `~${Math.round(etaSecs / 60)}m` : `~${etaSecs}s`;
+          console.log(`${prefix}✅ ${map.size} records in ${ptSecs}s  •  ${elapsed}s total  •  ${left > 0 ? eta + " remaining" : "all done"}`);
+        }
       }
 
-      if (fetchedCount > 0) await new Promise((r) => setTimeout(r, POINT_DELAY));
-      fetchedCount++;
-
-      const pointLabel = `[${i + 1}/${pointsToFetch.length}] ${pt.name} (${pt.label || pt.name})`;
-      console.log(`\n   Fetching ${pointLabel}`);
-
-      const ptStart = Date.now();
-      const map = await fetchAllSplitsAtPoint(
-        eventId,
-        pt.name,
-        appid,
-        tokenRef,
-        hintTotal
-      );
-
-      await saveSplits(pt.name, map);
-
-      const ptSecs = ((Date.now() - ptStart) / 1000).toFixed(1);
-      const totalElapsed = ((Date.now() - fetchStart) / 1000).toFixed(0);
-      const ptsLeft = pointsToFetch.length - i - 1;
-      const avgSecs = (Date.now() - fetchStart) / 1000 / fetchedCount;
-      const etaSecs = Math.round(ptsLeft * avgSecs);
-      const etaStr = etaSecs > 60
-        ? `~${Math.round(etaSecs / 60)}m remaining`
-        : `~${etaSecs}s remaining`;
-      process.stdout.write(
-        `\r   ✅ ${map.size} records in ${ptSecs}s  •  total ${totalElapsed}s elapsed  •  ${ptsLeft > 0 ? etaStr : "done"}\n`
-      );
+      await Promise.all(tokenRefs.map((tr) => runWorker(tr)));
     }
 
     // ── Build athlete records (load split files on demand) ────────────────────
