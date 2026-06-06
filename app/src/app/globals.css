@@ -8,9 +8,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-barlow);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-barlow-condensed);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -128,7 +128,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    font-size: 1.0625rem; /* 17px — Barlow reads better slightly larger than 16px */
   }
   html {
     @apply font-sans;
@@ -139,7 +139,7 @@
   h2,
   h3,
   h4 {
+    font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
     @apply tracking-tight;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 }

@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import pkg from "../../package.json";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const barlow = Barlow({
+  variable: "--font-barlow",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
 });
 
 const geistMono = Geist_Mono({
@@ -25,7 +32,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} h-full antialiased`}
+    >
       <body className="bg-background text-foreground flex min-h-full flex-col">
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <header className="bg-card/80 sticky top-0 z-10 border-b backdrop-blur-sm">
@@ -33,10 +43,11 @@ export default function RootLayout({
             {/* Logo */}
             <Link
               href="/"
-              className="hover:text-primary flex items-center gap-2 font-bold tracking-tight transition-colors"
+              className="hover:text-primary flex items-center gap-1.5 transition-colors"
+              style={{ fontFamily: "var(--font-barlow-condensed), sans-serif" }}
             >
-              <span className="text-primary text-xl font-black">⬡</span>
-              <span className="text-base">RaceReplay</span>
+              <span className="text-primary text-2xl leading-none font-black">⬡</span>
+              <span className="text-lg font-black tracking-wide uppercase">RaceReplay</span>
             </Link>
 
             {/* Nav */}
