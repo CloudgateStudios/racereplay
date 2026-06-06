@@ -1,0 +1,15 @@
+{
+  "ignores": [
+    "@prisma/client",
+    "shadcn",
+    "tw-animate-css",
+    "@tailwindcss/postcss",
+    "tailwindcss",
+    "prettier-plugin-tailwindcss",
+    "@types/react-dom",
+    "depcheck"
+  ],
+  "ignorePatterns": [
+    "src/generated/**"
+  ]
+}

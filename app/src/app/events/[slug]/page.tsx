@@ -39,10 +39,13 @@ export default async function RacePage({ params }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+        <Link
+          href="/"
+          className="text-muted-foreground hover:text-primary text-sm transition-colors"
+        >
           ← All races
         </Link>
-        <h1 className="text-4xl font-bold tracking-tight mt-3">{race.name}</h1>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight">{race.name}</h1>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,17 +53,17 @@ export default async function RacePage({ params }: Props) {
           <Link
             key={event.year}
             href={`/events/${slug}/${event.year}`}
-            className="group block rounded-xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/50 transition-all"
+            className="group bg-card hover:border-primary/50 block rounded-xl border p-6 shadow-sm transition-all hover:shadow-md"
           >
-            <div className="flex items-start justify-between mb-2">
-              <span className="text-3xl font-black group-hover:text-primary transition-colors">
+            <div className="mb-2 flex items-start justify-between">
+              <span className="group-hover:text-primary text-3xl font-black transition-colors">
                 {event.year}
               </span>
               <Badge variant="outline">
                 {event.type === "TRIATHLON" ? "Triathlon" : "Road Race"}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm">
               {new Date(event.date).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
@@ -69,12 +72,8 @@ export default async function RacePage({ params }: Props) {
               })}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">
-                {event._count.athletes.toLocaleString()} athletes
-              </Badge>
-              <Badge variant="secondary">
-                {event.segments.map((s) => s.name).join(" · ")}
-              </Badge>
+              <Badge variant="secondary">{event._count.athletes.toLocaleString()} athletes</Badge>
+              <Badge variant="secondary">{event.segments.map((s) => s.name).join(" · ")}</Badge>
             </div>
           </Link>
         ))}

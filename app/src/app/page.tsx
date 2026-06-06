@@ -23,7 +23,7 @@ export default async function HomePage() {
   return (
     <div>
       <div className="mb-10">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">Races</h1>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">Races</h1>
         <p className="text-muted-foreground text-lg">
           Select a race to explore passing data for every athlete.
         </p>
@@ -34,12 +34,12 @@ export default async function HomePage() {
           <Link
             key={race.slug}
             href={`/events/${race.slug}`}
-            className="group block rounded-xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/50 transition-all"
+            className="group bg-card hover:border-primary/50 block rounded-xl border p-6 shadow-sm transition-all hover:shadow-md"
           >
-            <h2 className="font-semibold text-xl mb-1 group-hover:text-primary transition-colors">
+            <h2 className="group-hover:text-primary mb-1 text-xl font-semibold transition-colors">
               {race.name}
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm">
               {race.events[0]?.type === "TRIATHLON" ? "Triathlon" : "Road Race"}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -53,9 +53,7 @@ export default async function HomePage() {
         ))}
       </div>
 
-      {races.length === 0 && (
-        <p className="text-muted-foreground">No races ingested yet.</p>
-      )}
+      {races.length === 0 && <p className="text-muted-foreground">No races ingested yet.</p>}
     </div>
   );
 }

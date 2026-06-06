@@ -73,12 +73,18 @@ export default async function AthletePage({ params }: Props) {
   return (
     <div>
       {/* Breadcrumb */}
-      <div className="mb-1 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-primary transition-colors">All races</Link>
+      <div className="text-muted-foreground mb-1 text-sm">
+        <Link href="/" className="hover:text-primary transition-colors">
+          All races
+        </Link>
         <span className="mx-1">›</span>
-        <Link href={`/events/${slug}`} className="hover:text-primary transition-colors">{race.name}</Link>
+        <Link href={`/events/${slug}`} className="hover:text-primary transition-colors">
+          {race.name}
+        </Link>
         <span className="mx-1">›</span>
-        <Link href={`/events/${slug}/${year}`} className="hover:text-primary transition-colors">{year}</Link>
+        <Link href={`/events/${slug}/${year}`} className="hover:text-primary transition-colors">
+          {year}
+        </Link>
         <span className="mx-1">›</span>
         <span className="text-foreground">Bib {bib}</span>
       </div>
@@ -86,7 +92,7 @@ export default async function AthletePage({ params }: Props) {
       {/* Athlete header */}
       <div className="mt-3 mb-8">
         <h1 className="text-4xl font-bold tracking-tight">{athlete.name}</h1>
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="secondary">Bib {athlete.bib}</Badge>
           {athlete.division && <Badge variant="secondary">{athlete.division}</Badge>}
           {athlete.gender && <Badge variant="secondary">{athlete.gender}</Badge>}
@@ -98,23 +104,32 @@ export default async function AthletePage({ params }: Props) {
       </div>
 
       {/* Rank summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
           { label: "Finish Time", value: athlete.finishTime || "—" },
-          { label: "Overall Rank", value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—" },
-          { label: "Gender Rank", value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—" },
-          { label: "Division Rank", value: athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—" },
+          {
+            label: "Overall Rank",
+            value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—",
+          },
+          {
+            label: "Gender Rank",
+            value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—",
+          },
+          {
+            label: "Division Rank",
+            value: athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—",
+          },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl border bg-card shadow-sm p-4">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tabular-nums mt-1">{value}</p>
+          <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
+            <p className="text-muted-foreground text-sm">{label}</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
           </div>
         ))}
       </div>
 
       {/* Passing breakdown */}
-      <h2 className="text-xl font-semibold mb-3">Leg-by-Leg Passing</h2>
-      <div className="rounded-md border overflow-x-auto mb-8">
+      <h2 className="mb-3 text-xl font-semibold">Leg-by-Leg Passing</h2>
+      <div className="mb-8 overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -129,32 +144,34 @@ export default async function AthletePage({ params }: Props) {
             {athlete.segments.map((as) => (
               <TableRow key={as.segmentId}>
                 <TableCell className="font-medium">{as.segment.name}</TableCell>
-                <TableCell className="text-right tabular-nums font-mono text-sm">
+                <TableCell className="text-right font-mono text-sm tabular-nums">
                   {formatSeconds(as.timeSeconds)}
                 </TableCell>
-                <TableCell className="text-center tabular-nums text-green-600 font-medium">
+                <TableCell className="text-center font-medium text-green-600 tabular-nums">
                   {as.gained != null ? `+${as.gained}` : "—"}
                 </TableCell>
-                <TableCell className="text-center tabular-nums text-red-500 font-medium">
+                <TableCell className="text-center font-medium text-red-500 tabular-nums">
                   {as.lost != null ? `-${as.lost}` : "—"}
                 </TableCell>
-                <TableCell className={`text-center tabular-nums font-bold ${netColor(as.net)}`}>
+                <TableCell className={`text-center font-bold tabular-nums ${netColor(as.net)}`}>
                   {netLabel(as.net)}
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow className="border-t-2 bg-muted/30">
+            <TableRow className="bg-muted/30 border-t-2">
               <TableCell className="font-bold">Overall</TableCell>
-              <TableCell className="text-right tabular-nums font-mono text-sm font-bold">
+              <TableCell className="text-right font-mono text-sm font-bold tabular-nums">
                 {athlete.finishTime || "—"}
               </TableCell>
-              <TableCell className="text-center tabular-nums text-green-600 font-bold">
+              <TableCell className="text-center font-bold text-green-600 tabular-nums">
                 {`+${athlete.segments.reduce((s, a) => s + (a.gained ?? 0), 0)}`}
               </TableCell>
-              <TableCell className="text-center tabular-nums text-red-500 font-bold">
+              <TableCell className="text-center font-bold text-red-500 tabular-nums">
                 {`-${athlete.segments.reduce((s, a) => s + (a.lost ?? 0), 0)}`}
               </TableCell>
-              <TableCell className={`text-center tabular-nums font-bold text-lg ${netColor(overallNet)}`}>
+              <TableCell
+                className={`text-center text-lg font-bold tabular-nums ${netColor(overallNet)}`}
+              >
                 {netLabel(overallNet)}
               </TableCell>
             </TableRow>
@@ -164,7 +181,7 @@ export default async function AthletePage({ params }: Props) {
 
       <Link
         href={`/events/${slug}/${year}`}
-        className="text-sm text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground text-sm"
       >
         ← Back to {race.name} {year} results
       </Link>

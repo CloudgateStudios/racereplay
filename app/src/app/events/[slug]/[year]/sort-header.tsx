@@ -33,11 +33,12 @@ export function SortHeader({ column, label, currentSort, currentDir }: Props) {
   return (
     <button
       onClick={handleClick}
-      className={`text-left font-medium hover:text-foreground whitespace-nowrap ${
+      className={`hover:text-foreground text-left font-medium whitespace-nowrap ${
         isActive ? "text-foreground" : "text-muted-foreground"
       }`}
     >
-      {label}{arrow}
+      {label}
+      {arrow}
     </button>
   );
 }

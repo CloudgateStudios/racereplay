@@ -42,7 +42,7 @@ export function EventFilters({ genders, divisions }: Props) {
   const divisionValue: string = searchParams.get("division") ?? "all";
 
   return (
-    <div className="flex flex-wrap gap-3 mb-6">
+    <div className="mb-6 flex flex-wrap gap-3">
       <Input
         placeholder="Search name or bib…"
         defaultValue={searchParams.get("q") ?? ""}
@@ -50,10 +50,7 @@ export function EventFilters({ genders, divisions }: Props) {
         className="w-56"
       />
 
-      <Select
-        defaultValue={genderValue}
-        onValueChange={(v) => updateParam("gender", v ?? "")}
-      >
+      <Select defaultValue={genderValue} onValueChange={(v) => updateParam("gender", v ?? "")}>
         <SelectTrigger className="w-36">
           <SelectValue placeholder="Gender" />
         </SelectTrigger>
@@ -67,10 +64,7 @@ export function EventFilters({ genders, divisions }: Props) {
         </SelectContent>
       </Select>
 
-      <Select
-        defaultValue={divisionValue}
-        onValueChange={(v) => updateParam("division", v ?? "")}
-      >
+      <Select defaultValue={divisionValue} onValueChange={(v) => updateParam("division", v ?? "")}>
         <SelectTrigger className="w-44">
           <SelectValue placeholder="Division" />
         </SelectTrigger>

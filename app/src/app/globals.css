@@ -51,24 +51,24 @@
 
 /* ── Light mode — warm stone/zinc base with orange accent ─────────────────── */
 :root {
-  --background: oklch(0.985 0.002 75);        /* stone-50 */
-  --foreground: oklch(0.211 0.006 286);        /* zinc-900 */
-  --card: oklch(1 0 0);                        /* white */
-  --card-foreground: oklch(0.211 0.006 286);   /* zinc-900 */
+  --background: oklch(0.985 0.002 75); /* stone-50 */
+  --foreground: oklch(0.211 0.006 286); /* zinc-900 */
+  --card: oklch(1 0 0); /* white */
+  --card-foreground: oklch(0.211 0.006 286); /* zinc-900 */
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.211 0.006 286);
-  --primary: oklch(0.705 0.191 47.6);          /* orange-500 */
-  --primary-foreground: oklch(1 0 0);          /* white */
-  --secondary: oklch(0.961 0.006 76);          /* stone-100 */
+  --primary: oklch(0.705 0.191 47.6); /* orange-500 */
+  --primary-foreground: oklch(1 0 0); /* white */
+  --secondary: oklch(0.961 0.006 76); /* stone-100 */
   --secondary-foreground: oklch(0.211 0.006 286);
-  --muted: oklch(0.961 0.006 76);              /* stone-100 */
-  --muted-foreground: oklch(0.553 0.013 58);   /* stone-500 */
-  --accent: oklch(0.98 0.016 73);              /* orange-50 */
-  --accent-foreground: oklch(0.474 0.155 37);  /* orange-900 */
+  --muted: oklch(0.961 0.006 76); /* stone-100 */
+  --muted-foreground: oklch(0.553 0.013 58); /* stone-500 */
+  --accent: oklch(0.98 0.016 73); /* orange-50 */
+  --accent-foreground: oklch(0.474 0.155 37); /* orange-900 */
   --destructive: oklch(0.577 0.245 27.3);
-  --border: oklch(0.929 0.008 76);             /* stone-200 */
+  --border: oklch(0.929 0.008 76); /* stone-200 */
   --input: oklch(0.929 0.008 76);
-  --ring: oklch(0.705 0.191 47.6);             /* orange-500 */
+  --ring: oklch(0.705 0.191 47.6); /* orange-500 */
   --chart-1: oklch(0.705 0.191 47.6);
   --chart-2: oklch(0.6 0.012 286);
   --chart-3: oklch(0.439 0 0);
@@ -88,24 +88,24 @@
 /* ── Dark mode — charcoal zinc base with orange-400 accent ────────────────── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(0.178 0.006 286);        /* zinc-900 */
-    --foreground: oklch(0.961 0.006 76);          /* stone-100 */
-    --card: oklch(0.24 0.006 286);               /* zinc-800 */
+    --background: oklch(0.178 0.006 286); /* zinc-900 */
+    --foreground: oklch(0.961 0.006 76); /* stone-100 */
+    --card: oklch(0.24 0.006 286); /* zinc-800 */
     --card-foreground: oklch(0.961 0.006 76);
     --popover: oklch(0.24 0.006 286);
     --popover-foreground: oklch(0.961 0.006 76);
-    --primary: oklch(0.75 0.183 52);              /* orange-400 */
+    --primary: oklch(0.75 0.183 52); /* orange-400 */
     --primary-foreground: oklch(0.178 0.006 286); /* zinc-900 */
-    --secondary: oklch(0.297 0.006 286);          /* zinc-700 */
+    --secondary: oklch(0.297 0.006 286); /* zinc-700 */
     --secondary-foreground: oklch(0.961 0.006 76);
-    --muted: oklch(0.24 0.006 286);              /* zinc-800 */
-    --muted-foreground: oklch(0.706 0.008 286);  /* zinc-400 */
-    --accent: oklch(0.297 0.006 286);             /* zinc-700 */
+    --muted: oklch(0.24 0.006 286); /* zinc-800 */
+    --muted-foreground: oklch(0.706 0.008 286); /* zinc-400 */
+    --accent: oklch(0.297 0.006 286); /* zinc-700 */
     --accent-foreground: oklch(0.961 0.006 76);
     --destructive: oklch(0.704 0.191 22.2);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 12%);
-    --ring: oklch(0.75 0.183 52);                /* orange-400 */
+    --ring: oklch(0.75 0.183 52); /* orange-400 */
     --chart-1: oklch(0.75 0.183 52);
     --chart-2: oklch(0.706 0.008 286);
     --chart-3: oklch(0.439 0 0);
