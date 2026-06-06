@@ -32,3 +32,4 @@ divisionRank
 timeSeconds
 ECONNREFUSED
 Turbopack
+upserts
