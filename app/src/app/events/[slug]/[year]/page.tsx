@@ -170,20 +170,26 @@ export default async function EventPage({ params, searchParams }: Props) {
               {totalAthletes.toLocaleString()}
             </span>
             <span className="text-muted-foreground mt-0.5 text-xs">Started</span>
+            <span className="text-muted-foreground mt-0.5 text-xs">100%</span>
           </div>
 
           {/* Arrow + gate for each segment */}
-          {segmentCounts.map((seg) => (
-            <div key={seg.segmentId} className="flex items-center">
-              <span className="text-muted-foreground select-none px-1 text-lg">→</span>
-              <div className="flex flex-col items-center px-4 text-center">
-                <span className="text-2xl font-bold tabular-nums">
-                  {seg.count.toLocaleString()}
-                </span>
-                <span className="text-muted-foreground mt-0.5 text-xs">{seg.name}</span>
+          {segmentCounts.map((seg) => {
+            const pct =
+              totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
+            return (
+              <div key={seg.segmentId} className="flex items-center">
+                <span className="text-muted-foreground select-none px-1 text-lg">→</span>
+                <div className="flex flex-col items-center px-4 text-center">
+                  <span className="text-2xl font-bold tabular-nums">
+                    {seg.count.toLocaleString()}
+                  </span>
+                  <span className="text-muted-foreground mt-0.5 text-xs">{seg.name}</span>
+                  <span className="text-muted-foreground mt-0.5 text-xs">{pct}%</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Arrow + Finishers */}
           <span className="text-muted-foreground select-none px-1 text-lg">→</span>
@@ -192,6 +198,9 @@ export default async function EventPage({ params, searchParams }: Props) {
               {finisherCount.toLocaleString()}
             </span>
             <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
+            <span className="text-muted-foreground mt-0.5 text-xs">
+              {totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0}%
+            </span>
           </div>
         </div>
       </div>
