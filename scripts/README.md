@@ -1,4 +1,4 @@
-# RaceReplay — Data Pipeline Scripts
+# Race Replay — Data Pipeline Scripts
 
 Standalone scripts to fetch race data from RTRT.me and run the leg-by-leg
 physical passing algorithm.
@@ -11,11 +11,12 @@ In a time-trial (TT) start race, athletes enter one at a time. A "physical
 pass" requires knowing who was actually ahead on course — which requires each
 athlete's individual start time.
 
-RaceReplay uses per-athlete start epoch times from RTRT.me to compute the
+Race Replay uses per-athlete start epoch times from RTRT.me to compute the
 absolute clock time each athlete was at every checkpoint. Comparing two
 athletes' absolute checkpoint times directly answers "who was physically ahead?"
 
 **Key identity:**
+
 ```
 epochTime[any_point] = startEpoch + chipSplitSeconds
 ```
@@ -43,7 +44,7 @@ Node.js 18+ (native `fetch`). No dependencies to install.
    "appid":"4d9df5bf9f36bc4a1dc8fce2"
    ```
    Each race organizer has their own app ID. The IRONMAN Tracker default is
-   `5824c5c948fd08c23a8b4567` (no need to pass `--appid` for IRM-* events).
+   `5824c5c948fd08c23a8b4567` (no need to pass `--appid` for IRM-\* events).
 
 ### Step 2 — Run the pipeline
 
@@ -52,6 +53,7 @@ node scripts/racereplay.mjs <event-id> [--appid <id>]
 ```
 
 Examples:
+
 ```bash
 # Bank of America Shamrock Shuffle (non-IRONMAN, requires --appid)
 node scripts/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
@@ -61,6 +63,7 @@ node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
 ```
 
 **Flags:**
+
 ```
 --appid <id>          RTRT tracker app ID (default: IRONMAN app ID)
 --output-dir <dir>    Write files here (default: scripts/data/)
@@ -68,6 +71,7 @@ node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
 ```
 
 **Output:**
+
 - `scripts/data/<EVENT-ID>_passing.csv` — full per-athlete passing breakdown, ready to ingest
 
 **Timing:** ~300ms/page + 5s between points. A 24K-athlete event with 3 timing
@@ -100,10 +104,10 @@ Run this before trusting output from a new race.
 
 ## Scripts summary
 
-| Script | Purpose |
-|---|---|
-| `racereplay.mjs` | Fetches splits from RTRT.me, runs passing algorithm, writes `_passing.csv` |
-| `test-algorithm.mjs` | Unit tests for the passing algorithm |
+| Script               | Purpose                                                                    |
+| -------------------- | -------------------------------------------------------------------------- |
+| `racereplay.mjs`     | Fetches splits from RTRT.me, runs passing algorithm, writes `_passing.csv` |
+| `test-algorithm.mjs` | Unit tests for the passing algorithm                                       |
 
 ---
 
@@ -114,6 +118,7 @@ Run this before trusting output from a new race.
 24,216 athletes · 24,152 finishers · 64 DNFs · 2 legs (5K, Finish)
 
 Both leg invariants pass:
+
 - 5K: gained = lost = 8,805,358 ✅
 - Finish: gained = lost = 7,864,006 ✅
 
@@ -135,14 +140,14 @@ All 5 leg invariants pass.
 
 All 5 leg invariants pass. Cross-checked Tom Arra (bib 361, overall 751st):
 
-| Leg | Reference | Algorithm | Delta |
-|---|---|---|---|
-| Swim passed | 70 | 76 | +6 |
-| Swim got passed | 12 | 11 | -1 |
-| Bike passed | 140 | 137 | -3 |
-| Bike got passed | 65 | 66 | +1 |
-| Run passed | 19 | 19 | ✅ exact |
-| Run got passed | 196 | 184 | -12 |
+| Leg             | Reference | Algorithm | Delta    |
+| --------------- | --------- | --------- | -------- |
+| Swim passed     | 70        | 76        | +6       |
+| Swim got passed | 12        | 11        | -1       |
+| Bike passed     | 140       | 137       | -3       |
+| Bike got passed | 65        | 66        | +1       |
+| Run passed      | 19        | 19        | ✅ exact |
+| Run got passed  | 196       | 184       | -12      |
 
 Remaining delta explained by ~67 athletes present in one dataset but not the
 other (97% match rate).

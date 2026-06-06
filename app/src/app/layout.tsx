@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import pkg from "../../package.json";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const barlow = Barlow({
+  variable: "--font-barlow",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
 });
 
 const geistMono = Geist_Mono({
@@ -15,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RaceReplay",
-  description: "See who you passed — and who passed you.",
+  title: "Race Replay",
+  description: "See who you passed — and who passed you, leg by leg.",
 };
 
 export default function RootLayout({
@@ -25,26 +32,48 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} h-full antialiased`}
+    >
       <body className="bg-background text-foreground flex min-h-full flex-col">
-        <header className="bg-card sticky top-0 z-10 border-b shadow-sm">
-          <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4">
-            <span className="text-primary text-xl font-black tracking-tight">⬡</span>
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <header className="bg-card/80 sticky top-0 z-10 border-b backdrop-blur-sm">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-[clamp(1.5rem,5vw,5rem)]">
+            {/* Logo */}
             <Link
               href="/"
-              className="hover:text-primary text-lg font-bold tracking-tight transition-colors"
+              className="hover:text-primary flex items-center gap-1.5 transition-colors"
+              style={{ fontFamily: "var(--font-barlow-condensed), sans-serif" }}
             >
-              RaceReplay
+              <span className="text-primary text-2xl leading-none font-black">⬡</span>
+              <span className="text-lg font-black tracking-wide uppercase">Race Replay</span>
             </Link>
+
+            {/* Nav */}
+            <nav className="flex items-center gap-6">
+              <Link
+                href="/races"
+                className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+              >
+                Races
+              </Link>
+            </nav>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+        {/* ── Page content ────────────────────────────────────────────────── */}
+        <main className="mx-auto w-full max-w-6xl flex-1 px-[clamp(1.5rem,5vw,5rem)] py-10">
+          {children}
+        </main>
 
-        <footer className="bg-card mt-8 border-t">
-          <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4">
-            <p className="text-muted-foreground text-sm">RaceReplay</p>
-            <p className="text-muted-foreground text-xs">v{pkg.version}</p>
+        {/* ── Footer ──────────────────────────────────────────────────────── */}
+        <footer className="bg-card border-t">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-[clamp(1.5rem,5vw,5rem)]">
+            <p className="text-muted-foreground text-sm">
+              © {new Date().getFullYear()} Race Replay
+            </p>
+            <p className="text-muted-foreground font-mono text-xs">v{pkg.version}</p>
           </div>
         </footer>
       </body>

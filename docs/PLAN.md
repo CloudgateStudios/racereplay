@@ -1,4 +1,4 @@
-# RaceReplay — Build Plan
+# Race Replay — Build Plan
 
 A public website that ingests pre-computed race passing data and lets anyone
 browse athletes, sort/filter results, and see how many people each participant

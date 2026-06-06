@@ -33,7 +33,7 @@ const SORTABLE_COLUMNS: Record<string, object> = {
 export async function generateMetadata({ params }: Props) {
   const { slug, year } = await params;
   const race = await prisma.race.findUnique({ where: { slug } });
-  return { title: race ? `${race.name} ${year} — RaceReplay` : "Not Found" };
+  return { title: race ? `${race.name} ${year} — Race Replay` : "Not Found" };
 }
 
 export default async function EventPage({ params, searchParams }: Props) {
@@ -121,7 +121,7 @@ export default async function EventPage({ params, searchParams }: Props) {
       {/* Breadcrumb */}
       <div className="mb-1">
         <Link
-          href="/"
+          href="/races"
           className="text-muted-foreground hover:text-primary text-sm transition-colors"
         >
           All races
