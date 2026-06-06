@@ -1,6 +1,6 @@
-# RaceReplay
+# Race Replay
 
-RaceReplay calculates how many people each athlete physically passes (and gets passed by) in every leg of a race — swim, bike, run, or any custom timing segment — and publishes those results on a public website.
+Race Replay calculates how many people each athlete physically passes (and gets passed by) per timing gate and publishes those results on a public website.
 
 It supports any race with per-athlete timing data from RTRT.me, including triathlons, road races, and trail runs.
 
@@ -8,11 +8,12 @@ It supports any race with per-athlete timing data from RTRT.me, including triath
 
 ## How It Works
 
-Traditional race results only show finish position and chip time. RaceReplay answers a different question: **who did you actually race past on course?**
+Traditional race results only show finish position and chip time. Race Replay answers a different question: **who did you actually race past on course?**
 
-In a time-trial start race (athletes enter one at a time), raw chip times don't tell you who was physically ahead. RaceReplay uses per-athlete start epoch times from RTRT.me to compute each athlete's absolute position at every timing checkpoint, then compares athletes head-to-head to count physical passes.
+In a time-trial start race (athletes enter one at a time), raw chip times don't tell you who was physically ahead. Race Replay uses per-athlete start epoch times from RTRT.me to compute each athlete's absolute position at every timing checkpoint, then compares athletes head-to-head to count physical passes.
 
-For each leg and each athlete, RaceReplay reports:
+For each leg and each athlete, Race Replay reports:
+
 - How many athletes they **passed**
 - How many athletes **passed them**
 - Their **net** (passed minus got passed)
@@ -39,14 +40,14 @@ Data flows one way: run the pipeline scripts locally → ingest the CSV → the 
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router) |
-| Database | PostgreSQL via Neon (serverless) |
-| ORM | Prisma 7 with `@prisma/adapter-pg` |
-| UI | shadcn/ui + Tailwind CSS v4 |
-| Hosting | Vercel |
-| Local DB | Docker (PostgreSQL on port 5433) |
+| Layer     | Technology                         |
+| --------- | ---------------------------------- |
+| Framework | Next.js 16 (App Router)            |
+| Database  | PostgreSQL via Neon (serverless)   |
+| ORM       | Prisma 7 with `@prisma/adapter-pg` |
+| UI        | shadcn/ui + Tailwind CSS v4        |
+| Hosting   | Vercel                             |
+| Local DB  | Docker (PostgreSQL on port 5433)   |
 
 ---
 
@@ -175,13 +176,13 @@ DATABASE_URL="postgresql://..." npx tsx scripts/ingest.ts ...
 
 Run these from the `app/` directory.
 
-| Script | Command | Purpose |
-|---|---|---|
-| `npm run dev` | `next dev --turbopack` | Start local dev server |
-| `npm run build` | `next build` | Production build |
-| `npm run lint` | `eslint` | Lint all files |
-| `npm run format` | `prettier --write .` | Format all files |
-| `npm run format:check` | `prettier --check .` | Check formatting (used in CI) |
+| Script                 | Command                | Purpose                       |
+| ---------------------- | ---------------------- | ----------------------------- |
+| `npm run dev`          | `next dev --turbopack` | Start local dev server        |
+| `npm run build`        | `next build`           | Production build              |
+| `npm run lint`         | `eslint`               | Lint all files                |
+| `npm run format`       | `prettier --write .`   | Format all files              |
+| `npm run format:check` | `prettier --check .`   | Check formatting (used in CI) |
 
 ---
 
@@ -199,12 +200,12 @@ Manual deploy via **Actions → Deploy Prod → Run workflow**. Requires a semve
 
 ### Required GitHub Secrets
 
-| Secret | Description |
-|---|---|
-| `VERCEL_TOKEN` | Vercel API token |
-| `VERCEL_ORG_ID` | Vercel organization ID |
-| `VERCEL_PROJECT_ID` | Vercel project ID |
-| `DATABASE_URL_DEV` | Neon dev branch connection string (set on `dev` environment) |
+| Secret              | Description                                                    |
+| ------------------- | -------------------------------------------------------------- |
+| `VERCEL_TOKEN`      | Vercel API token                                               |
+| `VERCEL_ORG_ID`     | Vercel organization ID                                         |
+| `VERCEL_PROJECT_ID` | Vercel project ID                                              |
+| `DATABASE_URL_DEV`  | Neon dev branch connection string (set on `dev` environment)   |
 | `DATABASE_URL_PROD` | Neon prod branch connection string (set on `prod` environment) |
 
 ---
@@ -213,11 +214,11 @@ Manual deploy via **Actions → Deploy Prod → Run workflow**. Requires a semve
 
 Every pull request to `main` runs three checks:
 
-| Check | What it does |
-|---|---|
-| Validate PR Title | Enforces semantic commit format (`feat:`, `fix:`, `ci:`, etc.) |
-| Validate Spelling | cspell on all `.ts`, `.tsx`, `.css`, `.md`, `.yaml` files |
-| Validate Code | Prisma validate → tsc → ESLint → Prettier → depcheck → next build |
+| Check             | What it does                                                      |
+| ----------------- | ----------------------------------------------------------------- |
+| Validate PR Title | Enforces semantic commit format (`feat:`, `fix:`, `ci:`, etc.)    |
+| Validate Spelling | cspell on all `.ts`, `.tsx`, `.css`, `.md`, `.yaml` files         |
+| Validate Code     | Prisma validate → tsc → ESLint → Prettier → depcheck → next build |
 
 Dependabot runs weekly and groups dependency updates into bundled PRs.
 
