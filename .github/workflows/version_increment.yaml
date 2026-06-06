@@ -38,9 +38,23 @@ jobs:
       - name: Install standard-version
         run: npm i -g standard-version
 
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
       - name: Run standard-version
         working-directory: app
         run: standard-version --release-as ${{ github.event.inputs.release_type }} --tag-prefix ""
+
+      - name: Format CHANGELOG
+        working-directory: app
+        run: npx prettier --write CHANGELOG.md
+
+      - name: Stage formatted CHANGELOG
+        working-directory: app
+        run: |
+          git add CHANGELOG.md
+          git commit --amend --no-edit
 
       - name: Get tag
         run: |
