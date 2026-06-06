@@ -22,11 +22,16 @@ export default async function HomePage() {
   return (
     <div>
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="relative mb-20 pt-10 pb-16">
-        {/* Subtle background accent */}
+      {/*
+        Full-bleed section: negative horizontal margins cancel the parent
+        padding so the background reaches the viewport edges, while the
+        inner padding keeps the text aligned with the rest of the page.
+      */}
+      <section className="relative -mx-[clamp(1.5rem,5vw,5rem)] mb-20 px-[clamp(1.5rem,5vw,5rem)] pt-12 pb-16">
+        {/* Full-width gradient wash */}
         <div
           aria-hidden
-          className="from-primary/8 pointer-events-none absolute inset-x-0 -top-8 h-64 bg-gradient-to-b to-transparent"
+          className="from-primary/10 pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b to-transparent"
         />
 
         <div className="relative max-w-3xl">
@@ -36,9 +41,9 @@ export default async function HomePage() {
           </div>
 
           <h1 className="mb-5 text-6xl font-black tracking-tight uppercase sm:text-7xl lg:text-8xl">
-            See where you passed,
+            See every pass,
             <br />
-            <span className="text-primary">and when you got passed.</span>
+            <span className="text-primary">know your race.</span>
           </h1>
 
           <p className="text-muted-foreground mb-8 max-w-xl text-lg leading-relaxed">
@@ -53,6 +58,36 @@ export default async function HomePage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ── How it works ────────────────────────────────────────────────────── */}
+      <section className="mb-20">
+        <h2 className="mb-8 text-2xl font-bold tracking-tight">How it works</h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {[
+            {
+              step: "01",
+              title: "Per-athlete start times",
+              body: "For time-trial starts, every athlete has a different start time. Race Replay uses per-athlete epoch timestamps from live tracking data to reconstruct the real on-course order at every checkpoint.",
+            },
+            {
+              step: "02",
+              title: "Physical position at each split",
+              body: "By adding each athlete's chip split time to their personal start time, we get an absolute clock position at every timing mat — comparable across all athletes regardless of when they started.",
+            },
+            {
+              step: "03",
+              title: "Leg-by-leg passing counts",
+              body: "Comparing positions before and after each leg reveals exactly who passed whom. The algorithm verifies correctness: every pass gained by one athlete must be a pass lost by another.",
+            },
+          ].map(({ step, title, body }) => (
+            <div key={step} className="bg-card rounded-xl border p-6 shadow-sm">
+              <div className="text-primary mb-3 font-mono text-sm font-bold">{step}</div>
+              <h3 className="mb-2 font-semibold">{title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{body}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -109,36 +144,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* ── How it works ────────────────────────────────────────────────────── */}
-      <section className="mt-20 mb-4">
-        <h2 className="mb-8 text-2xl font-bold tracking-tight">How it works</h2>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {[
-            {
-              step: "01",
-              title: "Per-athlete start times",
-              body: "For time-trial starts, every athlete has a different start time. Race Replay uses per-athlete epoch timestamps from live tracking data to reconstruct the real on-course order at every checkpoint.",
-            },
-            {
-              step: "02",
-              title: "Physical position at each split",
-              body: "By adding each athlete's chip split time to their personal start time, we get an absolute clock position at every timing mat — comparable across all athletes regardless of when they started.",
-            },
-            {
-              step: "03",
-              title: "Leg-by-leg passing counts",
-              body: "Comparing positions before and after each leg reveals exactly who passed whom. The algorithm verifies correctness: every pass gained by one athlete must be a pass lost by another.",
-            },
-          ].map(({ step, title, body }) => (
-            <div key={step} className="bg-card rounded-xl border p-6 shadow-sm">
-              <div className="text-primary mb-3 font-mono text-sm font-bold">{step}</div>
-              <h3 className="mb-2 font-semibold">{title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
