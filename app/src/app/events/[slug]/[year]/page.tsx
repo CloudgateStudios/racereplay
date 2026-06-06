@@ -121,7 +121,7 @@ export default async function EventPage({ params, searchParams }: Props) {
       {/* Breadcrumb */}
       <div className="mb-1">
         <Link
-          href="/"
+          href="/races"
           className="text-muted-foreground hover:text-primary text-sm transition-colors"
         >
           All races

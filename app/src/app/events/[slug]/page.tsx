@@ -40,7 +40,7 @@ export default async function RacePage({ params }: Props) {
     <div>
       <div className="mb-8">
         <Link
-          href="/"
+          href="/races"
           className="text-muted-foreground hover:text-primary text-sm transition-colors"
         >
           ← All races
