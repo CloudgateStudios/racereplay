@@ -25,3 +25,47 @@ jobs:
             revert
           requireScope: false
 
+  validate_spelling:
+    name: Validate Spelling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+      - name: Check Spelling
+        uses: streetsidesoftware/cspell-action@v8
+        with:
+          files: "**/*.{md,ts,tsx,yaml,yml,css,mjs}"
+          config: .github/cspell.json
+
+  validate_code:
+    name: Validate Code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/racereplay
