@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const race = await prisma.race.findUnique({ where: { slug } });
-  return { title: race ? `${race.name} — RaceReplay` : "Not Found" };
+  return { title: race ? `${race.name} — Race Replay` : "Not Found" };
 }
 
 export default async function RacePage({ params }: Props) {
@@ -36,11 +36,16 @@ export default async function RacePage({ params }: Props) {
 
   if (!race) notFound();
 
+  // Skip the year-picker when there's only one year of data
+  if (race.events.length === 1) {
+    redirect(`/events/${slug}/${race.events[0].year}`);
+  }
+
   return (
     <div>
       <div className="mb-8">
         <Link
-          href="/"
+          href="/races"
           className="text-muted-foreground hover:text-primary text-sm transition-colors"
         >
           ← All races

@@ -71,8 +71,10 @@ function parseCSVRow(line) {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else inQuotes = !inQuotes;
     } else if (ch === "," && !inQuotes) {
       values.push(current.trim());
       current = "";
@@ -107,12 +109,12 @@ function detectLegs(sampleRow) {
     .map((k) => k.replace(/ \(Seconds\)$/, ""));
 }
 
-// ─── Data Normalisation ───────────────────────────────────────────────────────
+// ─── Data Normalization ───────────────────────────────────────────────────────
 
 /**
- * normaliseAthletes(rows, legNames, rtrtStarts?, externalWaveOffsets?)
+ * normalizeAthletes(rows, legNames, rtrtStarts?, externalWaveOffsets?)
  *
- * Parses every athlete row and produces a normalised athlete object with:
+ * Parses every athlete row and produces a normalized athlete object with:
  *   - legSecs: { [legName]: seconds }  — time for each individual leg
  *   - waveOffset: seconds after the first athlete started (from RTRT, wave file,
  *     or gun-time field in priority order)
@@ -130,7 +132,12 @@ function detectLegs(sampleRow) {
  * externalWaveOffsets: Map<division, offsetSeconds> — fallback for wave-start
  *   races without RTRT data. Loaded from --wave-offsets JSON.
  */
-function normaliseAthletes(rows, legNames, rtrtStarts = null, externalWaveOffsets = null) {
+function normalizeAthletes(
+  rows,
+  legNames,
+  rtrtStarts = null,
+  externalWaveOffsets = null
+) {
   // First pass: parse raw fields
   const athletes = rows.map((r) => {
     const secs = (col) => {
@@ -144,10 +151,10 @@ function normaliseAthletes(rows, legNames, rtrtStarts = null, externalWaveOffset
       legSecs[leg] = secs(`${leg} (Seconds)`);
     }
 
-    const finish    = secs("Finish (Seconds)");
+    const finish = secs("Finish (Seconds)");
     const gunFinish = secs("Finish Gun (Seconds)");
-    const bib       = r["Bib Number"] || "?";
-    const division  = r["Division"] || "";
+    const bib = r["Bib Number"] || "?";
+    const division = r["Division"] || "";
 
     // Per-athlete start epoch from RTRT (if available)
     const startEpoch = rtrtStarts?.get(String(bib)) ?? null;
@@ -169,16 +176,16 @@ function normaliseAthletes(rows, legNames, rtrtStarts = null, externalWaveOffset
 
     return {
       bib,
-      name:         r["Athlete Name"] || "Unknown",
+      name: r["Athlete Name"] || "Unknown",
       division,
-      gender:       r["Gender"] || "",
-      country:      r["Country"] || "",
-      status:       r["Status"] || "FIN",
-      overallRank:  parseInt(r["Overall Rank"], 10) || null,
-      genderRank:   parseInt(r["Gender Rank"], 10) || null,
+      gender: r["Gender"] || "",
+      country: r["Country"] || "",
+      status: r["Status"] || "FIN",
+      overallRank: parseInt(r["Overall Rank"], 10) || null,
+      genderRank: parseInt(r["Gender Rank"], 10) || null,
       divisionRank: parseInt(r["Division Rank"], 10) || null,
       legSecs,
-      finishSecs:   finish,
+      finishSecs: finish,
       startEpoch,
       waveOffset,
       cumPositions: {}, // filled in second/third pass
@@ -294,7 +301,12 @@ function buildRankMap(athletes, getTime) {
  *   0 = unlimited. For large races (10k+ athletes), cap at a reasonable number
  *   to keep memory and CSV size manageable.
  */
-function computePassingData(athletes, legNames, hasWaveData = false, maxBibs = 0) {
+function computePassingData(
+  athletes,
+  legNames,
+  hasWaveData = false,
+  maxBibs = 0
+) {
   // Build leg definitions dynamically
   const legs = legNames.map((name, i) => ({
     name,
@@ -302,14 +314,14 @@ function computePassingData(athletes, legNames, hasWaveData = false, maxBibs = 0
     getBefore:
       i === 0
         ? hasWaveData
-          ? (a) => a.waveOffset                          // first leg, physical mode
-          : null                                          // first leg, gun-start mode
-        : (a) => a.cumPositions[legNames[i - 1]],        // all other legs: end of prev leg
+          ? (a) => a.waveOffset // first leg, physical mode
+          : null // first leg, gun-start mode
+        : (a) => a.cumPositions[legNames[i - 1]], // all other legs: end of prev leg
     // "After" position = physical position at END of this leg
     getAfter: (a) => a.cumPositions[name],
   }));
 
-  // Initialise result map: bib → { [legName]: stats }
+  // Initialize result map: bib → { [legName]: stats }
   const results = new Map();
   for (const a of athletes) {
     const entry = {};
@@ -340,15 +352,15 @@ function computePassingData(athletes, legNames, hasWaveData = false, maxBibs = 0
     }
 
     for (const x of eligible) {
-      const xBefore  = beforeMap.get(x.bib);
-      const xAfter   = afterMap.get(x.bib);
-      const legData  = results.get(x.bib)[leg.name];
+      const xBefore = beforeMap.get(x.bib);
+      const xAfter = afterMap.get(x.bib);
+      const legData = results.get(x.bib)[leg.name];
 
       for (const y of eligible) {
         if (y.bib === x.bib) continue;
 
         const yBefore = beforeMap.get(y.bib);
-        const yAfter  = afterMap.get(y.bib);
+        const yAfter = afterMap.get(y.bib);
         if (yBefore == null || yAfter == null) continue;
 
         if (isGunStart) {
@@ -393,54 +405,68 @@ function fmtTime(secs) {
     : `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function pad(str, len)  { return String(str).padEnd(len, " ").slice(0, len); }
-function rpad(str, len) { return String(str).padStart(len, " ").slice(-len); }
+function pad(str, len) {
+  return String(str).padEnd(len, " ").slice(0, len);
+}
+function rpad(str, len) {
+  return String(str).padStart(len, " ").slice(-len);
+}
 
 // ─── Report ───────────────────────────────────────────────────────────────────
 
 function printReport(athletes, passingMap, legNames, hasWaveData, maxBibs) {
-  const finishers = athletes.filter((a) => a.status === "FIN" && a.finishSecs != null);
-  const dnfs      = athletes.filter((a) => a.status === "DNF");
+  const finishers = athletes.filter(
+    (a) => a.status === "FIN" && a.finishSecs != null
+  );
+  const dnfs = athletes.filter((a) => a.status === "DNF");
 
   console.log("\n" + "═".repeat(70));
-  console.log("  RACEREPLAY — Passing Analysis Proof of Concept");
+  console.log("  RACE REPLAY — Passing Analysis");
   console.log("═".repeat(70));
   console.log(`  Athletes:  ${athletes.length}`);
   console.log(`  Finishers: ${finishers.length}`);
   console.log(`  DNFs:      ${dnfs.length}`);
   console.log(`  Legs:      ${legNames.join(", ")}`);
   if (maxBibs > 0) {
-    console.log(`  Bib lists: capped at ${maxBibs} per athlete per leg (--max-bibs)`);
+    console.log(
+      `  Bib lists: capped at ${maxBibs} per athlete per leg (--max-bibs)`
+    );
   }
 
   const rtrtCount = athletes.filter((a) => a.startEpoch != null).length;
-  const modeLabel = rtrtCount > 0
-    ? `✅ Physical passing — RTRT start times (${rtrtCount} athletes matched)`
-    : hasWaveData
-    ? "✅ Physical passing — wave offsets applied"
-    : "⚠️  Chip time only — no start time data\n" +
-      "     For physical passing, use --rtrt-starts with a _starts.csv";
+  const modeLabel =
+    rtrtCount > 0
+      ? `✅ Physical passing — RTRT start times (${rtrtCount} athletes matched)`
+      : hasWaveData
+      ? "✅ Physical passing — wave offsets applied"
+      : "⚠️  Chip time only — no start time data\n" +
+        "     For physical passing, use --rtrt-starts with a _starts.csv";
   console.log(`  Mode:      ${modeLabel}`);
   console.log("═".repeat(70));
 
   // ── Invariant check ─────────────────────────────────────────────────────────
   let invariantOk = true;
 
-  console.log("\n📐 INVARIANT CHECK  (sum of gained must equal sum of lost per leg)");
+  console.log(
+    "\n📐 INVARIANT CHECK  (sum of gained must equal sum of lost per leg)"
+  );
   console.log("─".repeat(50));
 
   for (const leg of legNames) {
     let totalGained = 0;
-    let totalLost   = 0;
+    let totalLost = 0;
     for (const data of passingMap.values()) {
       totalGained += data[leg].gained;
-      totalLost   += data[leg].lost;
+      totalLost += data[leg].lost;
     }
     const ok = totalGained === totalLost;
     if (!ok) invariantOk = false;
     const icon = ok ? "✅" : "❌";
     console.log(
-      `  ${icon}  ${pad(leg.toUpperCase(), 8)}  gained=${rpad(totalGained, 7)}  lost=${rpad(totalLost, 7)}  ${ok ? "MATCH" : "MISMATCH ← BUG"}`
+      `  ${icon}  ${pad(leg.toUpperCase(), 8)}  gained=${rpad(
+        totalGained,
+        7
+      )}  lost=${rpad(totalLost, 7)}  ${ok ? "MATCH" : "MISMATCH ← BUG"}`
     );
   }
 
@@ -454,7 +480,9 @@ function printReport(athletes, passingMap, legNames, hasWaveData, maxBibs) {
   console.log("\n\n🏆 TOP 5 FINISHERS — Leg-by-leg passing breakdown");
   console.log("─".repeat(70));
   console.log(
-    `  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(8)} ${"Finish".padEnd(9)} Net`
+    `  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(
+      8
+    )} ${"Finish".padEnd(9)} Net`
   );
   console.log("─".repeat(70));
 
@@ -463,18 +491,26 @@ function printReport(athletes, passingMap, legNames, hasWaveData, maxBibs) {
     if (!d) continue;
     const net = legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0);
     console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(a.division, 8)} ${fmtTime(a.finishSecs).padEnd(9)} ${net >= 0 ? "+" : ""}${net}`
+      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
+        a.division,
+        8
+      )} ${fmtTime(a.finishSecs).padEnd(9)} ${net >= 0 ? "+" : ""}${net}`
     );
     for (const leg of legNames) {
       const { gained, lost, passedBibs } = d[leg];
       const legNet = gained - lost;
       console.log(
-        `         ${pad(leg, 8)}  +${rpad(gained, 3)} / -${rpad(lost, 3)}  net ${legNet >= 0 ? "+" : ""}${legNet}` +
-        (passedBibs.length > 0 && passedBibs.length <= 5
-          ? `  passed: ${passedBibs.slice(0, 5).join(", ")}`
-          : passedBibs.length > 5
-          ? `  passed ${gained} athletes${maxBibs > 0 ? ` (showing ${passedBibs.length})` : ""}`
-          : "")
+        `         ${pad(leg, 8)}  +${rpad(gained, 3)} / -${rpad(
+          lost,
+          3
+        )}  net ${legNet >= 0 ? "+" : ""}${legNet}` +
+          (passedBibs.length > 0 && passedBibs.length <= 5
+            ? `  passed: ${passedBibs.slice(0, 5).join(", ")}`
+            : passedBibs.length > 5
+            ? `  passed ${gained} athletes${
+                maxBibs > 0 ? ` (showing ${passedBibs.length})` : ""
+              }`
+            : "")
       );
     }
     console.log();
@@ -494,16 +530,26 @@ function printReport(athletes, passingMap, legNames, hasWaveData, maxBibs) {
   console.log("\n🚀 BIGGEST CLIMBERS (most net positions gained)");
   console.log("─".repeat(70));
   console.log(
-    `  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(8)} ${"Finish".padEnd(9)} Net`
+    `  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(
+      8
+    )} ${"Finish".padEnd(9)} Net`
   );
   console.log("─".repeat(70));
   for (const a of withNet.slice(0, 10)) {
     const d = passingMap.get(a.bib);
     const perLeg = legNames
-      .map((l) => `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${d[l].gained - d[l].lost}`)
+      .map(
+        (l) =>
+          `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${
+            d[l].gained - d[l].lost
+          }`
+      )
       .join("  ");
     console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(a.division, 8)} ${fmtTime(a.finishSecs).padEnd(9)} +${a.net}`
+      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
+        a.division,
+        8
+      )} ${fmtTime(a.finishSecs).padEnd(9)} +${a.net}`
     );
     console.log(`         ${perLeg}`);
   }
@@ -514,10 +560,18 @@ function printReport(athletes, passingMap, legNames, hasWaveData, maxBibs) {
   for (const a of withNet.slice(-10).reverse()) {
     const d = passingMap.get(a.bib);
     const perLeg = legNames
-      .map((l) => `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${d[l].gained - d[l].lost}`)
+      .map(
+        (l) =>
+          `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${
+            d[l].gained - d[l].lost
+          }`
+      )
       .join("  ");
     console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(a.division, 8)} ${fmtTime(a.finishSecs).padEnd(9)} ${a.net}`
+      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
+        a.division,
+        8
+      )} ${fmtTime(a.finishSecs).padEnd(9)} ${a.net}`
     );
     console.log(`         ${perLeg}`);
   }
@@ -532,8 +586,15 @@ function buildOutputCSV(athletes, passingMap, legNames, maxBibs) {
 
   // Build headers dynamically from leg names
   const headers = [
-    "Bib", "Name", "Gender", "Country", "Division", "Status",
-    "Overall Rank", "Gender Rank", "Division Rank",
+    "Bib",
+    "Name",
+    "Gender",
+    "Country",
+    "Division",
+    "Status",
+    "Overall Rank",
+    "Gender Rank",
+    "Division Rank",
     "Finish Time",
     ...legNames.map((l) => `${l} Time`),
     "Wave Offset (Seconds)",
@@ -549,8 +610,15 @@ function buildOutputCSV(athletes, passingMap, legNames, maxBibs) {
       : 0;
 
     const row = [
-      a.bib, a.name, a.gender, a.country, a.division, a.status,
-      a.overallRank ?? "", a.genderRank ?? "", a.divisionRank ?? "",
+      a.bib,
+      a.name,
+      a.gender,
+      a.country,
+      a.division,
+      a.status,
+      a.overallRank ?? "",
+      a.genderRank ?? "",
+      a.divisionRank ?? "",
       fmtTime(a.finishSecs),
       ...legNames.map((l) => fmtTime(a.legSecs[l])),
       a.waveOffset ?? 0,
@@ -568,7 +636,8 @@ function buildOutputCSV(athletes, passingMap, legNames, maxBibs) {
       }
     } else {
       // No passing data (shouldn't happen)
-      for (let i = 0; i < legNames.length * 3 + 1 + legNames.length * 2; i++) row.push("");
+      for (let i = 0; i < legNames.length * 3 + 1 + legNames.length * 2; i++)
+        row.push("");
     }
 
     return row.map(esc).join(",");
@@ -580,13 +649,13 @@ function buildOutputCSV(athletes, passingMap, legNames, maxBibs) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
-const csvFile        = args.find((a) => !a.startsWith("--"));
+const csvFile = args.find((a) => !a.startsWith("--"));
 const waveOffsetsIdx = args.indexOf("--wave-offsets");
 const waveOffsetsFile = waveOffsetsIdx !== -1 ? args[waveOffsetsIdx + 1] : null;
-const rtrtStartsIdx  = args.indexOf("--rtrt-starts");
-const rtrtStartsFile = rtrtStartsIdx  !== -1 ? args[rtrtStartsIdx  + 1] : null;
-const maxBibsIdx     = args.indexOf("--max-bibs");
-const maxBibs        = maxBibsIdx !== -1 ? parseInt(args[maxBibsIdx + 1], 10) : 0;
+const rtrtStartsIdx = args.indexOf("--rtrt-starts");
+const rtrtStartsFile = rtrtStartsIdx !== -1 ? args[rtrtStartsIdx + 1] : null;
+const maxBibsIdx = args.indexOf("--max-bibs");
+const maxBibs = maxBibsIdx !== -1 ? parseInt(args[maxBibsIdx + 1], 10) : 0;
 
 if (!csvFile) {
   console.error(`
@@ -637,12 +706,14 @@ Examples:
       console.log(`\n🌊 Loading wave offsets from ${waveOffsetsFile}...`);
       const raw = await fs.readFile(waveOffsetsFile, "utf-8");
       const obj = JSON.parse(raw);
-      externalWaveOffsets = new Map(Object.entries(obj).map(([k, v]) => [k, Number(v)]));
+      externalWaveOffsets = new Map(
+        Object.entries(obj).map(([k, v]) => [k, Number(v)])
+      );
       console.log(`   ${externalWaveOffsets.size} division(s) loaded`);
     }
 
     console.log(`\n📂 Reading ${csvFile}...`);
-    const raw  = await fs.readFile(csvFile, "utf-8");
+    const raw = await fs.readFile(csvFile, "utf-8");
     const rows = parseCSV(raw);
     console.log(`   ${rows.length} rows parsed`);
 
@@ -650,10 +721,18 @@ Examples:
 
     // Auto-detect leg names from CSV headers
     const legNames = detectLegs(rows[0]);
-    if (!legNames.length) throw new Error("No leg columns found in CSV (expected columns like 'Swim (Seconds)')");
+    if (!legNames.length)
+      throw new Error(
+        "No leg columns found in CSV (expected columns like 'Swim (Seconds)')"
+      );
     console.log(`   Legs detected: ${legNames.join(", ")}`);
 
-    const { athletes, hasWaveData } = normaliseAthletes(rows, legNames, rtrtStarts, externalWaveOffsets);
+    const { athletes, hasWaveData } = normalizeAthletes(
+      rows,
+      legNames,
+      rtrtStarts,
+      externalWaveOffsets
+    );
 
     let modeMsg;
     if (rtrtStarts) {
@@ -671,13 +750,18 @@ Examples:
     }
 
     console.log(`   Running passing algorithm...`);
-    const passingMap = computePassingData(athletes, legNames, hasWaveData, maxBibs);
+    const passingMap = computePassingData(
+      athletes,
+      legNames,
+      hasWaveData,
+      maxBibs
+    );
     console.log(`   Done. Computing report...`);
 
     printReport(athletes, passingMap, legNames, hasWaveData, maxBibs);
 
     const outputFile = csvFile.replace(/\.csv$/i, "_passing.csv");
-    const outputCSV  = buildOutputCSV(athletes, passingMap, legNames, maxBibs);
+    const outputCSV = buildOutputCSV(athletes, passingMap, legNames, maxBibs);
     await fs.writeFile(outputFile, outputCSV);
     console.log(`📄 Passing data written to: ${outputFile}\n`);
   } catch (err) {
