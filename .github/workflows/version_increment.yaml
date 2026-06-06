@@ -12,11 +12,6 @@ on:
           - minor
           - major
         default: patch
-      first_release:
-        description: "First release (no previous tag exists)"
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   version_increment:
@@ -38,19 +33,14 @@ jobs:
       - name: Setup git
         run: |
           git config --global user.name 'Build Bot'
-          git config --global user.email bot@tomarra.com
+          git config --global user.email bot@cloudgatestudios.com
 
       - name: Install standard-version
         run: npm i -g standard-version
 
       - name: Run standard-version
         working-directory: app
-        run: |
-          if [ "${{ github.event.inputs.first_release }}" = "true" ]; then
-            standard-version --first-release
-          else
-            standard-version --release-as ${{ github.event.inputs.release_type }}
-          fi
+        run: standard-version --release-as ${{ github.event.inputs.release_type }} --tag-prefix ""
 
       - name: Get tag
         run: |
