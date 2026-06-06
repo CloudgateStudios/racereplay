@@ -10,9 +10,6 @@ jobs:
     name: Deploy to Dev
     runs-on: ubuntu-latest
     environment: dev
-    defaults:
-      run:
-        working-directory: app
 
     steps:
       - uses: actions/checkout@v4
@@ -24,14 +21,17 @@ jobs:
           cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
+        working-directory: app
         run: npm ci
 
       - name: Generate Prisma client
+        working-directory: app
         run: npx prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
 
       - name: Run database migrations
+        working-directory: app
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
