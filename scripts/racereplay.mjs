@@ -38,11 +38,11 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const IRONMAN_APPID = "5824c5c948fd08c23a8b4567";
-const API         = "https://api.rtrt.me";
-const UA          = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
-const PAGE        = 20;
-const DELAY       = 300;  // ms between pages within a point
-const POINT_DELAY = 5000; // ms between fetching different timing points
+const API = "https://api.rtrt.me";
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
+const PAGE = 20;
+const DELAY = 100; // ms between pages within a point
+const POINT_DELAY = 1000; // ms between fetching different timing points
 
 // ─── Fetch Helpers ────────────────────────────────────────────────────────────
 
@@ -54,7 +54,8 @@ async function rtrtFetch(p) {
 
 async function register(appid) {
   const data = await rtrtFetch(`/register?appid=${appid}`);
-  if (!data.token) throw new Error(`Registration failed: ${JSON.stringify(data)}`);
+  if (!data.token)
+    throw new Error(`Registration failed: ${JSON.stringify(data)}`);
   return data.token;
 }
 
@@ -86,10 +87,7 @@ function fmtTime(secs) {
  * "FINISH" / "START" → "" (caller provides a positional fallback)
  */
 function cleanLabel(label) {
-  const clean = (label || "")
-    .split("/")[0]
-    .split("|")[0]
-    .trim();
+  const clean = (label || "").split("/")[0].split("|")[0].trim();
   if (/^(finish|start)$/i.test(clean)) return "";
   return clean;
 }
@@ -100,7 +98,9 @@ async function fetchAllPoints(eventId, appid, token) {
   let start = 1;
 
   while (true) {
-    const data = await rtrtFetch(`/events/${eventId}/points?${qs}&start=${start}`);
+    const data = await rtrtFetch(
+      `/events/${eventId}/points?${qs}&start=${start}`
+    );
     if (data.error || !data.list?.length) break;
     allPoints.push(...data.list);
     if (data.list.length < PAGE) break;
@@ -108,13 +108,24 @@ async function fetchAllPoints(eventId, appid, token) {
     await new Promise((r) => setTimeout(r, 100));
   }
 
-  return allPoints.sort((a, b) => parseFloat(a.km || 0) - parseFloat(b.km || 0));
+  return allPoints.sort(
+    (a, b) => parseFloat(a.km || 0) - parseFloat(b.km || 0)
+  );
 }
 
-async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef) {
+async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTotal = 0) {
   const map = new Map();
   let start = 1;
   let retries = 0;
+  const estPages = hintTotal > 0 ? Math.ceil(hintTotal / PAGE) : 0;
+  const pointStart = Date.now();
+
+  // Overwrite the current progress line
+  const progress = (page, records) => {
+    const elapsed = ((Date.now() - pointStart) / 1000).toFixed(0);
+    const pageStr = estPages > 0 ? `page ${page}/${estPages}` : `page ${page}`;
+    process.stdout.write(`\r   ⏳ ${pageStr}  •  ${records} records  •  ${elapsed}s elapsed    `);
+  };
 
   while (true) {
     const qs = `appid=${appid}&token=${tokenRef.value}`;
@@ -127,7 +138,9 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef) {
       if (retries < 3) {
         retries++;
         const wait = retries * 5000;
-        process.stdout.write(` [network retry ${retries} in ${wait / 1000}s: ${networkErr.message}]`);
+        process.stdout.write(
+          `\n   [network retry ${retries} in ${wait / 1000}s: ${networkErr.message}]`
+        );
         await new Promise((r) => setTimeout(r, wait));
         tokenRef.value = await register(appid);
         continue;
@@ -137,14 +150,18 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef) {
 
     if (data.error) {
       const type = data.error.type ?? "";
-      const msg  = data.error.msg ?? "";
-      if (type === "no_results" || type === "access_denied" || msg.toLowerCase().includes("not found")) {
+      const msg = data.error.msg ?? "";
+      if (
+        type === "no_results" ||
+        type === "access_denied" ||
+        msg.toLowerCase().includes("not found")
+      ) {
         return map;
       }
       if (retries < 3) {
         retries++;
         const wait = retries * 5000;
-        process.stdout.write(` [retry ${retries} in ${wait / 1000}s]`);
+        process.stdout.write(`\n   [retry ${retries} in ${wait / 1000}s]`);
         await new Promise((r) => setTimeout(r, wait));
         tokenRef.value = await register(appid);
         continue;
@@ -157,6 +174,8 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef) {
     for (const s of data.list) {
       if (!map.has(String(s.bib))) map.set(String(s.bib), s);
     }
+    const page = Math.ceil(start / PAGE);
+    progress(page, map.size);
     if (data.list.length < PAGE) break;
     start = parseInt(data.info?.last ?? start) + 1;
     await new Promise((r) => setTimeout(r, DELAY));
@@ -268,13 +287,13 @@ function computePassingData(athletes, legNames, hasWaveData = false) {
 
     for (const x of eligible) {
       const xBefore = beforeMap.get(x.bib);
-      const xAfter  = afterMap.get(x.bib);
+      const xAfter = afterMap.get(x.bib);
       const legData = results.get(x.bib)[leg.name];
 
       for (const y of eligible) {
         if (y.bib === x.bib) continue;
         const yBefore = beforeMap.get(y.bib);
-        const yAfter  = afterMap.get(y.bib);
+        const yAfter = afterMap.get(y.bib);
         if (yBefore == null || yAfter == null) continue;
 
         if (isGunStart) {
@@ -293,8 +312,12 @@ function computePassingData(athletes, legNames, hasWaveData = false) {
 
 // ─── Report & Output ──────────────────────────────────────────────────────────
 
-function pad(str, len)  { return String(str).padEnd(len, " ").slice(0, len); }
-function rpad(str, len) { return String(str).padStart(len, " ").slice(-len); }
+function pad(str, len) {
+  return String(str).padEnd(len, " ").slice(0, len);
+}
+function rpad(str, len) {
+  return String(str).padStart(len, " ").slice(-len);
+}
 
 function fmtTimeLong(secs) {
   if (secs == null) return "--:--:--";
@@ -307,8 +330,10 @@ function fmtTimeLong(secs) {
 }
 
 function printReport(athletes, passingMap, legNames, hasWaveData) {
-  const finishers = athletes.filter((a) => a.status === "FIN" && a.finishSecs != null);
-  const dnfs      = athletes.filter((a) => a.status === "DNF");
+  const finishers = athletes.filter(
+    (a) => a.status === "FIN" && a.finishSecs != null
+  );
+  const dnfs = athletes.filter((a) => a.status === "DNF");
 
   console.log("\n" + "═".repeat(70));
   console.log("  RACEREPLAY — Passing Analysis");
@@ -323,27 +348,32 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
     rtrtCount > 0
       ? `✅ Physical passing — RTRT start times (${rtrtCount} athletes matched)`
       : hasWaveData
-        ? "✅ Physical passing — wave offsets applied"
-        : "⚠️  Chip time only — no start time data";
+      ? "✅ Physical passing — wave offsets applied"
+      : "⚠️  Chip time only — no start time data";
   console.log(`  Mode:      ${modeLabel}`);
   console.log("═".repeat(70));
 
-  console.log("\n📐 INVARIANT CHECK  (sum of gained must equal sum of lost per leg)");
+  console.log(
+    "\n📐 INVARIANT CHECK  (sum of gained must equal sum of lost per leg)"
+  );
   console.log("─".repeat(50));
 
   let invariantOk = true;
   for (const leg of legNames) {
     let totalGained = 0;
-    let totalLost   = 0;
+    let totalLost = 0;
     for (const data of passingMap.values()) {
       totalGained += data[leg].gained;
-      totalLost   += data[leg].lost;
+      totalLost += data[leg].lost;
     }
     const ok = totalGained === totalLost;
     if (!ok) invariantOk = false;
     const icon = ok ? "✅" : "❌";
     console.log(
-      `  ${icon}  ${pad(leg.toUpperCase(), 8)}  gained=${rpad(totalGained, 7)}  lost=${rpad(totalLost, 7)}  ${ok ? "MATCH" : "MISMATCH ← BUG"}`
+      `  ${icon}  ${pad(leg.toUpperCase(), 8)}  gained=${rpad(
+        totalGained,
+        7
+      )}  lost=${rpad(totalLost, 7)}  ${ok ? "MATCH" : "MISMATCH ← BUG"}`
     );
   }
   console.log(`\n  Overall invariant: ${invariantOk ? "✅ PASS" : "❌ FAIL"}`);
@@ -354,20 +384,32 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
 
   console.log("\n\n🏆 TOP 5 FINISHERS — Leg-by-leg passing breakdown");
   console.log("─".repeat(70));
-  console.log(`  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(8)} ${"Finish".padEnd(9)} Net`);
+  console.log(
+    `  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(
+      8
+    )} ${"Finish".padEnd(9)} Net`
+  );
   console.log("─".repeat(70));
 
   for (const a of sorted.slice(0, 5)) {
-    const d   = passingMap.get(a.bib);
+    const d = passingMap.get(a.bib);
     if (!d) continue;
     const net = legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0);
     console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(a.division, 8)} ${fmtTimeLong(a.finishSecs).padEnd(9)} ${net >= 0 ? "+" : ""}${net}`
+      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
+        a.division,
+        8
+      )} ${fmtTimeLong(a.finishSecs).padEnd(9)} ${net >= 0 ? "+" : ""}${net}`
     );
     for (const leg of legNames) {
       const { gained, lost } = d[leg];
       const legNet = gained - lost;
-      console.log(`         ${pad(leg, 8)}  +${rpad(gained, 3)} / -${rpad(lost, 3)}  net ${legNet >= 0 ? "+" : ""}${legNet}`);
+      console.log(
+        `         ${pad(leg, 8)}  +${rpad(gained, 3)} / -${rpad(
+          lost,
+          3
+        )}  net ${legNet >= 0 ? "+" : ""}${legNet}`
+      );
     }
     console.log();
   }
@@ -385,10 +427,20 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
   console.log("\n🚀 BIGGEST CLIMBERS (most net positions gained)");
   console.log("─".repeat(70));
   for (const a of withNet.slice(0, 10)) {
-    const d      = passingMap.get(a.bib);
-    const perLeg = legNames.map((l) => `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${d[l].gained - d[l].lost}`).join("  ");
+    const d = passingMap.get(a.bib);
+    const perLeg = legNames
+      .map(
+        (l) =>
+          `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${
+            d[l].gained - d[l].lost
+          }`
+      )
+      .join("  ");
     console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(a.division, 8)} ${fmtTimeLong(a.finishSecs).padEnd(9)} +${a.net}`
+      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
+        a.division,
+        8
+      )} ${fmtTimeLong(a.finishSecs).padEnd(9)} +${a.net}`
     );
     console.log(`         ${perLeg}`);
   }
@@ -396,10 +448,20 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
   console.log("\n📉 BIGGEST FALLERS (most net positions lost)");
   console.log("─".repeat(70));
   for (const a of withNet.slice(-10).reverse()) {
-    const d      = passingMap.get(a.bib);
-    const perLeg = legNames.map((l) => `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${d[l].gained - d[l].lost}`).join("  ");
+    const d = passingMap.get(a.bib);
+    const perLeg = legNames
+      .map(
+        (l) =>
+          `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${
+            d[l].gained - d[l].lost
+          }`
+      )
+      .join("  ");
     console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(a.division, 8)} ${fmtTimeLong(a.finishSecs).padEnd(9)} ${a.net}`
+      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
+        a.division,
+        8
+      )} ${fmtTimeLong(a.finishSecs).padEnd(9)} ${a.net}`
     );
     console.log(`         ${perLeg}`);
   }
@@ -411,8 +473,15 @@ function buildOutputCSV(athletes, passingMap, legNames) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
   const headers = [
-    "Bib", "Name", "Gender", "Country", "Division", "Status",
-    "Overall Rank", "Gender Rank", "Division Rank",
+    "Bib",
+    "Name",
+    "Gender",
+    "Country",
+    "Division",
+    "Status",
+    "Overall Rank",
+    "Gender Rank",
+    "Division Rank",
     "Finish Time",
     ...legNames.map((l) => `${l} Time`),
     "Wave Offset (Seconds)",
@@ -421,12 +490,21 @@ function buildOutputCSV(athletes, passingMap, legNames) {
   ];
 
   const rows = athletes.map((a) => {
-    const d          = passingMap.get(a.bib);
-    const overallNet = d ? legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0) : 0;
+    const d = passingMap.get(a.bib);
+    const overallNet = d
+      ? legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0)
+      : 0;
 
     const row = [
-      a.bib, a.name, a.gender, a.country, a.division, a.status,
-      a.overallRank ?? "", a.genderRank ?? "", a.divisionRank ?? "",
+      a.bib,
+      a.name,
+      a.gender,
+      a.country,
+      a.division,
+      a.status,
+      a.overallRank ?? "",
+      a.genderRank ?? "",
+      a.divisionRank ?? "",
       fmtTimeLong(a.finishSecs),
       ...legNames.map((l) => fmtTimeLong(a.legSecs[l])),
       a.waveOffset ?? 0,
@@ -450,14 +528,18 @@ function buildOutputCSV(athletes, passingMap, legNames) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-const args         = process.argv.slice(2);
-const eventId      = args.find((a) => !a.startsWith("--"));
-const appidIdx     = args.indexOf("--appid");
-const appid        = appidIdx !== -1 ? args[appidIdx + 1] : IRONMAN_APPID;
-const outdirIdx    = args.indexOf("--output-dir");
-const outputDir    = outdirIdx !== -1 ? args[outdirIdx + 1] : path.join(__dirname, "data");
-const pointsIdx    = args.indexOf("--points");
-const forcedPoints = pointsIdx !== -1 ? args[pointsIdx + 1]?.split(",").map((p) => p.trim()) : null;
+const args = process.argv.slice(2);
+const eventId = args.find((a) => !a.startsWith("--"));
+const appidIdx = args.indexOf("--appid");
+const appid = appidIdx !== -1 ? args[appidIdx + 1] : IRONMAN_APPID;
+const outdirIdx = args.indexOf("--output-dir");
+const outputDir =
+  outdirIdx !== -1 ? args[outdirIdx + 1] : path.join(__dirname, "data");
+const pointsIdx = args.indexOf("--points");
+const forcedPoints =
+  pointsIdx !== -1
+    ? args[pointsIdx + 1]?.split(",").map((p) => p.trim())
+    : null;
 
 if (!eventId) {
   console.error(`
@@ -492,7 +574,9 @@ Examples:
     console.log("🔑 Registering with RTRT.me...");
     const tokenRef = { value: await register(appid) };
 
-    const event = await rtrtFetch(`/events/${eventId}?appid=${appid}&token=${tokenRef.value}`);
+    const event = await rtrtFetch(
+      `/events/${eventId}?appid=${appid}&token=${tokenRef.value}`
+    );
     if (event.error) throw new Error(`Event not found: ${event.error.msg}`);
     console.log(`\n📍 Event: ${event.desc} (${event.date})`);
     console.log(`   Location: ${event.loc?.desc ?? "unknown"}`);
@@ -504,9 +588,9 @@ Examples:
     if (forcedPoints) {
       pointsToFetch = forcedPoints.map((name, i) => ({
         name,
-        label:    name,
-        legName:  name,
-        isStart:  i === 0,
+        label: name,
+        legName: name,
+        isStart: i === 0,
         isFinish: i === forcedPoints.length - 1,
       }));
       console.log(`\n📋 Using specified points: ${forcedPoints.join(", ")}`);
@@ -515,73 +599,155 @@ Examples:
       const allPoints = await fetchAllPoints(eventId, appid, tokenRef.value);
       console.log(`   Found ${allPoints.length} total timing points`);
 
-      const startPoint  = allPoints.find((p) => p.isStart  === "1");
+      const startPoint = allPoints.find((p) => p.isStart === "1");
       const finishPoint = allPoints.find((p) => p.isFinish === "1");
 
-      if (!startPoint)  throw new Error("No START point found for this event");
+      if (!startPoint) throw new Error("No START point found for this event");
       if (!finishPoint) throw new Error("No FINISH point found for this event");
 
-      const isTransition = (p) => /^T\d+$/i.test(p.name) || /^T\d+$/i.test(p.label);
+      const isTransition = (p) =>
+        /^T\d+$/i.test(p.name) || /^T\d+$/i.test(p.label);
       const intermediate = allPoints.filter(
         (p) =>
           p.publish === "1" &&
           (p.hide_in_badges !== "1" || isTransition(p)) &&
-          p.isStart  !== "1" &&
+          p.isStart !== "1" &&
           p.isFinish !== "1"
       );
 
-      console.log(`   START: ${startPoint.name} (${startPoint.label || startPoint.name})`);
+      console.log(
+        `   START: ${startPoint.name} (${startPoint.label || startPoint.name})`
+      );
       console.log(`   Intermediate: ${intermediate.length} points`);
       for (const p of intermediate) {
         console.log(`     • ${p.name} — "${p.label}" @ ${p.km} km`);
       }
-      console.log(`   FINISH: ${finishPoint.name} (${finishPoint.label || finishPoint.name})`);
+      console.log(
+        `   FINISH: ${finishPoint.name} (${
+          finishPoint.label || finishPoint.name
+        })`
+      );
 
       const legPoints = [...intermediate, finishPoint];
       pointsToFetch = [
-        { name: startPoint.name, label: startPoint.label, legName: null, isStart: true, isFinish: false },
+        {
+          name: startPoint.name,
+          label: startPoint.label,
+          legName: null,
+          isStart: true,
+          isFinish: false,
+        },
         ...legPoints.map((p, i) => ({
-          name:     p.name,
-          label:    p.label,
-          legName:  cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
-          isStart:  false,
+          name: p.name,
+          label: p.label,
+          legName: cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
+          isStart: false,
           isFinish: p.isFinish === "1",
         })),
       ];
     }
 
     const startPointName = pointsToFetch.find((p) => p.isStart)?.name;
-    const legPointDefs   = pointsToFetch.filter((p) => !p.isStart);
-    const legNames       = legPointDefs.map((p) => p.legName);
+    const legPointDefs = pointsToFetch.filter((p) => !p.isStart);
+    const legNames = legPointDefs.map((p) => p.legName);
 
     console.log(`\n   Legs to compute: ${legNames.join(" → ")}`);
 
-    // ── Fetch splits ──────────────────────────────────────────────────────────
-    const splits = {};
+    // ── Helpers: persist and load per-point split files ───────────────────────
+    const splitFile = (ptName) =>
+      path.join(outputDir, `${eventId}_splits_${ptName}.json`);
+
+    async function saveSplits(ptName, map) {
+      const arr = [...map.entries()].map(([bib, rec]) => ({ bib, ...rec }));
+      await fs.writeFile(splitFile(ptName), JSON.stringify(arr));
+    }
+
+    async function loadSplits(ptName) {
+      const raw = await fs.readFile(splitFile(ptName), "utf8");
+      const arr = JSON.parse(raw);
+      const map = new Map();
+      for (const rec of arr) {
+        const { bib, ...rest } = rec;
+        map.set(String(bib), rest);
+      }
+      return map;
+    }
+
+    async function splitFileExists(ptName) {
+      try { await fs.access(splitFile(ptName)); return true; } catch { return false; }
+    }
+
+    // ── Fetch splits (skip points whose cache file already exists) ────────────
+    const hintTotal = event.finishers ? parseInt(event.finishers, 10) : 0;
+    const fetchStart = Date.now();
+    let fetchedCount = 0;
 
     for (let i = 0; i < pointsToFetch.length; i++) {
       const pt = pointsToFetch[i];
-      if (i > 0) await new Promise((r) => setTimeout(r, POINT_DELAY));
-      process.stdout.write(`\n   Fetching ${pt.name} (${pt.label || pt.name}) splits...`);
-      splits[pt.name] = await fetchAllSplitsAtPoint(eventId, pt.name, appid, tokenRef);
-      console.log(` ${splits[pt.name].size} records`);
+
+      if (await splitFileExists(pt.name)) {
+        console.log(`\n   [${i + 1}/${pointsToFetch.length}] ${pt.name} — using cached splits (${splitFile(pt.name)})`);
+        continue;
+      }
+
+      if (fetchedCount > 0) await new Promise((r) => setTimeout(r, POINT_DELAY));
+      fetchedCount++;
+
+      const pointLabel = `[${i + 1}/${pointsToFetch.length}] ${pt.name} (${pt.label || pt.name})`;
+      console.log(`\n   Fetching ${pointLabel}`);
+
+      const ptStart = Date.now();
+      const map = await fetchAllSplitsAtPoint(
+        eventId,
+        pt.name,
+        appid,
+        tokenRef,
+        hintTotal
+      );
+
+      await saveSplits(pt.name, map);
+
+      const ptSecs = ((Date.now() - ptStart) / 1000).toFixed(1);
+      const totalElapsed = ((Date.now() - fetchStart) / 1000).toFixed(0);
+      const ptsLeft = pointsToFetch.length - i - 1;
+      const avgSecs = (Date.now() - fetchStart) / 1000 / fetchedCount;
+      const etaSecs = Math.round(ptsLeft * avgSecs);
+      const etaStr = etaSecs > 60
+        ? `~${Math.round(etaSecs / 60)}m remaining`
+        : `~${etaSecs}s remaining`;
+      process.stdout.write(
+        `\r   ✅ ${map.size} records in ${ptSecs}s  •  total ${totalElapsed}s elapsed  •  ${ptsLeft > 0 ? etaStr : "done"}\n`
+      );
     }
 
-    // ── Build athlete records ─────────────────────────────────────────────────
-    const startSplits  = splits[startPointName] ?? new Map();
-    const finishPtDef  = legPointDefs.find((p) => p.isFinish);
-    const finishSplits = splits[finishPtDef?.name] ?? new Map();
+    // ── Build athlete records (load split files on demand) ────────────────────
+    console.log("\n   Loading START and FINISH splits...");
+    const startSplits = await loadSplits(startPointName);
+    const finishPtDef = legPointDefs.find((p) => p.isFinish);
+    const finishSplits = await loadSplits(finishPtDef?.name);
 
     const allBibs = new Set([...startSplits.keys(), ...finishSplits.keys()]);
-    console.log(`\n   Total athletes found: ${allBibs.size}`);
+    console.log(`   Total athletes found: ${allBibs.size}`);
+
+    // Cache for the current leg's splits so we only hold one extra Map at a time
+    const splitsCache = new Map();
+    splitsCache.set(startPointName, startSplits);
+    splitsCache.set(finishPtDef?.name, finishSplits);
+
+    async function getSplits(ptName) {
+      if (!splitsCache.has(ptName)) {
+        splitsCache.set(ptName, await loadSplits(ptName));
+      }
+      return splitsCache.get(ptName);
+    }
 
     const athletes = [];
     const rtrtStarts = new Map();
 
     for (const bib of allBibs) {
-      const startSplit  = startSplits.get(bib);
+      const startSplit = startSplits.get(bib);
       const finishSplit = finishSplits.get(bib);
-      const profile     = finishSplit ?? startSplit;
+      const profile = finishSplit ?? startSplit;
       if (!profile) continue;
 
       const status = finishSplit ? "FIN" : "DNF";
@@ -590,10 +756,14 @@ Examples:
       let prevCumSecs = 0;
 
       for (const legPt of legPointDefs) {
-        const split   = splits[legPt.name]?.get(bib);
+        const ptSplits = await getSplits(legPt.name);
+        const split = ptSplits.get(bib);
         const cumSecs = parseTime(split?.netTime);
         if (cumSecs != null && prevCumSecs !== null) {
-          legSecs[legPt.legName] = Math.max(0, Math.round(cumSecs - prevCumSecs));
+          legSecs[legPt.legName] = Math.max(
+            0,
+            Math.round(cumSecs - prevCumSecs)
+          );
           prevCumSecs = cumSecs;
         } else {
           legSecs[legPt.legName] = null;
@@ -602,29 +772,34 @@ Examples:
       }
 
       const finishCumSecs = parseTime(finishSplit?.netTime);
-      const results       = finishSplit?.results ?? {};
-      const overallRank   = results["course"]?.p    ?? results["overall"]?.p  ?? null;
-      const genderRank    = results["course-sex"]?.p ?? results["gender"]?.p  ?? null;
-      const divisionRank  = results["course-sex-division"]?.p ?? results["agegroup"]?.p ?? null;
-      const gender        = profile.sex === "M" ? "Male" : profile.sex === "F" ? "Female" : "";
-      const startEpoch    = startSplit?.epochTime ? parseFloat(startSplit.epochTime) : null;
+      const results = finishSplit?.results ?? {};
+      const overallRank = results["course"]?.p ?? results["overall"]?.p ?? null;
+      const genderRank =
+        results["course-sex"]?.p ?? results["gender"]?.p ?? null;
+      const divisionRank =
+        results["course-sex-division"]?.p ?? results["agegroup"]?.p ?? null;
+      const gender =
+        profile.sex === "M" ? "Male" : profile.sex === "F" ? "Female" : "";
+      const startEpoch = startSplit?.epochTime
+        ? parseFloat(startSplit.epochTime)
+        : null;
 
       if (startEpoch != null) rtrtStarts.set(bib, startEpoch);
 
       athletes.push({
         bib,
-        name:         profile.name ?? "",
+        name: profile.name ?? "",
         gender,
-        country:      profile.country_iso?.toUpperCase() ?? profile.country ?? "",
-        division:     profile.division ?? "",
+        country: profile.country_iso?.toUpperCase() ?? profile.country ?? "",
+        division: profile.division ?? "",
         status,
-        overallRank:  overallRank  != null ? parseInt(overallRank, 10)  : null,
-        genderRank:   genderRank   != null ? parseInt(genderRank, 10)   : null,
+        overallRank: overallRank != null ? parseInt(overallRank, 10) : null,
+        genderRank: genderRank != null ? parseInt(genderRank, 10) : null,
         divisionRank: divisionRank != null ? parseInt(divisionRank, 10) : null,
-        finishSecs:   finishCumSecs ?? null,
+        finishSecs: finishCumSecs ?? null,
         legSecs,
         startEpoch,
-        waveOffset:   null,
+        waveOffset: null,
         cumPositions: {},
       });
     }
@@ -636,13 +811,13 @@ Examples:
     });
 
     const finishers = athletes.filter((a) => a.status === "FIN").length;
-    const dnfs      = athletes.filter((a) => a.status === "DNF").length;
+    const dnfs = athletes.filter((a) => a.status === "DNF").length;
     console.log(`   Finishers: ${finishers} | DNFs: ${dnfs}`);
 
     // ── Run passing analysis ──────────────────────────────────────────────────
     console.log("\n⚙️  Running passing analysis...");
 
-    const hasRtrt    = rtrtStarts.size > 0;
+    const hasRtrt = rtrtStarts.size > 0;
     const { athletes: normalizedAthletes, hasWaveData } = normalizeAthletes(
       athletes,
       legNames,
@@ -654,20 +829,27 @@ Examples:
       : "No per-athlete start times — using chip time comparisons only.";
     console.log(`   ${modeMsg}`);
 
-    const passingMap = computePassingData(normalizedAthletes, legNames, hasWaveData);
+    const passingMap = computePassingData(
+      normalizedAthletes,
+      legNames,
+      hasWaveData
+    );
 
     printReport(normalizedAthletes, passingMap, legNames, hasWaveData);
 
     // ── Write output ──────────────────────────────────────────────────────────
     const outputFile = path.join(outputDir, `${eventId}_passing.csv`);
-    const outputCSV  = buildOutputCSV(normalizedAthletes, passingMap, legNames);
+    const outputCSV = buildOutputCSV(normalizedAthletes, passingMap, legNames);
     await fs.writeFile(outputFile, outputCSV);
     console.log(`📄 Passing data written to: ${outputFile}`);
 
     console.log(`
 Next step:
   cd app
-  npx tsx scripts/ingest.ts ../${path.relative(path.join(__dirname, ".."), outputFile)} \\
+  npx tsx scripts/ingest.ts ../${path.relative(
+    path.join(__dirname, ".."),
+    outputFile
+  )} \\
     --slug <slug> \\
     --race-name "<Race Name>" \\
     --year <YYYY> \\
