@@ -43,7 +43,7 @@ export function EventFilters({ genders, divisions }: Props) {
 
   return (
     <div className="mb-6">
-      <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wider">
+      <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
         Filters
       </p>
       <div className="flex flex-wrap gap-4">

@@ -160,7 +160,7 @@ export default async function EventPage({ params, searchParams }: Props) {
 
       {/* Athlete funnel */}
       <div className="mb-6">
-        <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wider">
+        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
           Participation
         </p>
         <div className="bg-muted/40 flex flex-wrap items-center justify-center gap-y-3 rounded-lg border p-4">
@@ -175,11 +175,10 @@ export default async function EventPage({ params, searchParams }: Props) {
 
           {/* Arrow + gate for each segment */}
           {segmentCounts.map((seg) => {
-            const pct =
-              totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
+            const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
             return (
               <div key={seg.segmentId} className="flex items-center">
-                <span className="text-muted-foreground select-none px-1 text-lg">→</span>
+                <span className="text-muted-foreground px-1 text-lg select-none">→</span>
                 <div className="flex flex-col items-center px-4 text-center">
                   <span className="text-2xl font-bold tabular-nums">
                     {seg.count.toLocaleString()}
@@ -192,7 +191,7 @@ export default async function EventPage({ params, searchParams }: Props) {
           })}
 
           {/* Arrow + Finishers */}
-          <span className="text-muted-foreground select-none px-1 text-lg">→</span>
+          <span className="text-muted-foreground px-1 text-lg select-none">→</span>
           <div className="flex flex-col items-center px-4 text-center">
             <span className="text-primary text-2xl font-bold tabular-nums">
               {finisherCount.toLocaleString()}
