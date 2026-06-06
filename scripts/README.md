@@ -45,19 +45,19 @@ Node.js 18+ (native `fetch`). No dependencies to install.
    Each race organizer has their own app ID. The IRONMAN Tracker default is
    `5824c5c948fd08c23a8b4567` (no need to pass `--appid` for IRM-* events).
 
-### Step 2 — Fetch splits
+### Step 2 — Run the pipeline
 
 ```bash
-node scripts/fetch-rtrt-event.mjs <event-id> [--appid <id>]
+node scripts/racereplay.mjs <event-id> [--appid <id>]
 ```
 
 Examples:
 ```bash
 # Bank of America Shamrock Shuffle (non-IRONMAN, requires --appid)
-node scripts/fetch-rtrt-event.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+node scripts/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
 
 # Any IRONMAN event (uses default IRONMAN app ID)
-node scripts/fetch-rtrt-event.mjs IRM-OCEANSIDE703-2026
+node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
 ```
 
 **Flags:**
@@ -67,34 +67,13 @@ node scripts/fetch-rtrt-event.mjs IRM-OCEANSIDE703-2026
 --points A,B,C        Manual timing point override — skip auto-discovery
 ```
 
-**Flags for analyze-passing.mjs:**
-```
---rtrt-starts <file>   Per-athlete start times (_starts.csv)
---wave-offsets <file>  Per-division wave offsets in seconds (JSON) — fallback
-```
-
 **Output:**
-- `scripts/data/<EVENT-ID>.csv` — full results with leg columns named after timing segments
-- `scripts/data/<event-id>_starts.csv` — per-athlete start epoch times
+- `scripts/data/<EVENT-ID>_passing.csv` — full per-athlete passing breakdown, ready to ingest
 
 **Timing:** ~300ms/page + 5s between points. A 24K-athlete event with 3 timing
 points takes ~18 minutes.
 
-### Step 3 — Run the passing analysis
-
-```bash
-node scripts/analyze-passing.mjs scripts/data/<EVENT-ID>.csv \
-  --rtrt-starts scripts/data/<event-id>_starts.csv
-```
-
-Any column ending in ` (Seconds)` (except Finish, Finish Gun, Wave Offset) is
-treated as a leg automatically — no configuration needed.
-
-**Output:**
-- Terminal report: invariant check, top finishers, biggest climbers/fallers
-- `scripts/data/<EVENT-ID>_passing.csv` — full per-athlete breakdown, ready to ingest
-
-### Step 4 — Ingest into the database
+### Step 3 — Ingest into the database
 
 ```bash
 cd app
@@ -123,8 +102,7 @@ Run this before trusting output from a new race.
 
 | Script | Purpose |
 |---|---|
-| `fetch-rtrt-event.mjs` | Fetches splits and start times from RTRT.me for any race type |
-| `analyze-passing.mjs` | Runs the passing algorithm, prints report, writes `_passing.csv` |
+| `racereplay.mjs` | Fetches splits from RTRT.me, runs passing algorithm, writes `_passing.csv` |
 | `test-algorithm.mjs` | Unit tests for the passing algorithm |
 
 ---
