@@ -67,6 +67,12 @@ node scripts/fetch-rtrt-event.mjs IRM-OCEANSIDE703-2026
 --points A,B,C        Manual timing point override — skip auto-discovery
 ```
 
+**Flags for analyze-passing.mjs:**
+```
+--rtrt-starts <file>   Per-athlete start times (_starts.csv)
+--wave-offsets <file>  Per-division wave offsets in seconds (JSON) — fallback
+```
+
 **Output:**
 - `scripts/data/<EVENT-ID>.csv` — full results with leg columns named after timing segments
 - `scripts/data/<event-id>_starts.csv` — per-athlete start epoch times
@@ -83,14 +89,6 @@ node scripts/analyze-passing.mjs scripts/data/<EVENT-ID>.csv \
 
 Any column ending in ` (Seconds)` (except Finish, Finish Gun, Wave Offset) is
 treated as a leg automatically — no configuration needed.
-
-**For large races (>5K athletes), cap stored bib lists:**
-```bash
-node scripts/analyze-passing.mjs scripts/data/<EVENT-ID>.csv \
-  --rtrt-starts scripts/data/<event-id>_starts.csv \
-  --max-bibs 50
-```
-Counts remain accurate; only the stored bib lists are capped.
 
 **Output:**
 - Terminal report: invariant check, top finishers, biggest climbers/fallers
