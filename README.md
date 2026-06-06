@@ -1,6 +1,6 @@
 # Race Replay
 
-Race Replay calculates how many people each athlete physically passes — and gets passed by — on every leg of a race, then publishes those results on a public website.
+Race Replay calculates how many people each athlete physically passes and gets passed by on each leg of a race, then publishes those results on a public website.
 
 It supports any race with per-athlete timing data from RTRT.me, including triathlons, road races, and trail runs.
 
@@ -202,13 +202,13 @@ Manual via **Actions → Version Increment → Run workflow**. Choose `patch`, `
 
 ### Required GitHub Secrets
 
-| Secret              | Description                                                    |
-| ------------------- | -------------------------------------------------------------- |
-| `VERCEL_TOKEN`      | Vercel API token                                               |
-| `VERCEL_ORG_ID`     | Vercel organization ID                                         |
-| `VERCEL_PROJECT_ID` | Vercel project ID                                              |
-| `DATABASE_URL_DEV`  | Neon dev branch connection string (set on `dev` environment)   |
-| `DATABASE_URL_PROD` | Neon prod branch connection string (set on `prod` environment) |
+| Secret              | Description                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `VERCEL_TOKEN`      | Vercel API token                                                                                  |
+| `VERCEL_ORG_ID`     | Vercel organization ID                                                                            |
+| `VERCEL_PROJECT_ID` | Vercel project ID                                                                                 |
+| `DATABASE_URL_DEV`  | Neon dev branch connection string (set on `dev` environment)                                      |
+| `DATABASE_URL_PROD` | Neon prod branch connection string (set on `prod` environment)                                    |
 | `ADMIN_TOKEN`       | GitHub PAT with admin access (used by version increment to temporarily disable branch protection) |
 
 ---
