@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Race {
+  id     Int     @id @default(autoincrement())
+  slug   String  @unique
+  name   String
+  events Event[]
+}
+
+model Event {
+  id       Int         @id @default(autoincrement())
+  race     Race        @relation(fields: [raceId], references: [id])
+  raceId   Int
+  year     Int
+  type     EventType
+  date     DateTime    @db.Date
+  athletes Athlete[]
+  segments Segment[]
+
+  @@unique([raceId, year])
+}
+
+model Segment {
+  id           Int              @id @default(autoincrement())
+  event        Event            @relation(fields: [eventId], references: [id])
+  eventId      Int
+  name         String
+  displayOrder Int
+  athletes     AthleteSegment[]
+}
+
+model Athlete {
+  id           Int              @id @default(autoincrement())
+  event        Event            @relation(fields: [eventId], references: [id])
+  eventId      Int
+  bib          String
+  name         String
+  gender       String
+  division     String
+  country      String
+  status       String
+  finishTime   String
+  overallRank  Int?
+  genderRank   Int?
+  divisionRank Int?
+  segments     AthleteSegment[]
+
+  @@unique([eventId, bib])
+}
+
+model AthleteSegment {
+  id          Int      @id @default(autoincrement())
+  athlete     Athlete  @relation(fields: [athleteId], references: [id])
+  athleteId   Int
+  segment     Segment  @relation(fields: [segmentId], references: [id])
+  segmentId   Int
+  timeSeconds Float?
+  gained      Int?
+  lost        Int?
+  net         Int?
+
+  @@unique([athleteId, segmentId])
+}
+
+enum EventType {
+  TRIATHLON
+  ROAD_RACE
+}
