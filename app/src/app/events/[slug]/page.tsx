@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +35,11 @@ export default async function RacePage({ params }: Props) {
   });
 
   if (!race) notFound();
+
+  // Skip the year-picker when there's only one year of data
+  if (race.events.length === 1) {
+    redirect(`/events/${slug}/${race.events[0].year}`);
+  }
 
   return (
     <div>
