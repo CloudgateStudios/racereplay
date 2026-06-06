@@ -12,6 +12,11 @@ on:
           - minor
           - major
         default: patch
+      first_release:
+        description: "First release (no previous tag exists)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   version_increment:
@@ -40,7 +45,12 @@ jobs:
 
       - name: Run standard-version
         working-directory: app
-        run: standard-version --release-as ${{ github.event.inputs.release_type }}
+        run: |
+          if [ "${{ github.event.inputs.first_release }}" = "true" ]; then
+            standard-version --first-release
+          else
+            standard-version --release-as ${{ github.event.inputs.release_type }}
+          fi
 
       - name: Get tag
         run: |
