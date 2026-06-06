@@ -101,7 +101,7 @@ cd app
 npm install
 
 # 3. Create your local env file
-echo 'DATABASE_URL=postgresql://postgres:postgres@localhost:5433/racetrace' > .env.local
+echo 'DATABASE_URL=postgresql://postgres:postgres@localhost:5433/racereplay' > .env.local
 
 # 4. Run migrations
 npx prisma migrate deploy
