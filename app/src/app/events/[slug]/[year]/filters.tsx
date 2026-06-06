@@ -38,6 +38,9 @@ export function EventFilters({ genders, divisions }: Props) {
     [router, pathname, searchParams]
   );
 
+  const genderValue: string = searchParams.get("gender") ?? "all";
+  const divisionValue: string = searchParams.get("division") ?? "all";
+
   return (
     <div className="flex flex-wrap gap-3 mb-6">
       <Input
@@ -48,8 +51,8 @@ export function EventFilters({ genders, divisions }: Props) {
       />
 
       <Select
-        defaultValue={searchParams.get("gender") ?? "all"}
-        onValueChange={(v) => updateParam("gender", v)}
+        defaultValue={genderValue}
+        onValueChange={(v) => updateParam("gender", v ?? "")}
       >
         <SelectTrigger className="w-36">
           <SelectValue placeholder="Gender" />
@@ -65,8 +68,8 @@ export function EventFilters({ genders, divisions }: Props) {
       </Select>
 
       <Select
-        defaultValue={searchParams.get("division") ?? "all"}
-        onValueChange={(v) => updateParam("division", v)}
+        defaultValue={divisionValue}
+        onValueChange={(v) => updateParam("division", v ?? "")}
       >
         <SelectTrigger className="w-44">
           <SelectValue placeholder="Division" />
