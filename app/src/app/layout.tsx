@@ -39,7 +39,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground flex min-h-full flex-col">
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <header className="bg-card/80 sticky top-0 z-10 border-b backdrop-blur-sm">
-          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6 sm:px-10 lg:px-16">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-[clamp(1.5rem,5vw,5rem)]">
             {/* Logo */}
             <Link
               href="/"
@@ -63,13 +63,13 @@ export default function RootLayout({
         </header>
 
         {/* ── Page content ────────────────────────────────────────────────── */}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 sm:px-10 lg:px-16 xl:px-20">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-[clamp(1.5rem,5vw,5rem)] py-10">
           {children}
         </main>
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
         <footer className="bg-card border-t">
-          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6 sm:px-10 lg:px-16">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-[clamp(1.5rem,5vw,5rem)]">
             <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} RaceReplay</p>
             <p className="text-muted-foreground font-mono text-xs">v{pkg.version}</p>
           </div>
