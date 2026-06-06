@@ -22,11 +22,16 @@ export default async function HomePage() {
   return (
     <div>
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="relative mb-20 pt-10 pb-16">
-        {/* Subtle background accent */}
+      {/*
+        Full-bleed section: negative horizontal margins cancel the parent
+        padding so the background reaches the viewport edges, while the
+        inner padding keeps the text aligned with the rest of the page.
+      */}
+      <section className="relative -mx-[clamp(1.5rem,5vw,5rem)] mb-20 px-[clamp(1.5rem,5vw,5rem)] pt-12 pb-16">
+        {/* Full-width gradient wash */}
         <div
           aria-hidden
-          className="from-primary/8 pointer-events-none absolute inset-x-0 -top-8 h-64 bg-gradient-to-b to-transparent"
+          className="from-primary/10 pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b to-transparent"
         />
 
         <div className="relative max-w-3xl">
