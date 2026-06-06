@@ -36,13 +36,13 @@ export default async function HomePage() {
           </div>
 
           <h1 className="mb-5 text-6xl font-black tracking-tight uppercase sm:text-7xl lg:text-8xl">
-            See who you passed.
+            See where you passed,
             <br />
-            <span className="text-primary">See who passed you.</span>
+            <span className="text-primary">and when you got passed.</span>
           </h1>
 
           <p className="text-muted-foreground mb-8 max-w-xl text-lg leading-relaxed">
-            RaceReplay calculates every physical pass that happened on course — swim, bike, run —
+            RaceReplay calculates every physical pass that happened on course
             using per-athlete start times so the numbers reflect what actually happened on the road,
             not just chip time rank.
           </p>
