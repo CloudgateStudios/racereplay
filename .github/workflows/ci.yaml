@@ -40,4 +40,4 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/racetrace
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/racereplay
