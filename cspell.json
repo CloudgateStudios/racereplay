@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "enabled": true,
+  "language": "en",
+  "dictionaries": ["en_US", "softwareTerms", "dev_dictionary", "triathlon_dictionary"],
+  "dictionaryDefinitions": [
+    {
+      "name": "dev_dictionary",
+      "path": ".cspell/dev_dictionary.txt",
+      "addWords": true
+    },
+    {
+      "name": "triathlon_dictionary",
+      "path": ".cspell/triathlon_dictionary.txt",
+      "addWords": true
+    }
+  ],
+  "ignorePaths": [
+    ".github/workflows/**",
+    ".gitignore",
+    "app/src/generated/**",
+    "app/node_modules/**",
+    "app/prisma/migrations/**",
+    "app/.next/**",
+    "app/src/components/ui/**",
+    "scripts/data/**",
+    "**/*.lock",
+    "**/package-lock.json"
+  ]
+}

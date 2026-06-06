@@ -8,6 +8,7 @@ dist/
 node_modules/
 
 # Environment
+.env
 .env.local
 .env.*.local
 
@@ -22,10 +23,6 @@ scripts/data/
 *.tsbuildinfo
 next-env.d.ts
 
-# Supabase local data
-.supabase/
-supabase/.temp/
-
 # OS
 .DS_Store
 Thumbs.db
@@ -35,3 +32,5 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+/src/generated/prisma
