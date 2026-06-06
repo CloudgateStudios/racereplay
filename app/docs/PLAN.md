@@ -9,11 +9,13 @@ passed (or got passed by) in every leg of a race.
 ## Architecture
 
 ### Hosting & Cost
+
 - **Frontend + API:** Next.js 15 (App Router) deployed on **Vercel** (Hobby — free)
 - **Database:** Neon serverless PostgreSQL (free tier — 0.5 GB, no always-on server cost)
 - **Estimated monthly cost:** ~$0 until meaningful traffic
 
 ### Stack
+
 - Next.js 15 (App Router)
 - Prisma ORM
 - Neon (PostgreSQL)
@@ -21,6 +23,7 @@ passed (or got passed by) in every leg of a race.
 - TypeScript
 
 ### Data Flow
+
 ```
 Local scripts (existing) → _passing.csv → scripts/ingest.mjs → Neon DB → Next.js website
 ```
@@ -97,6 +100,7 @@ AthleteSegment
 **Location:** `scripts/ingest.mjs`
 
 **Usage:**
+
 ```bash
 node scripts/ingest.mjs <passing-csv> \
   --slug <slug> \
@@ -107,6 +111,7 @@ node scripts/ingest.mjs <passing-csv> \
 ```
 
 **Example:**
+
 ```bash
 node scripts/ingest.mjs scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
   --slug im-703-chattanooga \
@@ -117,6 +122,7 @@ node scripts/ingest.mjs scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
 ```
 
 **Behavior:**
+
 - Upserts Race by slug (safe to re-run)
 - Upserts Event by (slug, year)
 - Detects legs automatically from CSV column headers (any `* Time` column)
@@ -129,15 +135,18 @@ node scripts/ingest.mjs scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
 ## Website Pages
 
 ### `/` — Race List
+
 - Cards for each Race (grouped, not per-year)
 - Each card shows race name, available years, event type
 - Links to `/events/[slug]`
 
 ### `/events/[slug]` — Race Landing
+
 - Shows race name and a list of years with a summary (athlete count, date)
 - Links to `/events/[slug]/[year]`
 
 ### `/events/[slug]/[year]` — Athlete Table
+
 - Full sortable/searchable table of all athletes
 - Columns: Rank, Bib, Name, Division, Status, Finish Time, then per-leg Gained/Lost/Net, Overall Net
 - Search by name or bib
@@ -146,6 +155,7 @@ node scripts/ingest.mjs scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
 - Each row links to `/events/[slug]/[year]/[bib]`
 
 ### `/events/[slug]/[year]/[bib]` — Athlete Detail
+
 - Athlete name, bib, division, finish time, overall/gender/division rank
 - Per-leg breakdown table: Leg | Time | Passed | Got Passed | Net
 - Overall net passes
@@ -155,48 +165,58 @@ node scripts/ingest.mjs scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
 ## Build Steps
 
 ### Step 1 — Clean slate
+
 - [ ] Remove any leftover Next.js scaffold files from phase 1
 - [ ] Reset Prisma schema to match the schema above
 - [ ] Confirm Neon DB connection works
 
 ### Step 2 — Prisma schema + migration
+
 - [ ] Write new `schema.prisma` with all models above
 - [ ] Run `prisma migrate dev` to apply to Neon
 - [ ] Generate Prisma client
 
 ### Step 3 — Ingest script
+
 - [ ] Write `scripts/ingest.mjs`
 - [ ] Test with `IRM-CHATTANOOGA703-2026_passing.csv`
 - [ ] Test with `BASS2026_passing.csv` (road race — different leg structure)
 - [ ] Verify re-run is idempotent
 
 ### Step 4 — Load existing data
+
 - [ ] Ingest all existing `_passing.csv` files in `scripts/data/`
 - [ ] Confirm row counts and spot-check a few athletes
 
 ### Step 5 — Next.js app foundation
+
 - [ ] Install and configure Tailwind + shadcn/ui
 - [ ] Set up Prisma client singleton for Next.js
 - [ ] Create shared layout (nav, footer)
 
 ### Step 6 — Race list page (`/`)
+
 - [ ] Fetch all races with year counts
 - [ ] Render race cards
 
 ### Step 7 — Race landing page (`/events/[slug]`)
+
 - [ ] Fetch race + all events for that slug
 - [ ] Render year list with athlete counts and dates
 
 ### Step 8 — Athlete table page (`/events/[slug]/[year]`)
+
 - [ ] Fetch all athletes + segment data for event
 - [ ] Render sortable table
 - [ ] Add search (name/bib), filter (gender/division), sort
 
 ### Step 9 — Athlete detail page (`/events/[slug]/[year]/[bib]`)
+
 - [ ] Fetch single athlete + all segment data
 - [ ] Render per-leg breakdown
 
 ### Step 10 — Deploy
+
 - [ ] Push to GitHub
 - [ ] Connect repo to Vercel
 - [ ] Add Neon `DATABASE_URL` to Vercel env vars

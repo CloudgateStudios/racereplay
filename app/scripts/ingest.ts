@@ -114,8 +114,10 @@ function parseCSVRow(line: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else inQuotes = !inQuotes;
     } else if (ch === "," && !inQuotes) {
       values.push(current.trim());
       current = "";
@@ -167,8 +169,7 @@ function timeToSeconds(t: string): number | null {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { csvFile, slug, raceName, year, eventType, eventDate } =
-    parseArgs(process.argv);
+  const { csvFile, slug, raceName, year, eventType, eventDate } = parseArgs(process.argv);
 
   console.log(`\nIngesting: ${csvFile}`);
   console.log(`  Race:  ${raceName} (${slug})`);
