@@ -5,25 +5,29 @@
  * Fetches race data from RTRT.me and runs the leg-by-leg physical passing
  * algorithm, producing a _passing.csv ready for ingestion.
  *
- * Split data for each timing point is written to disk as it is fetched so the
- * run is resumable — if the process dies mid-fetch, re-running will skip any
- * points whose cache files already exist.
+ * Split data for each timing point is written to disk atomically as it is
+ * fetched, making the run resumable — if the process dies mid-fetch, re-running
+ * will skip any points whose cache files already exist. Use --fresh to force a
+ * full re-fetch regardless of cached files.
  *
  * Usage:
  *   node scripts/racereplay.mjs <event-id> [options]
  *
  * Options:
- *   --appid <id>         RTRT app ID for this event's tracker app.
- *                        Defaults to the IRONMAN Tracker app ID.
- *                        Find it at track.rtrt.me/e/<event-id> (view page source,
- *                        search for "appid").
- *   --output-dir <dir>   Directory to write output files (default: scripts/data/)
- *   --points <list>      Comma-separated list of point names to use, in order.
- *                        Overrides auto-discovery. Must include the finish point.
- *                        Example: --points START,5K,10K,FINISH
- *   --verify             After running the fast O(n log n) algorithm, also run
- *                        the O(n²) reference algorithm and diff the results.
- *                        Use this when validating algorithm changes.
+ *   --appid <id>          RTRT app ID for this event's tracker app.
+ *                         Defaults to the IRONMAN Tracker app ID.
+ *                         Find it at track.rtrt.me/e/<event-id> (view page
+ *                         source, search for "appid").
+ *   --output-dir <dir>    Directory to write output files (default: scripts/data/)
+ *   --points <list>       Comma-separated list of point names to use, in order.
+ *                         Overrides auto-discovery. Must include the finish point.
+ *                         Example: --points START,5K,10K,FINISH
+ *   --concurrency <n>     Number of timing points to fetch in parallel (default: 4).
+ *                         Higher values are faster but risk rate-limiting.
+ *   --fresh               Ignore existing split cache files and re-fetch everything.
+ *   --verify              After running the fast O(n log n) algorithm, also run
+ *                         the O(n²) reference algorithm and diff the results.
+ *                         Use this when validating algorithm changes.
  *
  * Examples:
  *   # Shamrock Shuffle 2026 (Bank of America — uses a different app ID)
@@ -31,6 +35,9 @@
  *
  *   # Any IRONMAN event (uses default IRONMAN app ID)
  *   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
+ *
+ *   # Force a full re-fetch, ignoring any cached split files
+ *   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
  *
  *   # Verify the fast algorithm matches the reference on a cached event
  *   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026 --verify
@@ -42,12 +49,12 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const IRONMAN_APPID = "5824c5c948fd08c23a8b4567";
-const API         = "https://api.rtrt.me";
-const UA          = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
-const PAGE        = 20;   // records per API page (RTRT caps at 20 regardless of count param)
-const DELAY       = 100;  // ms between page requests within a single timing point
-const CONCURRENCY = 4;    // timing points fetched in parallel
+const IRONMAN_APPID       = "5824c5c948fd08c23a8b4567";
+const API                 = "https://api.rtrt.me";
+const UA                  = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
+const PAGE                = 20;   // records per API page (RTRT caps at 20 regardless of count param)
+const DELAY               = 100;  // ms between page requests within a single timing point
+const DEFAULT_CONCURRENCY = 4;    // timing points fetched in parallel (overridable via --concurrency)
 
 // ─── Terminal Progress Display ────────────────────────────────────────────────
 
@@ -169,10 +176,24 @@ function fmtTimeLong(secs) {
 }
 
 /**
+ * Formats an elapsed millisecond count into a human-readable string.
+ * e.g. 75000 → "1m 15s", 45000 → "45s"
+ *
+ * @param {number} ms
+ * @returns {string}
+ */
+function fmtElapsed(ms) {
+  const totalSecs = Math.round(ms / 1000);
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+/**
  * Strips a timing point label down to a clean, CSV-friendly leg name.
- *   "Run/Finish"       → "Run"      (takes the part before "/")
+ *   "Run/Finish"       → "Run"       (takes the part before "/")
  *   "Bike 56mi | 89km" → "Bike 56mi" (takes the part before "|")
- *   "FINISH" / "START" → ""          (caller supplies a positional fallback)
+ *   "FINISH" / "START" → ""           (caller supplies a positional fallback)
  *
  * @param {string} label
  * @returns {string}
@@ -182,6 +203,76 @@ function cleanLabel(label) {
   if (/^(finish|start)$/i.test(clean)) return "";
   return clean;
 }
+
+// ─── Split Cache Helpers ──────────────────────────────────────────────────────
+//
+// Each timing point's splits are stored as {eventId}_splits_{pointName}.json
+// in the output directory. Files are written atomically (via a .tmp rename) so
+// a partial write from a crashed run is never mistaken for a complete cache.
+
+/**
+ * Returns the canonical path for a point's split cache file.
+ *
+ * @param {string} outputDir
+ * @param {string} eventId
+ * @param {string} ptName
+ * @returns {string}
+ */
+function splitFilePath(outputDir, eventId, ptName) {
+  return path.join(outputDir, `${eventId}_splits_${ptName}.json`);
+}
+
+/**
+ * Serialises a split Map to disk atomically: writes to a .tmp file first,
+ * then renames to the final path. This ensures a crashed mid-write never
+ * leaves a corrupt cache file that would be silently trusted on resume.
+ *
+ * @param {string}              outputDir
+ * @param {string}              eventId
+ * @param {string}              ptName
+ * @param {Map<string, object>} map - bib → split record
+ */
+async function saveSplits(outputDir, eventId, ptName, map) {
+  const tmp   = splitFilePath(outputDir, eventId, ptName) + ".tmp";
+  const final = splitFilePath(outputDir, eventId, ptName);
+  const arr   = [...map.entries()].map(([bib, rec]) => ({ bib, ...rec }));
+  await fs.writeFile(tmp, JSON.stringify(arr));
+  await fs.rename(tmp, final);
+}
+
+/**
+ * Loads a split cache file from disk and returns it as a bib → record Map.
+ *
+ * @param {string} outputDir
+ * @param {string} eventId
+ * @param {string} ptName
+ * @returns {Promise<Map<string, object>>}
+ */
+async function loadSplits(outputDir, eventId, ptName) {
+  const raw = await fs.readFile(splitFilePath(outputDir, eventId, ptName), "utf8");
+  const arr = JSON.parse(raw);
+  const map = new Map();
+  for (const rec of arr) {
+    const { bib, ...rest } = rec;
+    map.set(String(bib), rest);
+  }
+  return map;
+}
+
+/**
+ * Returns true if a complete (non-.tmp) split cache file exists for the point.
+ *
+ * @param {string} outputDir
+ * @param {string} eventId
+ * @param {string} ptName
+ * @returns {Promise<boolean>}
+ */
+async function splitFileExists(outputDir, eventId, ptName) {
+  try { await fs.access(splitFilePath(outputDir, eventId, ptName)); return true; }
+  catch { return false; }
+}
+
+// ─── RTRT Data Fetching ───────────────────────────────────────────────────────
 
 /**
  * Fetches all timing point definitions for an event, paginating as needed.
@@ -193,9 +284,9 @@ function cleanLabel(label) {
  * @returns {Promise<object[]>}
  */
 async function fetchAllPoints(eventId, appid, token) {
-  const qs = `appid=${appid}&token=${token}`;
+  const qs        = `appid=${appid}&token=${token}`;
   const allPoints = [];
-  let start = 1;
+  let   start     = 1;
 
   while (true) {
     const data = await rtrtFetch(`/events/${eventId}/points?${qs}&start=${start}`);
@@ -211,19 +302,19 @@ async function fetchAllPoints(eventId, appid, token) {
 
 /**
  * Fetches every split record for a single timing point, paginating through
- * all pages. Writes a progress line to stdout every LOG_EVERY pages.
+ * all pages.
  *
  * On network-level failures (ECONNRESET, ETIMEDOUT, etc.) or RTRT API errors,
- * retries up to 3 times with exponential back-off (5s / 10s / 15s), refreshing
- * the session token before each retry.
+ * retries up to 3 times with linear back-off (5s / 10s / 15s), refreshing the
+ * session token before each retry.
  *
- * @param {string}  eventId    - RTRT event ID
- * @param {string}  pointName  - Timing point name, e.g. "START" or "5K"
- * @param {string}  appid      - RTRT app ID
- * @param {{value: string}} tokenRef - Mutable token holder; updated on retry
- * @param {number}   [hintTotal=0]  - Expected total athletes (used to estimate page count)
- * @param {Function} [onProgress]   - Called with a status string whenever progress changes.
- *                                    Defaults to a no-op; callers supply a ProgressDisplay slot.
+ * @param {string}              eventId
+ * @param {string}              pointName   - Timing point name, e.g. "START" or "5K"
+ * @param {string}              appid
+ * @param {{value: string}}     tokenRef    - Mutable token holder; updated on retry
+ * @param {number}              [hintTotal] - Expected total athletes (used to estimate page count)
+ * @param {Function}            [onProgress]- Called with a status string on each page.
+ *                                            Defaults to a no-op; pass a ProgressDisplay updater.
  * @returns {Promise<Map<string, object>>} Map of bib → split record
  */
 async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTotal = 0, onProgress = () => {}) {
@@ -306,9 +397,9 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTo
  * meaningful wave/start-time data was found (determines gun-start vs physical-
  * passing mode in the algorithm).
  *
- * @param {object[]} athletes
- * @param {string[]} legNames
- * @param {Map<string, number>|null} rtrtStarts - Map of bib → Unix epoch start time, or null
+ * @param {object[]}                athletes
+ * @param {string[]}                legNames
+ * @param {Map<string, number>|null} rtrtStarts - bib → Unix epoch start time, or null
  * @returns {{ athletes: object[], hasWaveData: boolean }}
  */
 function normalizeAthletes(athletes, legNames, rtrtStarts) {
@@ -372,14 +463,21 @@ function normalizeAthletes(athletes, legNames, rtrtStarts) {
  * Ranks athletes by a time-getter function. Athletes for whom the getter
  * returns null are excluded. Rank 1 = fastest (lowest value).
  *
- * @param {object[]} athletes
- * @param {(a: object) => number|null} getTime
+ * Bib is used as a secondary sort key so rankings are fully deterministic
+ * regardless of the input order or JavaScript engine version — two athletes
+ * with identical times always receive the same relative rank across runs.
+ *
+ * @param {object[]}                       athletes
+ * @param {(a: object) => number|null}     getTime
  * @returns {Map<string, number>} bib → 1-based rank
  */
 function buildRankMap(athletes, getTime) {
   const eligible = athletes.filter((a) => getTime(a) != null);
-  const sorted   = [...eligible].sort((a, b) => getTime(a) - getTime(b));
-  const map      = new Map();
+  const sorted   = [...eligible].sort((a, b) => {
+    const diff = getTime(a) - getTime(b);
+    return diff !== 0 ? diff : String(a.bib).localeCompare(String(b.bib));
+  });
+  const map = new Map();
   sorted.forEach((a, i) => map.set(a.bib, i + 1));
   return map;
 }
@@ -406,7 +504,7 @@ class FenwickTree {
     for (; i > 0; i -= i & -i) s += this._t[i];
     return s;
   }
-  /** Resets all values to zero, allowing the tree to be reused. */
+  /** Resets all values to zero, allowing the tree to be reused across legs. */
   reset() {
     this._t.fill(0);
   }
@@ -580,15 +678,16 @@ function rpad(str, len) { return String(str).padStart(len, " ").slice(-len); }
  * The invariant asserts that sum(gained) === sum(lost) for each leg across all
  * athletes — a necessary condition for a correct passing algorithm.
  *
- * @param {object[]} athletes
- * @param {Map<string, object>} passingMap
- * @param {string[]} legNames
- * @param {boolean}  hasWaveData
+ * @param {object[]}             athletes
+ * @param {Map<string, object>}  passingMap
+ * @param {string[]}             legNames
+ * @param {boolean}              hasWaveData
+ * @param {number}               elapsedMs   - Total wall-clock time for the run
  */
-function printReport(athletes, passingMap, legNames, hasWaveData) {
-  const finishers  = athletes.filter((a) => a.status === "FIN" && a.finishSecs != null);
-  const dnfs       = athletes.filter((a) => a.status === "DNF");
-  const rtrtCount  = athletes.filter((a) => a.startEpoch != null).length;
+function printReport(athletes, passingMap, legNames, hasWaveData, elapsedMs) {
+  const finishers = athletes.filter((a) => a.status === "FIN" && a.finishSecs != null);
+  const dnfs      = athletes.filter((a) => a.status === "DNF");
+  const rtrtCount = athletes.filter((a) => a.startEpoch != null).length;
 
   const modeLabel = rtrtCount > 0
     ? `✅ Physical passing — RTRT start times (${rtrtCount} athletes matched)`
@@ -604,6 +703,7 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
   console.log(`  DNFs:      ${dnfs.length}`);
   console.log(`  Legs:      ${legNames.join(", ")}`);
   console.log(`  Mode:      ${modeLabel}`);
+  console.log(`  Elapsed:   ${fmtElapsed(elapsedMs)}`);
   console.log("═".repeat(70));
 
   console.log("\n📐 INVARIANT CHECK  (sum of gained must equal sum of lost per leg)");
@@ -633,9 +733,9 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
  * fields, leg split times, wave offset, per-leg gained/lost/net counts, and
  * an overall net positions figure.
  *
- * @param {object[]} athletes
- * @param {Map<string, object>} passingMap
- * @param {string[]} legNames
+ * @param {object[]}             athletes
+ * @param {Map<string, object>}  passingMap
+ * @param {string[]}             legNames
  * @returns {string} CSV content (headers + rows, newline-separated)
  */
 function buildOutputCSV(athletes, passingMap, legNames) {
@@ -679,35 +779,345 @@ function buildOutputCSV(athletes, passingMap, legNames) {
   return [headers.join(","), ...rows].join("\n");
 }
 
+// ─── Orchestration ────────────────────────────────────────────────────────────
+
+/**
+ * Resolves the ordered list of timing points for an event. If forcedPoints is
+ * provided the API discovery call is skipped entirely. Otherwise, queries the
+ * RTRT points endpoint, identifies START/FINISH, and includes all published
+ * intermediate points (transitions included even when hide_in_badges is set).
+ *
+ * Returns an array of point descriptor objects:
+ *   { name, label, legName, isStart, isFinish }
+ *
+ * @param {string}          eventId
+ * @param {string}          appid
+ * @param {string}          token
+ * @param {string[]|null}   forcedPoints - Names from --points flag, or null
+ * @returns {Promise<object[]>}
+ */
+async function discoverTimingPoints(eventId, appid, token, forcedPoints) {
+  if (forcedPoints) {
+    console.log(`\n📋 Using specified points: ${forcedPoints.join(", ")}`);
+    return forcedPoints.map((name, i) => ({
+      name,
+      label:    name,
+      legName:  name,
+      isStart:  i === 0,
+      isFinish: i === forcedPoints.length - 1,
+    }));
+  }
+
+  console.log("\n📋 Discovering timing points...");
+  const allPoints = await fetchAllPoints(eventId, appid, token);
+  console.log(`   Found ${allPoints.length} total timing points`);
+
+  const startPoint  = allPoints.find((p) => p.isStart  === "1");
+  const finishPoint = allPoints.find((p) => p.isFinish === "1");
+  if (!startPoint)  throw new Error("No START point found for this event");
+  if (!finishPoint) throw new Error("No FINISH point found for this event");
+
+  // Include transitions (T1, T2, etc.) even when hide_in_badges is set,
+  // since they are meaningful legs for triathlon passing analysis.
+  const isTransition = (p) => /^T\d+$/i.test(p.name) || /^T\d+$/i.test(p.label);
+  const intermediate = allPoints.filter(
+    (p) =>
+      p.publish       === "1" &&
+      p.isStart       !== "1" &&
+      p.isFinish      !== "1" &&
+      (p.hide_in_badges !== "1" || isTransition(p))
+  );
+
+  console.log(`   START: ${startPoint.name} (${startPoint.label || startPoint.name})`);
+  console.log(`   Intermediate: ${intermediate.length} points`);
+  for (const p of intermediate) {
+    console.log(`     • ${p.name} — "${p.label}" @ ${p.km} km`);
+  }
+  console.log(`   FINISH: ${finishPoint.name} (${finishPoint.label || finishPoint.name})`);
+
+  const legPoints = [...intermediate, finishPoint];
+  return [
+    { name: startPoint.name, label: startPoint.label, legName: null, isStart: true,  isFinish: false },
+    ...legPoints.map((p, i) => ({
+      name:     p.name,
+      label:    p.label,
+      legName:  cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
+      isStart:  false,
+      isFinish: p.isFinish === "1",
+    })),
+  ];
+}
+
+/**
+ * Fetches splits for all timing points that don't have a cache file, writing
+ * each to disk atomically as it completes. Points with existing cache files are
+ * skipped (unless fresh=true).
+ *
+ * Up to `concurrency` points are fetched simultaneously, each with its own
+ * registered session token to avoid concurrent token-refresh races.
+ *
+ * @param {string}   eventId
+ * @param {object[]} pointsToFetch  - Point descriptors from discoverTimingPoints
+ * @param {string}   appid
+ * @param {string}   outputDir
+ * @param {number}   hintTotal      - Expected finisher count (for progress estimates)
+ * @param {object}   opts
+ * @param {number}   opts.concurrency
+ * @param {boolean}  opts.fresh     - If true, ignore existing cache files
+ */
+async function fetchAndCacheSplits(eventId, pointsToFetch, appid, outputDir, hintTotal, { concurrency, fresh }) {
+  const fetchStart = Date.now();
+  let   completed  = 0;
+
+  // Separate already-cached points from those still needing a fetch
+  const toFetch = [];
+  for (let i = 0; i < pointsToFetch.length; i++) {
+    const pt     = pointsToFetch[i];
+    const cached = !fresh && await splitFileExists(outputDir, eventId, pt.name);
+    if (cached) {
+      console.log(`   [${i + 1}/${pointsToFetch.length}] ${pt.name} — cached ✓`);
+    } else {
+      toFetch.push({ pt, idx: i });
+    }
+  }
+
+  if (toFetch.length === 0) {
+    console.log("\n   All points cached — skipping fetch.");
+    return;
+  }
+
+  console.log(`\n   Fetching ${toFetch.length} point(s) with concurrency=${concurrency}...\n`);
+
+  // Register one session token per worker to avoid concurrent refresh races
+  const workerCount = Math.min(concurrency, toFetch.length);
+  const tokens      = await Promise.all(
+    Array.from({ length: workerCount }, () => register(appid))
+  );
+  const tokenRefs = tokens.map((value) => ({ value }));
+  const queue     = [...toFetch];
+  const display   = new ProgressDisplay();
+
+  /**
+   * Worker loop: pulls jobs from the shared queue until empty.
+   * Each job fetches one timing point and writes it to disk.
+   *
+   * @param {{value: string}} workerToken - This worker's mutable token holder
+   */
+  async function runWorker(workerToken) {
+    while (queue.length > 0) {
+      const { pt, idx } = queue.shift();
+      const label       = `   [${idx + 1}/${pointsToFetch.length}] ${pt.name.padEnd(8)}`;
+      const ptStart     = Date.now();
+
+      // Each point gets its own persistent line in the terminal display
+      const lineIdx = display.addLine(`${label} starting...`);
+
+      const map = await fetchAllSplitsAtPoint(
+        eventId, pt.name, appid, workerToken, hintTotal,
+        (status) => display.update(lineIdx, `${label} ${status}`)
+      );
+      await saveSplits(outputDir, eventId, pt.name, map);
+
+      completed++;
+      const ptSecs  = ((Date.now() - ptStart)  / 1000).toFixed(1);
+      const elapsed = ((Date.now() - fetchStart) / 1000).toFixed(0);
+      const left    = toFetch.length - completed;
+      const avgSecs = (Date.now() - fetchStart) / 1000 / completed;
+      const etaSecs = Math.round(left * avgSecs);
+      const eta     = etaSecs > 60 ? `~${Math.round(etaSecs / 60)}m` : `~${etaSecs}s`;
+      display.update(lineIdx, `${label} ✅ ${map.size} records in ${ptSecs}s  •  ${elapsed}s total  •  ${left > 0 ? eta + " remaining" : "all done"}`);
+    }
+  }
+
+  await Promise.all(tokenRefs.map((tr) => runWorker(tr)));
+}
+
+/**
+ * Loads all cached split files and constructs the athlete records array.
+ *
+ * All intermediate split maps are preloaded into memory before the athlete loop
+ * to avoid per-bib async overhead (54k awaits on a getSplits call that is
+ * effectively synchronous after the first load is expensive in practice).
+ *
+ * Returns the athletes array (sorted by overall rank) and a map of bib →
+ * Unix epoch start time for athletes whose START split contained timing data.
+ *
+ * @param {string}   eventId
+ * @param {object[]} pointsToFetch - Point descriptors from discoverTimingPoints
+ * @param {string}   outputDir
+ * @returns {Promise<{ athletes: object[], rtrtStarts: Map<string, number> }>}
+ */
+async function buildAthleteRecords(eventId, pointsToFetch, outputDir) {
+  const startPointName = pointsToFetch.find((p) => p.isStart)?.name;
+  const legPointDefs   = pointsToFetch.filter((p) => !p.isStart);
+
+  // Preload all split files upfront — avoids 54k individual awaits in the loop
+  console.log("\n   Loading split files...");
+  const allSplits = new Map();
+  for (const pt of pointsToFetch) {
+    allSplits.set(pt.name, await loadSplits(outputDir, eventId, pt.name));
+  }
+
+  const startSplits  = allSplits.get(startPointName);
+  const finishPtDef  = legPointDefs.find((p) => p.isFinish);
+  const finishSplits = allSplits.get(finishPtDef?.name);
+
+  const allBibs = new Set([...startSplits.keys(), ...finishSplits.keys()]);
+  console.log(`   Total athletes found: ${allBibs.size}`);
+
+  const athletes   = [];
+  const rtrtStarts = new Map();
+
+  for (const bib of allBibs) {
+    const startSplit  = startSplits.get(bib);
+    const finishSplit = finishSplits.get(bib);
+    const profile     = finishSplit ?? startSplit;
+    if (!profile) continue;
+
+    // Compute leg split times as differences between consecutive cumulative chip times
+    const legSecs = {};
+    let prevCumSecs = 0;
+    for (const legPt of legPointDefs) {
+      const split   = allSplits.get(legPt.name)?.get(bib);
+      const cumSecs = parseTime(split?.netTime);
+      if (cumSecs != null && prevCumSecs !== null) {
+        legSecs[legPt.legName] = Math.max(0, Math.round(cumSecs - prevCumSecs));
+        prevCumSecs = cumSecs;
+      } else {
+        legSecs[legPt.legName] = null;
+        prevCumSecs = null;
+      }
+    }
+
+    const finishCumSecs = parseTime(finishSplit?.netTime);
+    const results       = finishSplit?.results ?? {};
+    const overallRank   = results["course"]?.p              ?? results["overall"]?.p  ?? null;
+    const genderRank    = results["course-sex"]?.p          ?? results["gender"]?.p   ?? null;
+    const divisionRank  = results["course-sex-division"]?.p ?? results["agegroup"]?.p ?? null;
+    const gender        = profile.sex === "M" ? "Male" : profile.sex === "F" ? "Female" : "";
+    const startEpoch    = startSplit?.epochTime ? parseFloat(startSplit.epochTime) : null;
+
+    if (startEpoch != null) rtrtStarts.set(bib, startEpoch);
+
+    athletes.push({
+      bib,
+      name:         profile.name ?? "",
+      gender,
+      country:      profile.country_iso?.toUpperCase() ?? profile.country ?? "",
+      division:     profile.division ?? "",
+      status:       finishSplit ? "FIN" : "DNF",
+      overallRank:  overallRank  != null ? parseInt(overallRank,  10) : null,
+      genderRank:   genderRank   != null ? parseInt(genderRank,   10) : null,
+      divisionRank: divisionRank != null ? parseInt(divisionRank, 10) : null,
+      finishSecs:   finishCumSecs ?? null,
+      legSecs,
+      startEpoch,
+      waveOffset:   null,
+      cumPositions: {},
+    });
+  }
+
+  athletes.sort((a, b) => (a.overallRank ?? 99999) - (b.overallRank ?? 99999));
+
+  const finisherCount = athletes.filter((a) => a.status === "FIN").length;
+  const dnfCount      = athletes.filter((a) => a.status === "DNF").length;
+  console.log(`   Finishers: ${finisherCount} | DNFs: ${dnfCount}`);
+
+  return { athletes, rtrtStarts };
+}
+
+/**
+ * Normalizes athletes, runs the fast passing algorithm, and optionally verifies
+ * results against the O(n²) reference implementation.
+ *
+ * @param {object[]}             athletes
+ * @param {string[]}             legNames
+ * @param {Map<string, number>}  rtrtStarts  - bib → epoch; pass empty Map if unavailable
+ * @param {boolean}              verifyMode  - Whether to run --verify diff
+ * @returns {{ normalizedAthletes: object[], passingMap: Map, hasWaveData: boolean }}
+ */
+function runPassingAnalysis(athletes, legNames, rtrtStarts, verifyMode) {
+  const hasRtrt = rtrtStarts.size > 0;
+  const { athletes: normalizedAthletes, hasWaveData } = normalizeAthletes(
+    athletes,
+    legNames,
+    hasRtrt ? rtrtStarts : null
+  );
+
+  const modeMsg = hasRtrt
+    ? `RTRT start times matched to ${rtrtStarts.size}/${athletes.length} athletes — physical passing mode active.`
+    : "No per-athlete start times — using chip time comparisons only.";
+  console.log(`   ${modeMsg}`);
+
+  const passingMap = computePassingDataFast(normalizedAthletes, legNames, hasWaveData);
+
+  // Optional: diff fast algorithm against O(n²) reference to verify correctness
+  if (verifyMode) {
+    console.log("\n🔍 --verify: running O(n²) reference algorithm to diff results...");
+    const refMap     = computePassingData(normalizedAthletes, legNames, hasWaveData);
+    let   mismatches = 0;
+
+    for (const a of normalizedAthletes) {
+      const fast = passingMap.get(a.bib);
+      const ref  = refMap.get(a.bib);
+      if (!fast || !ref) continue;
+      for (const leg of legNames) {
+        if (fast[leg].gained !== ref[leg].gained || fast[leg].lost !== ref[leg].lost) {
+          if (mismatches === 0) console.log("   BIB       LEG      FAST gained/lost  REF gained/lost");
+          console.log(
+            `   ${String(a.bib).padEnd(9)} ${leg.padEnd(8)} ` +
+            `fast=${fast[leg].gained}/${fast[leg].lost}  ref=${ref[leg].gained}/${ref[leg].lost}`
+          );
+          if (++mismatches >= 20) { console.log("   ... (truncated at 20 mismatches)"); break; }
+        }
+      }
+      if (mismatches >= 20) break;
+    }
+
+    if (mismatches === 0) {
+      console.log("   ✅ PASS — fast and reference algorithms produce identical results.");
+    } else {
+      console.log(`\n   ❌ FAIL — ${mismatches} mismatch(es) found. Results written using fast algorithm.`);
+    }
+  }
+
+  return { normalizedAthletes, passingMap, hasWaveData };
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-const args         = process.argv.slice(2);
-const eventId      = args.find((a) => !a.startsWith("--"));
-const appidIdx     = args.indexOf("--appid");
-const appid        = appidIdx !== -1 ? args[appidIdx + 1] : IRONMAN_APPID;
-const outdirIdx    = args.indexOf("--output-dir");
-const outputDir    = outdirIdx !== -1 ? args[outdirIdx + 1] : path.join(__dirname, "data");
-const pointsIdx    = args.indexOf("--points");
-const forcedPoints = pointsIdx !== -1 ? args[pointsIdx + 1]?.split(",").map((p) => p.trim()) : null;
-const verifyMode   = args.includes("--verify");
+const args           = process.argv.slice(2);
+const eventId        = args.find((a) => !a.startsWith("--"));
+const appidIdx       = args.indexOf("--appid");
+const appid          = appidIdx       !== -1 ? args[appidIdx + 1]       : IRONMAN_APPID;
+const outdirIdx      = args.indexOf("--output-dir");
+const outputDir      = outdirIdx      !== -1 ? args[outdirIdx + 1]      : path.join(__dirname, "data");
+const pointsIdx      = args.indexOf("--points");
+const forcedPoints   = pointsIdx      !== -1 ? args[pointsIdx + 1]?.split(",").map((p) => p.trim()) : null;
+const concurrencyIdx = args.indexOf("--concurrency");
+const concurrency    = concurrencyIdx !== -1 ? parseInt(args[concurrencyIdx + 1], 10) : DEFAULT_CONCURRENCY;
+const freshMode      = args.includes("--fresh");
+const verifyMode     = args.includes("--verify");
 
 if (!eventId) {
   console.error(`
 Usage: node scripts/racereplay.mjs <event-id> [options]
 
-  event-id             RTRT event ID, e.g. BASS2026 or IRM-OCEANSIDE703-2026
+  event-id              RTRT event ID, e.g. BASS2026 or IRM-OCEANSIDE703-2026
 
 Options:
-  --appid <id>         RTRT app ID for this event's tracker.
-                       Default: IRONMAN Tracker (for IRM-* events).
-                       For other events, find it at track.rtrt.me/e/<event-id>
-                       (view page source, search for "appid").
-  --output-dir <dir>   Directory to write output files (default: scripts/data/)
-  --points <list>      Comma-separated timing point names to use, in order.
-                       Overrides auto-discovery.
-                       Example: --points START,5K,10K,FINISH
-  --verify             Run the O(n²) reference algorithm after the fast algorithm
-                       and diff the results to confirm correctness.
+  --appid <id>          RTRT app ID for this event's tracker.
+                        Default: IRONMAN Tracker (for IRM-* events).
+                        For other events, find it at track.rtrt.me/e/<event-id>
+                        (view page source, search for "appid").
+  --output-dir <dir>    Directory to write output files (default: scripts/data/)
+  --points <list>       Comma-separated timing point names to use, in order.
+                        Overrides auto-discovery.
+                        Example: --points START,5K,10K,FINISH
+  --concurrency <n>     Points to fetch in parallel (default: ${DEFAULT_CONCURRENCY}).
+  --fresh               Ignore cached split files and re-fetch everything.
+  --verify              Run the O(n²) reference algorithm after the fast algorithm
+                        and diff the results to confirm correctness.
 
 Examples:
   # Shamrock Shuffle 2026
@@ -715,14 +1125,20 @@ Examples:
 
   # Any IRONMAN event
   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
+
+  # Force full re-fetch
+  node scripts/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
 `);
   process.exit(1);
 }
 
 (async () => {
+  const runStart = Date.now();
+
   try {
     await fs.mkdir(outputDir, { recursive: true });
 
+    // ── Connect and load event metadata ──────────────────────────────────────
     console.log("🔑 Registering with RTRT.me...");
     const tokenRef = { value: await register(appid) };
 
@@ -732,283 +1148,35 @@ Examples:
     console.log(`   Location: ${event.loc?.desc ?? "unknown"}`);
     console.log(`   Finishers reported: ${event.finishers ?? "unknown"}`);
 
-    // ── Determine timing points ───────────────────────────────────────────────
-    let pointsToFetch;
-
-    if (forcedPoints) {
-      pointsToFetch = forcedPoints.map((name, i) => ({
-        name,
-        label:    name,
-        legName:  name,
-        isStart:  i === 0,
-        isFinish: i === forcedPoints.length - 1,
-      }));
-      console.log(`\n📋 Using specified points: ${forcedPoints.join(", ")}`);
-    } else {
-      console.log("\n📋 Discovering timing points...");
-      const allPoints = await fetchAllPoints(eventId, appid, tokenRef.value);
-      console.log(`   Found ${allPoints.length} total timing points`);
-
-      const startPoint  = allPoints.find((p) => p.isStart  === "1");
-      const finishPoint = allPoints.find((p) => p.isFinish === "1");
-      if (!startPoint)  throw new Error("No START point found for this event");
-      if (!finishPoint) throw new Error("No FINISH point found for this event");
-
-      // Include transitions (T1, T2) even if hide_in_badges is set
-      const isTransition = (p) => /^T\d+$/i.test(p.name) || /^T\d+$/i.test(p.label);
-      const intermediate = allPoints.filter(
-        (p) =>
-          p.publish === "1" &&
-          (p.hide_in_badges !== "1" || isTransition(p)) &&
-          p.isStart  !== "1" &&
-          p.isFinish !== "1"
-      );
-
-      console.log(`   START: ${startPoint.name} (${startPoint.label || startPoint.name})`);
-      console.log(`   Intermediate: ${intermediate.length} points`);
-      for (const p of intermediate) {
-        console.log(`     • ${p.name} — "${p.label}" @ ${p.km} km`);
-      }
-      console.log(`   FINISH: ${finishPoint.name} (${finishPoint.label || finishPoint.name})`);
-
-      const legPoints = [...intermediate, finishPoint];
-      pointsToFetch = [
-        { name: startPoint.name, label: startPoint.label, legName: null, isStart: true,  isFinish: false },
-        ...legPoints.map((p, i) => ({
-          name:     p.name,
-          label:    p.label,
-          legName:  cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
-          isStart:  false,
-          isFinish: p.isFinish === "1",
-        })),
-      ];
-    }
-
-    const startPointName = pointsToFetch.find((p) => p.isStart)?.name;
+    // ── Resolve timing points ─────────────────────────────────────────────────
+    const pointsToFetch  = await discoverTimingPoints(eventId, appid, tokenRef.value, forcedPoints);
     const legPointDefs   = pointsToFetch.filter((p) => !p.isStart);
     const legNames       = legPointDefs.map((p) => p.legName);
 
     console.log(`\n   Legs to compute: ${legNames.join(" → ")}`);
 
-    // ── Helpers: persist and load per-point split files ───────────────────────
-    // Each timing point's splits are written to {eventId}_splits_{pointName}.json
-    // immediately after fetching. On re-run, any file that already exists is
-    // loaded from disk instead of re-fetched, making the process resumable.
+    // ── Fetch and cache splits ────────────────────────────────────────────────
+    const hintTotal = event.finishers ? parseInt(event.finishers, 10) : 0;
+    await fetchAndCacheSplits(eventId, pointsToFetch, appid, outputDir, hintTotal, {
+      concurrency,
+      fresh: freshMode,
+    });
 
-    const splitFile = (ptName) =>
-      path.join(outputDir, `${eventId}_splits_${ptName}.json`);
-
-    async function saveSplits(ptName, map) {
-      const arr = [...map.entries()].map(([bib, rec]) => ({ bib, ...rec }));
-      await fs.writeFile(splitFile(ptName), JSON.stringify(arr));
-    }
-
-    async function loadSplits(ptName) {
-      const raw = await fs.readFile(splitFile(ptName), "utf8");
-      const arr = JSON.parse(raw);
-      const map = new Map();
-      for (const rec of arr) {
-        const { bib, ...rest } = rec;
-        map.set(String(bib), rest);
-      }
-      return map;
-    }
-
-    async function splitFileExists(ptName) {
-      try { await fs.access(splitFile(ptName)); return true; } catch { return false; }
-    }
-
-    // ── Fetch splits (parallel, skip cached points) ───────────────────────────
-    const hintTotal  = event.finishers ? parseInt(event.finishers, 10) : 0;
-    const fetchStart = Date.now();
-    let   completed  = 0;
-
-    // Separate already-cached points from those still needing a fetch
-    const toFetch = [];
-    for (let i = 0; i < pointsToFetch.length; i++) {
-      const pt = pointsToFetch[i];
-      if (await splitFileExists(pt.name)) {
-        console.log(`   [${i + 1}/${pointsToFetch.length}] ${pt.name} — cached ✓`);
-      } else {
-        toFetch.push({ pt, idx: i });
-      }
-    }
-
-    if (toFetch.length === 0) {
-      console.log("\n   All points cached — skipping fetch.");
-    } else {
-      console.log(`\n   Fetching ${toFetch.length} point(s) with concurrency=${CONCURRENCY}...\n`);
-
-      // Each worker gets its own token to avoid concurrent token-refresh races
-      const workerCount = Math.min(CONCURRENCY, toFetch.length);
-      const tokens      = await Promise.all(
-        Array.from({ length: workerCount }, () => register(appid))
-      );
-      const tokenRefs = tokens.map((value) => ({ value }));
-      const queue     = [...toFetch];
-      const display   = new ProgressDisplay();
-
-      async function runWorker(workerToken) {
-        while (queue.length > 0) {
-          const { pt, idx } = queue.shift();
-          const label       = `   [${idx + 1}/${pointsToFetch.length}] ${pt.name.padEnd(8)}`;
-          const ptStart     = Date.now();
-
-          // Each point gets its own line; update it in place while fetching
-          const lineIdx = display.addLine(`${label} starting...`);
-
-          const map = await fetchAllSplitsAtPoint(
-            eventId, pt.name, appid, workerToken, hintTotal,
-            (status) => display.update(lineIdx, `${label} ${status}`)
-          );
-          await saveSplits(pt.name, map);
-
-          completed++;
-          const ptSecs  = ((Date.now() - ptStart) / 1000).toFixed(1);
-          const elapsed = ((Date.now() - fetchStart) / 1000).toFixed(0);
-          const left    = toFetch.length - completed;
-          const avgSecs = (Date.now() - fetchStart) / 1000 / completed;
-          const etaSecs = Math.round(left * avgSecs);
-          const eta     = etaSecs > 60 ? `~${Math.round(etaSecs / 60)}m` : `~${etaSecs}s`;
-          // Finalize the line — it stays on screen and is never updated again
-          display.update(lineIdx, `${label} ✅ ${map.size} records in ${ptSecs}s  •  ${elapsed}s total  •  ${left > 0 ? eta + " remaining" : "all done"}`);
-        }
-      }
-
-      await Promise.all(tokenRefs.map((tr) => runWorker(tr)));
-    }
-
-    // ── Build athlete records (load split files on demand) ────────────────────
-    // START and FINISH are loaded upfront to enumerate all bibs. Intermediate
-    // point files are loaded one at a time as each leg is processed, keeping
-    // peak memory around 3 Maps rather than all points simultaneously.
-
-    console.log("\n   Loading START and FINISH splits...");
-    const startSplits  = await loadSplits(startPointName);
-    const finishPtDef  = legPointDefs.find((p) => p.isFinish);
-    const finishSplits = await loadSplits(finishPtDef?.name);
-
-    const allBibs = new Set([...startSplits.keys(), ...finishSplits.keys()]);
-    console.log(`   Total athletes found: ${allBibs.size}`);
-
-    const splitsCache = new Map();
-    splitsCache.set(startPointName,   startSplits);
-    splitsCache.set(finishPtDef?.name, finishSplits);
-
-    async function getSplits(ptName) {
-      if (!splitsCache.has(ptName)) splitsCache.set(ptName, await loadSplits(ptName));
-      return splitsCache.get(ptName);
-    }
-
-    const athletes   = [];
-    const rtrtStarts = new Map();
-
-    for (const bib of allBibs) {
-      const startSplit  = startSplits.get(bib);
-      const finishSplit = finishSplits.get(bib);
-      const profile     = finishSplit ?? startSplit;
-      if (!profile) continue;
-
-      // Compute leg split times as differences between consecutive cumulative times
-      const legSecs = {};
-      let prevCumSecs = 0;
-      for (const legPt of legPointDefs) {
-        const ptSplits  = await getSplits(legPt.name);
-        const split     = ptSplits.get(bib);
-        const cumSecs   = parseTime(split?.netTime);
-        if (cumSecs != null && prevCumSecs !== null) {
-          legSecs[legPt.legName] = Math.max(0, Math.round(cumSecs - prevCumSecs));
-          prevCumSecs = cumSecs;
-        } else {
-          legSecs[legPt.legName] = null;
-          prevCumSecs = null;
-        }
-      }
-
-      const finishCumSecs  = parseTime(finishSplit?.netTime);
-      const results        = finishSplit?.results ?? {};
-      const overallRank    = results["course"]?.p              ?? results["overall"]?.p   ?? null;
-      const genderRank     = results["course-sex"]?.p          ?? results["gender"]?.p    ?? null;
-      const divisionRank   = results["course-sex-division"]?.p ?? results["agegroup"]?.p  ?? null;
-      const gender         = profile.sex === "M" ? "Male" : profile.sex === "F" ? "Female" : "";
-      const startEpoch     = startSplit?.epochTime ? parseFloat(startSplit.epochTime) : null;
-
-      if (startEpoch != null) rtrtStarts.set(bib, startEpoch);
-
-      athletes.push({
-        bib,
-        name:         profile.name ?? "",
-        gender,
-        country:      profile.country_iso?.toUpperCase() ?? profile.country ?? "",
-        division:     profile.division ?? "",
-        status:       finishSplit ? "FIN" : "DNF",
-        overallRank:  overallRank  != null ? parseInt(overallRank,  10) : null,
-        genderRank:   genderRank   != null ? parseInt(genderRank,   10) : null,
-        divisionRank: divisionRank != null ? parseInt(divisionRank, 10) : null,
-        finishSecs:   finishCumSecs ?? null,
-        legSecs,
-        startEpoch,
-        waveOffset:   null,
-        cumPositions: {},
-      });
-    }
-
-    athletes.sort((a, b) => (a.overallRank ?? 99999) - (b.overallRank ?? 99999));
-
-    const finisherCount = athletes.filter((a) => a.status === "FIN").length;
-    const dnfCount      = athletes.filter((a) => a.status === "DNF").length;
-    console.log(`   Finishers: ${finisherCount} | DNFs: ${dnfCount}`);
+    // ── Build athlete records ─────────────────────────────────────────────────
+    const { athletes, rtrtStarts } = await buildAthleteRecords(eventId, pointsToFetch, outputDir);
 
     // ── Run passing analysis ──────────────────────────────────────────────────
     console.log("\n⚙️  Running passing analysis...");
-
-    const hasRtrt = rtrtStarts.size > 0;
-    const { athletes: normalizedAthletes, hasWaveData } = normalizeAthletes(
+    const { normalizedAthletes, passingMap, hasWaveData } = runPassingAnalysis(
       athletes,
       legNames,
-      hasRtrt ? rtrtStarts : null
+      rtrtStarts,
+      verifyMode
     );
 
-    const modeMsg = hasRtrt
-      ? `RTRT start times matched to ${rtrtStarts.size}/${athletes.length} athletes — physical passing mode active.`
-      : "No per-athlete start times — using chip time comparisons only.";
-    console.log(`   ${modeMsg}`);
+    // ── Print report and write CSV ────────────────────────────────────────────
+    printReport(normalizedAthletes, passingMap, legNames, hasWaveData, Date.now() - runStart);
 
-    const passingMap = computePassingDataFast(normalizedAthletes, legNames, hasWaveData);
-
-    // Optional: diff fast algorithm against O(n²) reference to verify correctness
-    if (verifyMode) {
-      console.log("\n🔍 --verify: running O(n²) reference algorithm to diff results...");
-      const refMap     = computePassingData(normalizedAthletes, legNames, hasWaveData);
-      let   mismatches = 0;
-
-      for (const a of normalizedAthletes) {
-        const fast = passingMap.get(a.bib);
-        const ref  = refMap.get(a.bib);
-        if (!fast || !ref) continue;
-        for (const leg of legNames) {
-          if (fast[leg].gained !== ref[leg].gained || fast[leg].lost !== ref[leg].lost) {
-            if (mismatches === 0) console.log("   BIB       LEG      FAST gained/lost  REF gained/lost");
-            console.log(
-              `   ${String(a.bib).padEnd(9)} ${leg.padEnd(8)} ` +
-              `fast=${fast[leg].gained}/${fast[leg].lost}  ref=${ref[leg].gained}/${ref[leg].lost}`
-            );
-            if (++mismatches >= 20) { console.log("   ... (truncated at 20 mismatches)"); break; }
-          }
-        }
-        if (mismatches >= 20) break;
-      }
-
-      if (mismatches === 0) {
-        console.log("   ✅ PASS — fast and reference algorithms produce identical results.");
-      } else {
-        console.log(`\n   ❌ FAIL — ${mismatches} mismatch(es) found. Results written using fast algorithm.`);
-      }
-    }
-
-    printReport(normalizedAthletes, passingMap, legNames, hasWaveData);
-
-    // ── Write output ──────────────────────────────────────────────────────────
     const outputFile = path.join(outputDir, `${eventId}_passing.csv`);
     await fs.writeFile(outputFile, buildOutputCSV(normalizedAthletes, passingMap, legNames));
     console.log(`📄 Passing data written to: ${outputFile}`);
