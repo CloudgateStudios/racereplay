@@ -90,6 +90,11 @@ export default async function EventPage({ params, searchParams }: Props) {
     where: { eventId: event.id, status: "FIN" },
   });
 
+  // Only show the Division column if at least one athlete in this event has one
+  const hasDivisions = await prisma.athlete.count({
+    where: { eventId: event.id, division: { not: "" } },
+  }).then((n) => n > 0);
+
   const [total, athletes, genders, divisions] = await Promise.all([
     prisma.athlete.count({ where }),
     prisma.athlete.findMany({
@@ -240,7 +245,7 @@ export default async function EventPage({ params, searchParams }: Props) {
               <TableHead>
                 <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
               </TableHead>
-              <TableHead>Division</TableHead>
+              {hasDivisions && <TableHead>Division</TableHead>}
               <TableHead>Status</TableHead>
               <TableHead>
                 <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
@@ -268,9 +273,11 @@ export default async function EventPage({ params, searchParams }: Props) {
                       {athlete.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {athlete.division || "—"}
-                  </TableCell>
+                  {hasDivisions && (
+                    <TableCell className="text-muted-foreground text-sm">
+                      {athlete.division || "—"}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
                       {athlete.status}
