@@ -240,81 +240,102 @@ export default async function EventPage({ params, searchParams }: Props) {
         {page > 1 ? ` — page ${page} of ${totalPages}` : ""}
       </p>
 
-      <div className="overflow-x-auto rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <SortHeader column="rank" label="Rank" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              <TableHead>
-                <SortHeader column="bib" label="Bib" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              <TableHead>
-                <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              {hasDivisions && <TableHead>Division</TableHead>}
-              <TableHead>Status</TableHead>
-              <TableHead>
-                <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              {event.segments.map((seg) => (
-                <TableHead key={`${seg.id}-net`} className="text-center">
-                  {seg.name} Net
+      {/* Table: on mobile shows Rank, Name (+ status badge inline), Overall Net only.
+          Secondary columns (Bib, Division, Status, Finish, per-segment nets) are
+          hidden on small screens and revealed at sm breakpoint.
+          A right-edge fade hints at horizontal scroll on mobile. */}
+      <div className="relative">
+        {/* Fade hint for horizontal overflow on mobile */}
+        <div className="from-background pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-8 bg-gradient-to-l to-transparent sm:hidden" />
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  <SortHeader column="rank" label="Rank" currentSort={sort} currentDir={dir} />
                 </TableHead>
-              ))}
-              <TableHead className="text-center">Overall Net</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {athletes.map((athlete) => {
-              const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
-              return (
-                <TableRow key={athlete.id} className="hover:bg-muted/50">
-                  <TableCell className="tabular-nums">{athlete.overallRank ?? "—"}</TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">{athlete.bib}</TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/events/${slug}/${year}/${athlete.bib}`}
-                      className="font-medium hover:underline"
-                    >
-                      {athlete.name}
-                    </Link>
-                  </TableCell>
-                  {hasDivisions && (
-                    <TableCell className="text-muted-foreground text-sm">
-                      {athlete.division || "—"}
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
-                      {athlete.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">
-                    {athlete.finishTime ?? "—"}
-                  </TableCell>
-                  {event.segments.map((seg) => {
-                    const s = athlete.segments.find((as) => as.segmentId === seg.id);
-                    return (
-                      <TableCell
-                        key={`${athlete.id}-${seg.id}-net`}
-                        className={`text-center font-medium tabular-nums ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
-                      >
-                        {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
-                      </TableCell>
-                    );
-                  })}
-                  <TableCell
-                    className={`text-center font-bold tabular-nums ${overallNet > 0 ? "text-green-600" : overallNet < 0 ? "text-red-500" : ""}`}
+                <TableHead className="hidden sm:table-cell">
+                  <SortHeader column="bib" label="Bib" currentSort={sort} currentDir={dir} />
+                </TableHead>
+                <TableHead>
+                  <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
+                </TableHead>
+                {hasDivisions && (
+                  <TableHead className="hidden sm:table-cell">Division</TableHead>
+                )}
+                <TableHead className="hidden sm:table-cell">Status</TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
+                </TableHead>
+                {event.segments.map((seg) => (
+                  <TableHead
+                    key={`${seg.id}-net`}
+                    className="hidden text-center sm:table-cell"
                   >
-                    {overallNet > 0 ? `+${overallNet}` : overallNet}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    {seg.name} Net
+                  </TableHead>
+                ))}
+                <TableHead className="text-center">Overall Net</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {athletes.map((athlete) => {
+                const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
+                return (
+                  <TableRow key={athlete.id} className="hover:bg-muted/50">
+                    <TableCell className="tabular-nums">{athlete.overallRank ?? "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell font-mono text-sm tabular-nums">
+                      {athlete.bib}
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/events/${slug}/${year}/${athlete.bib}`}
+                        className="font-medium hover:underline"
+                      >
+                        {athlete.name}
+                      </Link>
+                      {/* Status badge shown inline on mobile only */}
+                      {athlete.status !== "FIN" && (
+                        <Badge variant="outline" className="ml-2 text-xs sm:hidden">
+                          {athlete.status}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    {hasDivisions && (
+                      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                        {athlete.division || "—"}
+                      </TableCell>
+                    )}
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
+                        {athlete.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell font-mono text-sm tabular-nums">
+                      {athlete.finishTime ?? "—"}
+                    </TableCell>
+                    {event.segments.map((seg) => {
+                      const s = athlete.segments.find((as) => as.segmentId === seg.id);
+                      return (
+                        <TableCell
+                          key={`${athlete.id}-${seg.id}-net`}
+                          className={`hidden sm:table-cell text-center font-medium tabular-nums ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
+                        >
+                          {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
+                        </TableCell>
+                      );
+                    })}
+                    <TableCell
+                      className={`text-center font-bold tabular-nums ${overallNet > 0 ? "text-green-600" : overallNet < 0 ? "text-red-500" : ""}`}
+                    >
+                      {overallNet > 0 ? `+${overallNet}` : overallNet}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}
