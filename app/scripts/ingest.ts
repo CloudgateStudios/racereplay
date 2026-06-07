@@ -29,6 +29,9 @@
  *     --event-date 2026-03-29
  *
  * Safe to re-run — all writes are upserts keyed on (slug, year, bib).
+ *
+ * Add --dry-run to print detected columns and legs without writing anything:
+ *   npx tsx scripts/ingest.ts <passing-csv> --dry-run
  */
 
 import { config } from "dotenv";
@@ -54,15 +57,19 @@ interface Args {
   year: number;
   eventType: "TRIATHLON" | "ROAD_RACE";
   eventDate: Date;
+  dryRun: boolean;
 }
 
 function parseArgs(argv: string[]): Args {
   const args = argv.slice(2);
   const flags: Record<string, string> = {};
   let csvFile: string | null = null;
+  let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i].startsWith("--")) {
+    if (args[i] === "--dry-run") {
+      dryRun = true;
+    } else if (args[i].startsWith("--")) {
       flags[args[i].slice(2)] = args[i + 1];
       i++;
     } else if (!csvFile) {
@@ -70,11 +77,14 @@ function parseArgs(argv: string[]): Args {
     }
   }
 
-  const required = ["slug", "race-name", "year", "event-type", "event-date"];
-  for (const key of required) {
-    if (!flags[key]) {
-      console.error(`Missing required flag: --${key}`);
-      process.exit(1);
+  // --dry-run only needs the CSV file
+  if (!dryRun) {
+    const required = ["slug", "race-name", "year", "event-type", "event-date"];
+    for (const key of required) {
+      if (!flags[key]) {
+        console.error(`Missing required flag: --${key}`);
+        process.exit(1);
+      }
     }
   }
   if (!csvFile) {
@@ -82,19 +92,20 @@ function parseArgs(argv: string[]): Args {
     process.exit(1);
   }
 
-  const rawType = flags["event-type"].toUpperCase().replace("-", "_");
-  if (rawType !== "TRIATHLON" && rawType !== "ROAD_RACE") {
+  const rawType = (flags["event-type"] ?? "TRIATHLON").toUpperCase().replace("-", "_");
+  if (!dryRun && rawType !== "TRIATHLON" && rawType !== "ROAD_RACE") {
     console.error(`--event-type must be triathlon or road_race`);
     process.exit(1);
   }
 
   return {
     csvFile: path.resolve(csvFile),
-    slug: flags["slug"],
-    raceName: flags["race-name"],
-    year: parseInt(flags["year"], 10),
+    slug: flags["slug"] ?? "",
+    raceName: flags["race-name"] ?? "",
+    year: parseInt(flags["year"] ?? "0", 10),
     eventType: rawType as "TRIATHLON" | "ROAD_RACE",
-    eventDate: new Date(flags["event-date"]),
+    eventDate: new Date(flags["event-date"] ?? ""),
+    dryRun,
   };
 }
 
@@ -168,21 +179,61 @@ export function timeToSeconds(t: string): number | null {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+// ─── Column validation ────────────────────────────────────────────────────────
+
+const EXPECTED_COLS = ["Bib", "Name", "Gender", "Division", "Country", "Status"];
+const EXPECTED_FINISH_COLS = ["Overall Finish Time", "Finish Time"];
+const EXPECTED_RANK_COLS = ["Overall Rank", "Gender Rank", "Division Rank"];
+
+export function warnMissingColumns(headers: string[]): void {
+  const headerSet = new Set(headers);
+  for (const col of EXPECTED_COLS) {
+    if (!headerSet.has(col)) {
+      console.warn(`  ⚠ Expected column not found: "${col}" — data will be empty for this field`);
+    }
+  }
+  if (!EXPECTED_FINISH_COLS.some((c) => headerSet.has(c))) {
+    console.warn(
+      `  ⚠ Neither "Overall Finish Time" nor "Finish Time" found — finish times will be empty`
+    );
+  }
+  for (const col of EXPECTED_RANK_COLS) {
+    if (!headerSet.has(col)) {
+      console.warn(`  ⚠ Expected column not found: "${col}" — rank will be null`);
+    }
+  }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 async function main() {
-  const { csvFile, slug, raceName, year, eventType, eventDate } = parseArgs(process.argv);
+  const { csvFile, slug, raceName, year, eventType, eventDate, dryRun } = parseArgs(process.argv);
 
   console.log(`\nIngesting: ${csvFile}`);
-  console.log(`  Race:  ${raceName} (${slug})`);
-  console.log(`  Year:  ${year}`);
-  console.log(`  Type:  ${eventType}`);
-  console.log(`  Date:  ${eventDate.toISOString().slice(0, 10)}\n`);
+  if (!dryRun) {
+    console.log(`  Race:  ${raceName} (${slug})`);
+    console.log(`  Year:  ${year}`);
+    console.log(`  Type:  ${eventType}`);
+    console.log(`  Date:  ${eventDate.toISOString().slice(0, 10)}`);
+  }
+  console.log();
 
   const raw = await fs.readFile(csvFile, "utf8");
   const { headers, rows } = parseCSV(raw);
   const legs = detectLegs(headers);
 
-  console.log(`Detected legs: ${legs.join(", ")}`);
-  console.log(`Athlete rows:  ${rows.length}\n`);
+  console.log(`Detected legs:   ${legs.length > 0 ? legs.join(", ") : "(none)"}`);
+  console.log(`Athlete rows:    ${rows.length}`);
+  console.log(`All CSV columns: ${headers.join(", ")}\n`);
+
+  console.log("Column check:");
+  warnMissingColumns(headers);
+  console.log();
+
+  if (dryRun) {
+    console.log("Dry run complete — no data written.");
+    return;
+  }
 
   // ── Upsert Race ────────────────────────────────────────────────────────────
   const race = await prisma.race.upsert({
@@ -239,12 +290,12 @@ async function main() {
       const obj = rowToObj(headers, row);
 
       const athleteData = {
-        name: obj["Name"] ?? "",
-        gender: obj["Gender"] ?? "",
-        division: obj["Division"] ?? "",
-        country: obj["Country"] ?? "",
-        status: obj["Status"] ?? "",
-        finishTime: obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "",
+        name: (obj["Name"] ?? "").trim(),
+        gender: (obj["Gender"] ?? "").trim(),
+        division: (obj["Division"] ?? "").trim(),
+        country: (obj["Country"] ?? "").trim(),
+        status: (obj["Status"] ?? "").trim(),
+        finishTime: (obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "").trim(),
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),
         divisionRank: toInt(obj["Division Rank"]),
