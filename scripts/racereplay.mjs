@@ -1131,6 +1131,43 @@ async function buildAthleteRecords(eventId, pointsToFetch, outputDir) {
     });
   }
 
+  // If RTRT didn't supply any rank data (common for road races), compute ranks
+  // ourselves from finish times. Ranks are assigned to finishers only; DNFs are
+  // left null. Ties are broken by bib for determinism (matches buildRankMap).
+  const hasRtrtRanks = athletes.some((a) => a.overallRank != null);
+  if (!hasRtrtRanks) {
+    console.log("   No RTRT rank data found — computing ranks from finish times.");
+    const finishers = athletes
+      .filter((a) => a.status === "FIN" && a.finishSecs != null)
+      .sort((a, b) => a.finishSecs - b.finishSecs || String(a.bib).localeCompare(String(b.bib)));
+
+    // Overall rank
+    finishers.forEach((a, i) => { a.overallRank = i + 1; });
+
+    // Gender rank — group by gender, preserving overall-rank order within each group
+    const byGender = new Map();
+    for (const a of finishers) {
+      if (!byGender.has(a.gender)) byGender.set(a.gender, []);
+      byGender.get(a.gender).push(a);
+    }
+    for (const group of byGender.values()) {
+      group.forEach((a, i) => { a.genderRank = i + 1; });
+    }
+
+    // Division rank — group by division, preserving overall-rank order within each group
+    const byDivision = new Map();
+    for (const a of finishers) {
+      const key = a.division || "__none__";
+      if (!byDivision.has(key)) byDivision.set(key, []);
+      byDivision.get(key).push(a);
+    }
+    for (const [key, group] of byDivision.entries()) {
+      // Skip the catch-all bucket — athletes with no division don't get a division rank
+      if (key === "__none__") continue;
+      group.forEach((a, i) => { a.divisionRank = i + 1; });
+    }
+  }
+
   athletes.sort((a, b) => (a.overallRank ?? 99999) - (b.overallRank ?? 99999));
 
   const finisherCount = athletes.filter((a) => a.status === "FIN").length;
