@@ -19,8 +19,7 @@ interface Props {
 export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Props) {
   const [expanded, setExpanded] = useState(false);
 
-  const pctOf = (n: number) =>
-    totalAthletes > 0 ? ((n / totalAthletes) * 100).toFixed(1) : "0.0";
+  const pctOf = (n: number) => (totalAthletes > 0 ? ((n / totalAthletes) * 100).toFixed(1) : "0.0");
 
   const finishPct = pctOf(finisherCount);
 
@@ -29,7 +28,12 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
     { key: "started", label: "Started", count: totalAthletes, isFinish: false },
     ...segmentCounts
       .filter((seg) => !seg.isFinish)
-      .map((seg) => ({ key: String(seg.segmentId), label: seg.name, count: seg.count, isFinish: false })),
+      .map((seg) => ({
+        key: String(seg.segmentId),
+        label: seg.name,
+        count: seg.count,
+        isFinish: false,
+      })),
     { key: "finished", label: "Finished", count: finisherCount, isFinish: true },
   ];
 
@@ -57,9 +61,7 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
           className="bg-muted/40 flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left"
         >
           <span className="text-sm">
-            <span className="font-semibold tabular-nums">
-              {totalAthletes.toLocaleString()}
-            </span>
+            <span className="font-semibold tabular-nums">{totalAthletes.toLocaleString()}</span>
             <span className="text-muted-foreground"> started · </span>
             <span className="text-primary font-semibold tabular-nums">
               {finisherCount.toLocaleString()}
@@ -81,13 +83,15 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
                 const isBigDrop = i === maxDropIdx;
                 return (
                   <div key={row.key} className="flex items-center justify-between py-2">
-                    <span className={`text-sm ${isBigDrop ? "text-orange-500 font-medium" : "text-muted-foreground"}`}>
+                    <span
+                      className={`text-sm ${isBigDrop ? "font-medium text-orange-500" : "text-muted-foreground"}`}
+                    >
                       {row.label}
-                      {isBigDrop && (
-                        <span className="ml-1 text-xs">↓ biggest drop</span>
-                      )}
+                      {isBigDrop && <span className="ml-1 text-xs">↓ biggest drop</span>}
                     </span>
-                    <span className={`text-sm font-semibold tabular-nums ${row.isFinish ? "text-primary" : ""}`}>
+                    <span
+                      className={`text-sm font-semibold tabular-nums ${row.isFinish ? "text-primary" : ""}`}
+                    >
                       {row.count.toLocaleString()}{" "}
                       <span className="text-muted-foreground font-normal">{pct}%</span>
                     </span>
@@ -145,20 +149,14 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
                   <div className="w-32 shrink-0 text-sm tabular-nums">
                     <span
                       className={`font-semibold ${
-                        isBigDrop
-                          ? "text-orange-500"
-                          : row.isFinish
-                            ? "text-primary"
-                            : ""
+                        isBigDrop ? "text-orange-500" : row.isFinish ? "text-primary" : ""
                       }`}
                     >
                       {row.count.toLocaleString()}
                     </span>
                     <span className="text-muted-foreground ml-1">{pct}%</span>
                     {isBigDrop && drop > 0 && (
-                      <span className="text-orange-400 ml-2 text-xs">
-                        −{drop.toLocaleString()}
-                      </span>
+                      <span className="ml-2 text-xs text-orange-400">−{drop.toLocaleString()}</span>
                     )}
                   </div>
 

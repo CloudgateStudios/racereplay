@@ -209,18 +209,13 @@ export default async function EventPage({ params, searchParams }: Props) {
                 <TableHead className="w-auto">
                   <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
                 </TableHead>
-                {hasDivisions && (
-                  <TableHead className="hidden sm:table-cell">Division</TableHead>
-                )}
+                {hasDivisions && <TableHead className="hidden sm:table-cell">Division</TableHead>}
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
                 <TableHead className="hidden sm:table-cell">
                   <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
                 </TableHead>
                 {event.segments.map((seg) => (
-                  <TableHead
-                    key={`${seg.id}-net`}
-                    className="hidden text-center sm:table-cell"
-                  >
+                  <TableHead key={`${seg.id}-net`} className="hidden text-center sm:table-cell">
                     {seg.name} Net
                   </TableHead>
                 ))}
@@ -233,7 +228,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                 return (
                   <TableRow key={athlete.id} className="hover:bg-muted/50">
                     <TableCell className="tabular-nums">{athlete.overallRank ?? "—"}</TableCell>
-                    <TableCell className="hidden sm:table-cell font-mono text-sm tabular-nums">
+                    <TableCell className="hidden font-mono text-sm tabular-nums sm:table-cell">
                       {athlete.bib}
                     </TableCell>
                     <TableCell>
@@ -251,7 +246,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                       )}
                     </TableCell>
                     {hasDivisions && (
-                      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                      <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
                         {athlete.division || "—"}
                       </TableCell>
                     )}
@@ -260,7 +255,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                         {athlete.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell font-mono text-sm tabular-nums">
+                    <TableCell className="hidden font-mono text-sm tabular-nums sm:table-cell">
                       {athlete.finishTime ?? "—"}
                     </TableCell>
                     {event.segments.map((seg) => {
@@ -268,7 +263,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                       return (
                         <TableCell
                           key={`${athlete.id}-${seg.id}-net`}
-                          className={`hidden sm:table-cell text-center font-medium tabular-nums ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
+                          className={`hidden text-center font-medium tabular-nums sm:table-cell ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
                         >
                           {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
                         </TableCell>
