@@ -108,27 +108,21 @@ export default async function AthletePage({ params }: Props) {
         {[
           {
             label: "Finish Time",
-            value: athlete.finishTime && athlete.finishTime !== "--:--:--"
-              ? athlete.finishTime
-              : null,
+            value:
+              athlete.finishTime && athlete.finishTime !== "--:--:--" ? athlete.finishTime : null,
           },
           {
             label: "Overall Rank",
-            value: athlete.overallRank != null
-              ? `#${athlete.overallRank.toLocaleString()}`
-              : null,
+            value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : null,
           },
           {
             label: "Gender Rank",
-            value: athlete.genderRank != null
-              ? `#${athlete.genderRank.toLocaleString()}`
-              : null,
+            value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : null,
           },
           {
             label: "Division Rank",
-            value: athlete.divisionRank != null
-              ? `#${athlete.divisionRank.toLocaleString()}`
-              : null,
+            value:
+              athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : null,
           },
         ]
           .filter(({ value }) => value != null)

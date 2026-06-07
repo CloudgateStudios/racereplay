@@ -91,9 +91,11 @@ export default async function EventPage({ params, searchParams }: Props) {
   });
 
   // Only show the Division column if at least one athlete in this event has one
-  const hasDivisions = await prisma.athlete.count({
-    where: { eventId: event.id, division: { not: "" } },
-  }).then((n) => n > 0);
+  const hasDivisions = await prisma.athlete
+    .count({
+      where: { eventId: event.id, division: { not: "" } },
+    })
+    .then((n) => n > 0);
 
   const [total, athletes, genders, divisions] = await Promise.all([
     prisma.athlete.count({ where }),
