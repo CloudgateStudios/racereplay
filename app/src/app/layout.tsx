@@ -86,7 +86,6 @@ export default function RootLayout({
                 className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
               >
                 Cloudgate Studios
-                <ExternalLink className="h-3 w-3" />
               </Link>
             </p>
             <div className="flex items-center gap-4">

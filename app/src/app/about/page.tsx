@@ -65,7 +65,6 @@ export default function AboutPage() {
                   className="text-primary hover:text-primary/80 inline-flex items-center gap-1 font-medium transition-colors"
                 >
                   Cloudgate Studios
-                  <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
                 . It started as a personal tool to make sense of triathlon results, and grew into
                 something worth sharing with the broader racing community.
@@ -78,15 +77,6 @@ export default function AboutPage() {
           </section>
 
           <div className="flex flex-wrap gap-4">
-            <Link
-              href="https://cloudgatestudios.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-card hover:border-primary/50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-            >
-              <ExternalLink className="text-primary h-4 w-4" />
-              Cloudgate Studios
-            </Link>
             <Link
               href="https://github.com/CloudgateStudios/race_replay"
               target="_blank"
@@ -110,7 +100,7 @@ export default function AboutPage() {
         <div className="order-1 w-full shrink-0 sm:order-2 sm:w-1/3">
           <Image
             src="/arra-chi13.1.jpeg"
-            alt="Tom racing at Chicago 13.1"
+            alt="Tom Arra racing at Chicago 13.1"
             width={400}
             height={600}
             className="w-full rounded-xl object-cover object-top shadow-md"
