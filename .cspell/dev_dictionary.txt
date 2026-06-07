@@ -4,6 +4,7 @@ arra
 autoincrement
 athleteid
 cloudgate
+couldn
 cspell
 depcheck
 destructive
