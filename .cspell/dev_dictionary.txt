@@ -3,6 +3,7 @@ antialiased
 arra
 autoincrement
 athleteid
+cloudgate
 cspell
 depcheck
 destructive
