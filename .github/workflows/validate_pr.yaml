@@ -74,6 +74,9 @@ jobs:
       - name: Check unused dependencies
         run: npx depcheck
 
+      - name: Unit tests
+        run: npm test
+
       - name: Build
         run: npm run build
         env:

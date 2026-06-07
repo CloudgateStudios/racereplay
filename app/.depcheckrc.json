@@ -7,7 +7,9 @@
     "tailwindcss",
     "prettier-plugin-tailwindcss",
     "@types/react-dom",
-    "depcheck"
+    "depcheck",
+    "vitest",
+    "@vitest/coverage-v8"
   ],
   "ignorePatterns": ["src/generated/**"]
 }

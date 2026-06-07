@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { formatSeconds, netColor, netLabel } from "@/lib/formatting";
 
 export const dynamic = "force-dynamic";
 import { Badge } from "@/components/ui/badge";
@@ -21,26 +22,6 @@ export async function generateMetadata({ params }: Props) {
   const { slug, year, bib } = await params;
   const race = await prisma.race.findUnique({ where: { slug } });
   return { title: race ? `Bib ${bib} — ${race.name} ${year} — Race Replay` : "Not Found" };
-}
-
-function formatSeconds(seconds: number | null): string {
-  if (seconds == null) return "—";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function netColor(net: number | null) {
-  if (net == null || net === 0) return "";
-  return net > 0 ? "text-green-600" : "text-red-500";
-}
-
-function netLabel(net: number | null) {
-  if (net == null) return "—";
-  if (net > 0) return `+${net}`;
-  return String(net);
 }
 
 export default async function AthletePage({ params }: Props) {

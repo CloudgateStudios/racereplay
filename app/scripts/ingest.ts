@@ -100,13 +100,13 @@ function parseArgs(argv: string[]): Args {
 
 // ─── CSV parsing ──────────────────────────────────────────────────────────────
 
-function parseCSV(raw: string): { headers: string[]; rows: string[][] } {
+export function parseCSV(raw: string): { headers: string[]; rows: string[][] } {
   const lines = raw.trim().split("\n");
   const headers = parseCSVRow(lines[0]);
   return { headers, rows: lines.slice(1).map(parseCSVRow) };
 }
 
-function parseCSVRow(line: string): string[] {
+export function parseCSVRow(line: string): string[] {
   const values: string[] = [];
   let current = "";
   let inQuotes = false;
@@ -129,7 +129,7 @@ function parseCSVRow(line: string): string[] {
   return values;
 }
 
-function rowToObj(headers: string[], row: string[]): Record<string, string> {
+export function rowToObj(headers: string[], row: string[]): Record<string, string> {
   return Object.fromEntries(headers.map((h, i) => [h, row[i] ?? ""]));
 }
 
@@ -137,7 +137,7 @@ function rowToObj(headers: string[], row: string[]): Record<string, string> {
 
 const SKIP_TIME_COLS = new Set(["Overall Finish Time", "Finish Time", "Wave Offset (Seconds)"]);
 
-function detectLegs(headers: string[]): string[] {
+export function detectLegs(headers: string[]): string[] {
   return headers
     .filter((h) => h.endsWith(" Time") && !SKIP_TIME_COLS.has(h))
     .map((h) => h.replace(/ Time$/, ""));
@@ -145,20 +145,20 @@ function detectLegs(headers: string[]): string[] {
 
 // ─── Value helpers ────────────────────────────────────────────────────────────
 
-function toInt(val: string | undefined): number | null {
+export function toInt(val: string | undefined): number | null {
   if (!val) return null;
   const n = parseInt(val, 10);
   return isNaN(n) ? null : n;
 }
 
-function toFloat(val: string | undefined): number | null {
+export function toFloat(val: string | undefined): number | null {
   if (!val) return null;
   if (val.includes(":")) return timeToSeconds(val);
   const n = parseFloat(val);
   return isNaN(n) ? null : n;
 }
 
-function timeToSeconds(t: string): number | null {
+export function timeToSeconds(t: string): number | null {
   const parts = t.split(":").map(Number);
   if (parts.some(isNaN)) return null;
   if (parts.length === 2) return parts[0] * 60 + parts[1];
@@ -294,8 +294,11 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main().catch(async (err) => {
-  console.error(err);
-  await prisma.$disconnect();
-  process.exit(1);
-});
+// Only run when executed directly (not when imported by tests)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(async (err) => {
+    console.error(err);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
+}
