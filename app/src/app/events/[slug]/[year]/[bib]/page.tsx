@@ -70,6 +70,22 @@ export default async function AthletePage({ params }: Props) {
 
   const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
 
+  // Pre-compute cumulative times in segment display order so we can reference
+  // them by index in the render — avoids mutating a variable inside JSX which
+  // triggers the react-hooks/immutability lint rule.
+  // If any leg time is null the running total resets to null for that row and
+  // all subsequent rows, mirroring the chain-break logic in the pipeline.
+  const cumulativeTimes: (number | null)[] = [];
+  let running: number | null = 0;
+  for (const seg of athlete.segments) {
+    if (seg.timeSeconds != null && running !== null) {
+      running += seg.timeSeconds;
+    } else {
+      running = null;
+    }
+    cumulativeTimes.push(running);
+  }
+
   return (
     <div>
       {/* Breadcrumb */}
@@ -142,41 +158,26 @@ export default async function AthletePage({ params }: Props) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(() => {
-              // Compute a running cumulative time across legs in display order.
-              // If any leg time is null the cumulative resets to null for that row
-              // and all subsequent rows (mirrors the same chain-break logic used
-              // when building the CSV).
-              let cumulativeSecs: number | null = 0;
-              return athlete.segments.map((as) => {
-                if (as.timeSeconds != null && cumulativeSecs !== null) {
-                  cumulativeSecs += as.timeSeconds;
-                } else {
-                  cumulativeSecs = null;
-                }
-                const cumDisplay = cumulativeSecs != null ? formatSeconds(cumulativeSecs) : "—";
-                return (
-                  <TableRow key={as.segmentId}>
-                    <TableCell className="font-medium">{as.segment.name}</TableCell>
-                    <TableCell className="text-right font-mono text-sm tabular-nums">
-                      {formatSeconds(as.timeSeconds)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-right font-mono text-sm tabular-nums">
-                      {cumDisplay}
-                    </TableCell>
-                    <TableCell className="text-center font-medium text-green-600 tabular-nums">
-                      {as.gained != null ? `+${as.gained}` : "—"}
-                    </TableCell>
-                    <TableCell className="text-center font-medium text-red-500 tabular-nums">
-                      {as.lost != null ? `-${as.lost}` : "—"}
-                    </TableCell>
-                    <TableCell className={`text-center font-bold tabular-nums ${netColor(as.net)}`}>
-                      {netLabel(as.net)}
-                    </TableCell>
-                  </TableRow>
-                );
-              });
-            })()}
+            {athlete.segments.map((as, i) => (
+              <TableRow key={as.segmentId}>
+                <TableCell className="font-medium">{as.segment.name}</TableCell>
+                <TableCell className="text-right font-mono text-sm tabular-nums">
+                  {formatSeconds(as.timeSeconds)}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-right font-mono text-sm tabular-nums">
+                  {cumulativeTimes[i] != null ? formatSeconds(cumulativeTimes[i]) : "—"}
+                </TableCell>
+                <TableCell className="text-center font-medium text-green-600 tabular-nums">
+                  {as.gained != null ? `+${as.gained}` : "—"}
+                </TableCell>
+                <TableCell className="text-center font-medium text-red-500 tabular-nums">
+                  {as.lost != null ? `-${as.lost}` : "—"}
+                </TableCell>
+                <TableCell className={`text-center font-bold tabular-nums ${netColor(as.net)}`}>
+                  {netLabel(as.net)}
+                </TableCell>
+              </TableRow>
+            ))}
             <TableRow className="bg-muted/30 border-t-2">
               <TableCell className="font-bold">Overall</TableCell>
               <TableCell />
