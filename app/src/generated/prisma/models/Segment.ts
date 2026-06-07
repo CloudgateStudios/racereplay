@@ -43,6 +43,7 @@ export type SegmentMinAggregateOutputType = {
   eventId: number | null
   name: string | null
   displayOrder: number | null
+  isFinish: boolean | null
 }
 
 export type SegmentMaxAggregateOutputType = {
@@ -50,6 +51,7 @@ export type SegmentMaxAggregateOutputType = {
   eventId: number | null
   name: string | null
   displayOrder: number | null
+  isFinish: boolean | null
 }
 
 export type SegmentCountAggregateOutputType = {
@@ -57,6 +59,7 @@ export type SegmentCountAggregateOutputType = {
   eventId: number
   name: number
   displayOrder: number
+  isFinish: number
   _all: number
 }
 
@@ -78,6 +81,7 @@ export type SegmentMinAggregateInputType = {
   eventId?: true
   name?: true
   displayOrder?: true
+  isFinish?: true
 }
 
 export type SegmentMaxAggregateInputType = {
@@ -85,6 +89,7 @@ export type SegmentMaxAggregateInputType = {
   eventId?: true
   name?: true
   displayOrder?: true
+  isFinish?: true
 }
 
 export type SegmentCountAggregateInputType = {
@@ -92,6 +97,7 @@ export type SegmentCountAggregateInputType = {
   eventId?: true
   name?: true
   displayOrder?: true
+  isFinish?: true
   _all?: true
 }
 
@@ -186,6 +192,7 @@ export type SegmentGroupByOutputType = {
   eventId: number
   name: string
   displayOrder: number
+  isFinish: boolean
   _count: SegmentCountAggregateOutputType | null
   _avg: SegmentAvgAggregateOutputType | null
   _sum: SegmentSumAggregateOutputType | null
@@ -216,6 +223,7 @@ export type SegmentWhereInput = {
   eventId?: Prisma.IntFilter<"Segment"> | number
   name?: Prisma.StringFilter<"Segment"> | string
   displayOrder?: Prisma.IntFilter<"Segment"> | number
+  isFinish?: Prisma.BoolFilter<"Segment"> | boolean
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
   athletes?: Prisma.AthleteSegmentListRelationFilter
 }
@@ -225,6 +233,7 @@ export type SegmentOrderByWithRelationInput = {
   eventId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   displayOrder?: Prisma.SortOrder
+  isFinish?: Prisma.SortOrder
   event?: Prisma.EventOrderByWithRelationInput
   athletes?: Prisma.AthleteSegmentOrderByRelationAggregateInput
 }
@@ -237,6 +246,7 @@ export type SegmentWhereUniqueInput = Prisma.AtLeast<{
   eventId?: Prisma.IntFilter<"Segment"> | number
   name?: Prisma.StringFilter<"Segment"> | string
   displayOrder?: Prisma.IntFilter<"Segment"> | number
+  isFinish?: Prisma.BoolFilter<"Segment"> | boolean
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
   athletes?: Prisma.AthleteSegmentListRelationFilter
 }, "id">
@@ -246,6 +256,7 @@ export type SegmentOrderByWithAggregationInput = {
   eventId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   displayOrder?: Prisma.SortOrder
+  isFinish?: Prisma.SortOrder
   _count?: Prisma.SegmentCountOrderByAggregateInput
   _avg?: Prisma.SegmentAvgOrderByAggregateInput
   _max?: Prisma.SegmentMaxOrderByAggregateInput
@@ -261,11 +272,13 @@ export type SegmentScalarWhereWithAggregatesInput = {
   eventId?: Prisma.IntWithAggregatesFilter<"Segment"> | number
   name?: Prisma.StringWithAggregatesFilter<"Segment"> | string
   displayOrder?: Prisma.IntWithAggregatesFilter<"Segment"> | number
+  isFinish?: Prisma.BoolWithAggregatesFilter<"Segment"> | boolean
 }
 
 export type SegmentCreateInput = {
   name: string
   displayOrder: number
+  isFinish?: boolean
   event: Prisma.EventCreateNestedOneWithoutSegmentsInput
   athletes?: Prisma.AthleteSegmentCreateNestedManyWithoutSegmentInput
 }
@@ -275,12 +288,14 @@ export type SegmentUncheckedCreateInput = {
   eventId: number
   name: string
   displayOrder: number
+  isFinish?: boolean
   athletes?: Prisma.AthleteSegmentUncheckedCreateNestedManyWithoutSegmentInput
 }
 
 export type SegmentUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   event?: Prisma.EventUpdateOneRequiredWithoutSegmentsNestedInput
   athletes?: Prisma.AthleteSegmentUpdateManyWithoutSegmentNestedInput
 }
@@ -290,6 +305,7 @@ export type SegmentUncheckedUpdateInput = {
   eventId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   athletes?: Prisma.AthleteSegmentUncheckedUpdateManyWithoutSegmentNestedInput
 }
 
@@ -298,11 +314,13 @@ export type SegmentCreateManyInput = {
   eventId: number
   name: string
   displayOrder: number
+  isFinish?: boolean
 }
 
 export type SegmentUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SegmentUncheckedUpdateManyInput = {
@@ -310,6 +328,7 @@ export type SegmentUncheckedUpdateManyInput = {
   eventId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SegmentListRelationFilter = {
@@ -327,6 +346,7 @@ export type SegmentCountOrderByAggregateInput = {
   eventId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   displayOrder?: Prisma.SortOrder
+  isFinish?: Prisma.SortOrder
 }
 
 export type SegmentAvgOrderByAggregateInput = {
@@ -340,6 +360,7 @@ export type SegmentMaxOrderByAggregateInput = {
   eventId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   displayOrder?: Prisma.SortOrder
+  isFinish?: Prisma.SortOrder
 }
 
 export type SegmentMinOrderByAggregateInput = {
@@ -347,6 +368,7 @@ export type SegmentMinOrderByAggregateInput = {
   eventId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   displayOrder?: Prisma.SortOrder
+  isFinish?: Prisma.SortOrder
 }
 
 export type SegmentSumOrderByAggregateInput = {
@@ -402,6 +424,10 @@ export type SegmentUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.SegmentScalarWhereInput | Prisma.SegmentScalarWhereInput[]
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type SegmentCreateNestedOneWithoutAthletesInput = {
   create?: Prisma.XOR<Prisma.SegmentCreateWithoutAthletesInput, Prisma.SegmentUncheckedCreateWithoutAthletesInput>
   connectOrCreate?: Prisma.SegmentCreateOrConnectWithoutAthletesInput
@@ -419,6 +445,7 @@ export type SegmentUpdateOneRequiredWithoutAthletesNestedInput = {
 export type SegmentCreateWithoutEventInput = {
   name: string
   displayOrder: number
+  isFinish?: boolean
   athletes?: Prisma.AthleteSegmentCreateNestedManyWithoutSegmentInput
 }
 
@@ -426,6 +453,7 @@ export type SegmentUncheckedCreateWithoutEventInput = {
   id?: number
   name: string
   displayOrder: number
+  isFinish?: boolean
   athletes?: Prisma.AthleteSegmentUncheckedCreateNestedManyWithoutSegmentInput
 }
 
@@ -463,11 +491,13 @@ export type SegmentScalarWhereInput = {
   eventId?: Prisma.IntFilter<"Segment"> | number
   name?: Prisma.StringFilter<"Segment"> | string
   displayOrder?: Prisma.IntFilter<"Segment"> | number
+  isFinish?: Prisma.BoolFilter<"Segment"> | boolean
 }
 
 export type SegmentCreateWithoutAthletesInput = {
   name: string
   displayOrder: number
+  isFinish?: boolean
   event: Prisma.EventCreateNestedOneWithoutSegmentsInput
 }
 
@@ -476,6 +506,7 @@ export type SegmentUncheckedCreateWithoutAthletesInput = {
   eventId: number
   name: string
   displayOrder: number
+  isFinish?: boolean
 }
 
 export type SegmentCreateOrConnectWithoutAthletesInput = {
@@ -497,6 +528,7 @@ export type SegmentUpdateToOneWithWhereWithoutAthletesInput = {
 export type SegmentUpdateWithoutAthletesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   event?: Prisma.EventUpdateOneRequiredWithoutSegmentsNestedInput
 }
 
@@ -505,17 +537,20 @@ export type SegmentUncheckedUpdateWithoutAthletesInput = {
   eventId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SegmentCreateManyEventInput = {
   id?: number
   name: string
   displayOrder: number
+  isFinish?: boolean
 }
 
 export type SegmentUpdateWithoutEventInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   athletes?: Prisma.AthleteSegmentUpdateManyWithoutSegmentNestedInput
 }
 
@@ -523,6 +558,7 @@ export type SegmentUncheckedUpdateWithoutEventInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   athletes?: Prisma.AthleteSegmentUncheckedUpdateManyWithoutSegmentNestedInput
 }
 
@@ -530,6 +566,7 @@ export type SegmentUncheckedUpdateManyWithoutEventInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinish?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -568,6 +605,7 @@ export type SegmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   eventId?: boolean
   name?: boolean
   displayOrder?: boolean
+  isFinish?: boolean
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
   athletes?: boolean | Prisma.Segment$athletesArgs<ExtArgs>
   _count?: boolean | Prisma.SegmentCountOutputTypeDefaultArgs<ExtArgs>
@@ -578,6 +616,7 @@ export type SegmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   eventId?: boolean
   name?: boolean
   displayOrder?: boolean
+  isFinish?: boolean
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["segment"]>
 
@@ -586,6 +625,7 @@ export type SegmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   eventId?: boolean
   name?: boolean
   displayOrder?: boolean
+  isFinish?: boolean
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["segment"]>
 
@@ -594,9 +634,10 @@ export type SegmentSelectScalar = {
   eventId?: boolean
   name?: boolean
   displayOrder?: boolean
+  isFinish?: boolean
 }
 
-export type SegmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "name" | "displayOrder", ExtArgs["result"]["segment"]>
+export type SegmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "name" | "displayOrder" | "isFinish", ExtArgs["result"]["segment"]>
 export type SegmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
   athletes?: boolean | Prisma.Segment$athletesArgs<ExtArgs>
@@ -620,6 +661,7 @@ export type $SegmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     eventId: number
     name: string
     displayOrder: number
+    isFinish: boolean
   }, ExtArgs["result"]["segment"]>
   composites: {}
 }
@@ -1049,6 +1091,7 @@ export interface SegmentFieldRefs {
   readonly eventId: Prisma.FieldRef<"Segment", 'Int'>
   readonly name: Prisma.FieldRef<"Segment", 'String'>
   readonly displayOrder: Prisma.FieldRef<"Segment", 'Int'>
+  readonly isFinish: Prisma.FieldRef<"Segment", 'Boolean'>
 }
     
 

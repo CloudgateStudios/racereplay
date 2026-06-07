@@ -33,6 +33,7 @@ model Segment {
   eventId      Int
   name         String
   displayOrder Int
+  isFinish     Boolean          @default(false)
   athletes     AthleteSegment[]
 }
 

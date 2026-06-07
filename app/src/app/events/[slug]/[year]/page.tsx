@@ -81,7 +81,7 @@ export default async function EventPage({ params, searchParams }: Props) {
     event.segments.map((seg) =>
       prisma.athleteSegment
         .count({ where: { segmentId: seg.id, timeSeconds: { not: null } } })
-        .then((count) => ({ segmentId: seg.id, name: seg.name, count }))
+        .then((count) => ({ segmentId: seg.id, name: seg.name, isFinish: seg.isFinish, count }))
     )
   );
 
@@ -185,7 +185,7 @@ export default async function EventPage({ params, searchParams }: Props) {
               already represents that count and avoids the funnel going back up due
               to athletes who missed the final timing mat but still have FIN status. */}
           {segmentCounts
-            .filter((seg) => seg.name.toLowerCase() !== "finish")
+            .filter((seg) => !seg.isFinish)
             .map((seg) => {
               const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
               return (
