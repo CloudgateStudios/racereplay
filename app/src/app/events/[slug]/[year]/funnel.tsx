@@ -98,66 +98,90 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
         )}
       </div>
 
-      {/* ── Desktop: horizontal bar chart ── */}
+      {/* ── Desktop: collapsible bar chart ── */}
       <div className="bg-muted/40 hidden rounded-lg border px-6 py-4 sm:block">
         <div className="space-y-2">
-          {rows.map((row, i) => {
-            const pct =
-              totalAthletes > 0 ? Math.round((row.count / totalAthletes) * 100) : 0;
-            const barPct = totalAthletes > 0 ? (row.count / totalAthletes) * 100 : 0;
-            const isBigDrop = i === maxDropIdx;
-            const drop = i > 0 ? rows[i - 1].count - row.count : 0;
+          {rows
+            .filter((row, i) => expanded || i === 0 || row.isFinish)
+            .map((row, _, visible) => {
+              const originalIdx = rows.findIndex((r) => r.key === row.key);
+              const pct =
+                totalAthletes > 0 ? Math.round((row.count / totalAthletes) * 100) : 0;
+              const barPct = totalAthletes > 0 ? (row.count / totalAthletes) * 100 : 0;
+              const isBigDrop = originalIdx === maxDropIdx;
+              const drop = originalIdx > 0 ? rows[originalIdx - 1].count - row.count : 0;
+              const isLast = row.key === visible[visible.length - 1].key;
 
-            return (
-              <div key={row.key} className="flex items-center gap-3">
-                {/* Label */}
-                <span
-                  className={`w-20 shrink-0 text-right text-sm ${
-                    isBigDrop
-                      ? "font-medium text-orange-500"
-                      : row.isFinish
-                        ? "text-primary font-medium"
-                        : "text-muted-foreground"
-                  }`}
-                >
-                  {row.label}
-                </span>
-
-                {/* Bar */}
-                <div className="h-6 flex-1 overflow-hidden rounded-sm bg-transparent">
-                  <div
-                    className={`h-full rounded-sm transition-all ${
-                      isBigDrop
-                        ? "bg-orange-400/70"
-                        : row.isFinish
-                          ? "bg-primary/70"
-                          : "bg-primary/30"
-                    }`}
-                    style={{ width: `${barPct}%` }}
-                  />
-                </div>
-
-                {/* Count + pct */}
-                <div className="w-32 shrink-0 text-sm tabular-nums">
+              return (
+                <div key={row.key} className="flex items-center gap-3">
+                  {/* Label */}
                   <span
-                    className={`font-semibold ${
+                    className={`w-20 shrink-0 text-right text-sm ${
                       isBigDrop
-                        ? "text-orange-500"
+                        ? "font-medium text-orange-500"
                         : row.isFinish
-                          ? "text-primary"
-                          : ""
+                          ? "text-primary font-medium"
+                          : "text-muted-foreground"
                     }`}
                   >
-                    {row.count.toLocaleString()}
+                    {row.label}
                   </span>
-                  <span className="text-muted-foreground ml-1">{pct}%</span>
-                  {isBigDrop && drop > 0 && (
-                    <span className="text-orange-400 ml-2 text-xs">−{drop.toLocaleString()}</span>
+
+                  {/* Bar */}
+                  <div className="h-6 flex-1 overflow-hidden rounded-sm bg-transparent">
+                    <div
+                      className={`h-full rounded-sm transition-all ${
+                        isBigDrop
+                          ? "bg-orange-400/70"
+                          : row.isFinish
+                            ? "bg-primary/70"
+                            : "bg-primary/30"
+                      }`}
+                      style={{ width: `${barPct}%` }}
+                    />
+                  </div>
+
+                  {/* Count + pct */}
+                  <div className="w-32 shrink-0 text-sm tabular-nums">
+                    <span
+                      className={`font-semibold ${
+                        isBigDrop
+                          ? "text-orange-500"
+                          : row.isFinish
+                            ? "text-primary"
+                            : ""
+                      }`}
+                    >
+                      {row.count.toLocaleString()}
+                    </span>
+                    <span className="text-muted-foreground ml-1">{pct}%</span>
+                    {isBigDrop && drop > 0 && (
+                      <span className="text-orange-400 ml-2 text-xs">
+                        −{drop.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Expand/collapse toggle — sits on the Finished row */}
+                  {isLast && rows.length > 2 && (
+                    <button
+                      onClick={() => setExpanded((v) => !v)}
+                      className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1 text-xs transition-colors"
+                    >
+                      {expanded ? (
+                        <>
+                          <ChevronUp className="h-3 w-3" /> collapse
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3" /> show legs
+                        </>
+                      )}
+                    </button>
                   )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     </div>
