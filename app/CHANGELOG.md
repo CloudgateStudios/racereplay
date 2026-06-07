@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/CloudgateStudios/race_replay/compare/0.3.2...0.4.0) (2026-06-07)
+
+### Features
+
+- add about page ([#43](https://github.com/CloudgateStudios/race_replay/issues/43)) ([dd6f3a1](https://github.com/CloudgateStudios/race_replay/commit/dd6f3a14e11e866637028bea59e90c881c3a3c5f))
+
+### Bug Fixes
+
+- actually round the time format ([#42](https://github.com/CloudgateStudios/race_replay/issues/42)) ([6571205](https://github.com/CloudgateStudios/race_replay/commit/6571205a2a3cce6f61e3939a35ec95cbe13d8b26))
+- add --dry-run flag and column warnings to ingest script ([#52](https://github.com/CloudgateStudios/race_replay/issues/52)) ([ae9955f](https://github.com/CloudgateStudios/race_replay/commit/ae9955f0440d1f8d6bc9afc0a703eb024ecdab51))
+- add AthleteStatus enum to Prisma schema (tech debt [#6](https://github.com/CloudgateStudios/race_replay/issues/6)) ([#55](https://github.com/CloudgateStudios/race_replay/issues/55)) ([a142b38](https://github.com/CloudgateStudios/race_replay/commit/a142b38948eaf21a19d77ae6144a01d1af05625a))
+- add error boundary components for graceful error handling ([#47](https://github.com/CloudgateStudios/race_replay/issues/47)) ([7e879b7](https://github.com/CloudgateStudios/race_replay/commit/7e879b748528b8695a997e298962eab205e5d412))
+- add isFinish flag to Segment model (tech debt [#3](https://github.com/CloudgateStudios/race_replay/issues/3)) ([#54](https://github.com/CloudgateStudios/race_replay/issues/54)) ([0e18a0c](https://github.com/CloudgateStudios/race_replay/commit/0e18a0c5bd2e0ccef4c6876c8c60e4a76468a9e3))
+- add skeleton loading states for event and athlete pages ([#49](https://github.com/CloudgateStudios/race_replay/issues/49)) ([3b44aef](https://github.com/CloudgateStudios/race_replay/commit/3b44aefe1e894618412abaa3ccec26270feb212e))
+- always render all four rank cards on athlete page ([#48](https://github.com/CloudgateStudios/race_replay/issues/48)) ([5c7efad](https://github.com/CloudgateStudios/race_replay/commit/5c7efad995fa9a7d3d3b1e76ebbcdecdb479f958))
+- debounce search input to reduce excessive router pushes ([#50](https://github.com/CloudgateStudios/race_replay/issues/50)) ([e339387](https://github.com/CloudgateStudios/race_replay/commit/e3393879b3de8369dc63e5c1d7ba33d2baa59915))
+- make Athlete.finishTime nullable, replace sentinel string with null ([#53](https://github.com/CloudgateStudios/race_replay/issues/53)) ([a1de4a1](https://github.com/CloudgateStudios/race_replay/commit/a1de4a1818db9e2de5e010e995582ce492a48677))
+- pass DATABASE_URL to vercel build step in CI ([#56](https://github.com/CloudgateStudios/race_replay/issues/56)) ([f307f7c](https://github.com/CloudgateStudios/race_replay/commit/f307f7c316631f0fc1eaec8a26ccfca857fc9550))
+- remove duplicate release notes in version increment workflow ([#41](https://github.com/CloudgateStudios/race_replay/issues/41)) ([90ba21b](https://github.com/CloudgateStudios/race_replay/commit/90ba21bcbface4654490d52f61c61fa85ccc6c4f))
+- trim whitespace from athlete string fields during ingest ([#51](https://github.com/CloudgateStudios/race_replay/issues/51)) ([6ea2027](https://github.com/CloudgateStudios/race_replay/commit/6ea2027558496106b79cc11efe4e52010fdca15b))
+- validate DATABASE_URL at startup instead of crashing at query time ([#46](https://github.com/CloudgateStudios/race_replay/issues/46)) ([0832124](https://github.com/CloudgateStudios/race_replay/commit/083212459ed18cbcba9537f7a6f6991d4396ce9c))
+
 ### [0.3.2](https://github.com/CloudgateStudios/race_replay/compare/0.3.1...0.3.2) (2026-06-07)
 
 ### Features
