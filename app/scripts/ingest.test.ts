@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   parseCSVRow,
   parseCSV,
@@ -7,6 +7,7 @@ import {
   timeToSeconds,
   toInt,
   toFloat,
+  warnMissingColumns,
   toAthleteStatus,
 } from "./ingest";
 
@@ -213,6 +214,78 @@ describe("toFloat", () => {
 
   it("returns null for non-numeric string", () => {
     expect(toFloat("abc")).toBeNull();
+  });
+});
+
+// ─── warnMissingColumns ───────────────────────────────────────────────────────
+
+describe("warnMissingColumns", () => {
+  it("does not warn when all expected columns are present", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const headers = [
+      "Bib",
+      "Name",
+      "Gender",
+      "Division",
+      "Country",
+      "Status",
+      "Overall Finish Time",
+      "Overall Rank",
+      "Gender Rank",
+      "Division Rank",
+      "Swim Time",
+      "Bike Time",
+      "Run Time",
+    ];
+    warnMissingColumns(headers);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("warns when a standard column is missing", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    warnMissingColumns(["Bib", "Name", "Overall Finish Time"]);
+    const messages = warn.mock.calls.map((c) => c[0] as string);
+    expect(messages.some((m) => m.includes("Gender"))).toBe(true);
+    expect(messages.some((m) => m.includes("Division"))).toBe(true);
+    warn.mockRestore();
+  });
+
+  it("warns when neither finish time column is present", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    warnMissingColumns([
+      "Bib",
+      "Name",
+      "Gender",
+      "Division",
+      "Country",
+      "Status",
+      "Overall Rank",
+      "Gender Rank",
+      "Division Rank",
+    ]);
+    const messages = warn.mock.calls.map((c) => c[0] as string);
+    expect(messages.some((m) => m.includes("finish times will be empty"))).toBe(true);
+    warn.mockRestore();
+  });
+
+  it("does not warn about finish time when Finish Time is present", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    warnMissingColumns([
+      "Bib",
+      "Name",
+      "Gender",
+      "Division",
+      "Country",
+      "Status",
+      "Finish Time",
+      "Overall Rank",
+      "Gender Rank",
+      "Division Rank",
+    ]);
+    const messages = warn.mock.calls.map((c) => c[0] as string);
+    expect(messages.some((m) => m.includes("finish times will be empty"))).toBe(false);
+    warn.mockRestore();
   });
 });
 

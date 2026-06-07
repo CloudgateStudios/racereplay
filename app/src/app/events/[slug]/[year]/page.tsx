@@ -81,7 +81,7 @@ export default async function EventPage({ params, searchParams }: Props) {
     event.segments.map((seg) =>
       prisma.athleteSegment
         .count({ where: { segmentId: seg.id, timeSeconds: { not: null } } })
-        .then((count) => ({ segmentId: seg.id, name: seg.name, count }))
+        .then((count) => ({ segmentId: seg.id, name: seg.name, isFinish: seg.isFinish, count }))
     )
   );
 
@@ -90,10 +90,16 @@ export default async function EventPage({ params, searchParams }: Props) {
     where: { eventId: event.id, status: "FIN" },
   });
 
-  // Only show the Division column if at least one athlete in this event has one
+  // Only show the Division column if at least one athlete has a non-blank division.
+  // Check against empty string and whitespace-only values so trimming in the
+  // ingest script doesn't leave phantom filter categories.
   const hasDivisions = await prisma.athlete
     .count({
-      where: { eventId: event.id, division: { not: "" } },
+      where: {
+        eventId: event.id,
+        division: { not: "" },
+        AND: { division: { not: { equals: " " } } },
+      },
     })
     .then((n) => n > 0);
 
@@ -185,7 +191,7 @@ export default async function EventPage({ params, searchParams }: Props) {
               already represents that count and avoids the funnel going back up due
               to athletes who missed the final timing mat but still have FIN status. */}
           {segmentCounts
-            .filter((seg) => seg.name.toLowerCase() !== "finish")
+            .filter((seg) => !seg.isFinish)
             .map((seg) => {
               const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
               return (
@@ -286,7 +292,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono text-sm tabular-nums">
-                    {athlete.finishTime || "—"}
+                    {athlete.finishTime ?? "—"}
                   </TableCell>
                   {event.segments.map((seg) => {
                     const s = athlete.segments.find((as) => as.segmentId === seg.id);

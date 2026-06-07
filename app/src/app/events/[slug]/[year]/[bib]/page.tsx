@@ -100,13 +100,12 @@ export default async function AthletePage({ params }: Props) {
         </div>
       </div>
 
-      {/* Rank summary — only render cards that have real data */}
+      {/* Rank summary — always render all four cards, show — for missing values */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
           {
             label: "Finish Time",
-            value:
-              athlete.finishTime && athlete.finishTime !== "--:--:--" ? athlete.finishTime : null,
+            value: athlete.finishTime ?? null,
           },
           {
             label: "Overall Rank",
@@ -121,14 +120,16 @@ export default async function AthletePage({ params }: Props) {
             value:
               athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : null,
           },
-        ]
-          .filter(({ value }) => value != null)
-          .map(({ label, value }) => (
-            <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
-              <p className="text-muted-foreground text-sm">{label}</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
-            </div>
-          ))}
+        ].map(({ label, value }) => (
+          <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
+            <p className="text-muted-foreground text-sm">{label}</p>
+            <p
+              className={`mt-1 text-2xl font-bold tabular-nums ${value == null ? "text-muted-foreground" : ""}`}
+            >
+              {value ?? "—"}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Passing breakdown */}
@@ -170,7 +171,7 @@ export default async function AthletePage({ params }: Props) {
               <TableCell className="font-bold">Overall</TableCell>
               <TableCell />
               <TableCell className="text-right font-mono text-sm font-bold tabular-nums">
-                {athlete.finishTime || "—"}
+                {athlete.finishTime ?? "—"}
               </TableCell>
               <TableCell className="text-center font-bold text-green-600 tabular-nums">
                 {`+${athlete.segments.reduce((s, a) => s + (a.gained ?? 0), 0)}`}
