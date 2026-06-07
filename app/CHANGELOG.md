@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.2](https://github.com/CloudgateStudios/race_replay/compare/0.3.1...0.3.2) (2026-06-07)
+
+### Features
+
+- add total time in athlete page ([#39](https://github.com/CloudgateStudios/race_replay/issues/39)) ([bc2ce1e](https://github.com/CloudgateStudios/race_replay/commit/bc2ce1e3761ed7c80c63713ab7e692d806994998))
+- compute ranks locally when RTRT omits them, hide empty data fields ([#40](https://github.com/CloudgateStudios/race_replay/issues/40)) ([f903a6c](https://github.com/CloudgateStudios/race_replay/commit/f903a6cdcaf6447af3fa02d0e62a622b629cd425))
+
+### Bug Fixes
+
+- make participation funnel responsive on mobile ([#36](https://github.com/CloudgateStudios/race_replay/issues/36)) ([113ad1b](https://github.com/CloudgateStudios/race_replay/commit/113ad1b63122bdfc8107b8bb98217cd24cc14d1b))
+- retry on network-level fetch failures in split fetching ([#37](https://github.com/CloudgateStudios/race_replay/issues/37)) ([c7ff445](https://github.com/CloudgateStudios/race_replay/commit/c7ff445f4824ddb9737536ac123ddfb5d60d917b))
+- update data scraper for better performance and visibility ([#38](https://github.com/CloudgateStudios/race_replay/issues/38)) ([f7603fa](https://github.com/CloudgateStudios/race_replay/commit/f7603fa9804b7f224937ffbf301512aa3e7cfbc8))
+
 ### [0.3.1](https://github.com/CloudgateStudios/racereplay/compare/0.3.0...0.3.1) (2026-06-06)
 
 ### Bug Fixes
