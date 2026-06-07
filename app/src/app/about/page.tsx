@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-
 export const metadata: Metadata = {
   title: "About — Race Replay",
   description: "Why Race Replay was built and who made it.",
@@ -25,9 +24,10 @@ export default function AboutPage() {
             <h2 className="mb-5 text-xl font-bold tracking-tight">The problem</h2>
             <div className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
-                Race results pages show you your chip time and your overall rank, but they don&apos;t
-                tell you what actually happened on course. When everyone starts at a different time,
-                finishing rank doesn&apos;t reflect the physical experience of racing.
+                Race results pages show you your chip time and your overall rank, but they
+                don&apos;t tell you what actually happened on course. When everyone starts at a
+                different time, finishing rank doesn&apos;t reflect the physical experience of
+                racing.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Did you pass 50 people on the bike leg of a triathlon? Did someone come flying past
@@ -40,15 +40,15 @@ export default function AboutPage() {
             <h2 className="mb-5 text-xl font-bold tracking-tight">How it works</h2>
             <div className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
-                By anchoring each athlete&apos;s split times to their personal start time, we compute an
-                absolute clock position at every timing checkpoint. Comparing those positions
-                leg-by-leg reveals every physical pass — who moved forward, who got caught, and by
-                how much.
+                By anchoring each athlete&apos;s split times to their personal start time, we
+                compute an absolute clock position at every timing checkpoint. Comparing those
+                positions leg-by-leg reveals every physical pass — who moved forward, who got
+                caught, and by how much.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 The algorithm self-checks: every pass gained by one athlete must correspond to a
-                pass conceded by another. If the totals don&apos;t balance, something is wrong with the
-                data and we surface that rather than show you misleading numbers.
+                pass conceded by another. If the totals don&apos;t balance, something is wrong with
+                the data and we surface that rather than show you misleading numbers.
               </p>
             </div>
           </section>
