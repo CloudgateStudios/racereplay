@@ -47,7 +47,7 @@ model Athlete {
   division     String
   country      String
   status       String
-  finishTime   String
+  finishTime   String?
   overallRank  Int?
   genderRank   Int?
   divisionRank Int?

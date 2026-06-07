@@ -90,10 +90,16 @@ export default async function EventPage({ params, searchParams }: Props) {
     where: { eventId: event.id, status: "FIN" },
   });
 
-  // Only show the Division column if at least one athlete in this event has one
+  // Only show the Division column if at least one athlete has a non-blank division.
+  // Check against empty string and whitespace-only values so trimming in the
+  // ingest script doesn't leave phantom filter categories.
   const hasDivisions = await prisma.athlete
     .count({
-      where: { eventId: event.id, division: { not: "" } },
+      where: {
+        eventId: event.id,
+        division: { not: "" },
+        AND: { division: { not: { equals: " " } } },
+      },
     })
     .then((n) => n > 0);
 
@@ -286,7 +292,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono text-sm tabular-nums">
-                    {athlete.finishTime || "—"}
+                    {athlete.finishTime ?? "—"}
                   </TableCell>
                   {event.segments.map((seg) => {
                     const s = athlete.segments.find((as) => as.segmentId === seg.id);
