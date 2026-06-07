@@ -841,7 +841,8 @@ export const SegmentScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
   name: 'name',
-  displayOrder: 'displayOrder'
+  displayOrder: 'displayOrder',
+  isFinish: 'isFinish'
 } as const
 
 export type SegmentScalarFieldEnum = (typeof SegmentScalarFieldEnum)[keyof typeof SegmentScalarFieldEnum]
@@ -961,6 +962,13 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

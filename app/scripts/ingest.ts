@@ -258,14 +258,15 @@ async function main() {
     let segment = await prisma.segment.findFirst({
       where: { eventId: event.id, name },
     });
+    const isFinish = name.toLowerCase() === "finish";
     if (segment) {
       segment = await prisma.segment.update({
         where: { id: segment.id },
-        data: { displayOrder: i },
+        data: { displayOrder: i, isFinish },
       });
     } else {
       segment = await prisma.segment.create({
-        data: { eventId: event.id, name, displayOrder: i },
+        data: { eventId: event.id, name, displayOrder: i, isFinish },
       });
     }
     segmentMap[name] = segment.id;
