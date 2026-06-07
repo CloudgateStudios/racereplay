@@ -134,32 +134,52 @@ export default async function AthletePage({ params }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>Leg</TableHead>
-              <TableHead className="text-right">Time</TableHead>
+              <TableHead className="text-right">Leg Time</TableHead>
+              <TableHead className="text-right">Total Time</TableHead>
               <TableHead className="text-center text-green-600">Passed</TableHead>
               <TableHead className="text-center text-red-500">Got Passed</TableHead>
               <TableHead className="text-center">Net</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {athlete.segments.map((as) => (
-              <TableRow key={as.segmentId}>
-                <TableCell className="font-medium">{as.segment.name}</TableCell>
-                <TableCell className="text-right font-mono text-sm tabular-nums">
-                  {formatSeconds(as.timeSeconds)}
-                </TableCell>
-                <TableCell className="text-center font-medium text-green-600 tabular-nums">
-                  {as.gained != null ? `+${as.gained}` : "—"}
-                </TableCell>
-                <TableCell className="text-center font-medium text-red-500 tabular-nums">
-                  {as.lost != null ? `-${as.lost}` : "—"}
-                </TableCell>
-                <TableCell className={`text-center font-bold tabular-nums ${netColor(as.net)}`}>
-                  {netLabel(as.net)}
-                </TableCell>
-              </TableRow>
-            ))}
+            {(() => {
+              // Compute a running cumulative time across legs in display order.
+              // If any leg time is null the cumulative resets to null for that row
+              // and all subsequent rows (mirrors the same chain-break logic used
+              // when building the CSV).
+              let cumulativeSecs: number | null = 0;
+              return athlete.segments.map((as) => {
+                if (as.timeSeconds != null && cumulativeSecs !== null) {
+                  cumulativeSecs += as.timeSeconds;
+                } else {
+                  cumulativeSecs = null;
+                }
+                const cumDisplay = cumulativeSecs != null ? formatSeconds(cumulativeSecs) : "—";
+                return (
+                  <TableRow key={as.segmentId}>
+                    <TableCell className="font-medium">{as.segment.name}</TableCell>
+                    <TableCell className="text-right font-mono text-sm tabular-nums">
+                      {formatSeconds(as.timeSeconds)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-right font-mono text-sm tabular-nums">
+                      {cumDisplay}
+                    </TableCell>
+                    <TableCell className="text-center font-medium text-green-600 tabular-nums">
+                      {as.gained != null ? `+${as.gained}` : "—"}
+                    </TableCell>
+                    <TableCell className="text-center font-medium text-red-500 tabular-nums">
+                      {as.lost != null ? `-${as.lost}` : "—"}
+                    </TableCell>
+                    <TableCell className={`text-center font-bold tabular-nums ${netColor(as.net)}`}>
+                      {netLabel(as.net)}
+                    </TableCell>
+                  </TableRow>
+                );
+              });
+            })()}
             <TableRow className="bg-muted/30 border-t-2">
               <TableCell className="font-bold">Overall</TableCell>
+              <TableCell />
               <TableCell className="text-right font-mono text-sm font-bold tabular-nums">
                 {athlete.finishTime || "—"}
               </TableCell>
