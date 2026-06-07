@@ -9,7 +9,11 @@ export default function AthleteLoading() {
         <div className="mb-3 h-10 w-64 rounded bg-gray-200 dark:bg-gray-700" />
         <div className="flex gap-2">
           {[60, 80, 60, 70].map((w, i) => (
-            <div key={i} className="h-6 rounded-full bg-gray-200 dark:bg-gray-700" style={{ width: w }} />
+            <div
+              key={i}
+              className="h-6 rounded-full bg-gray-200 dark:bg-gray-700"
+              style={{ width: w }}
+            />
           ))}
         </div>
       </div>
@@ -30,7 +34,11 @@ export default function AthleteLoading() {
         <div className="border-b px-4 py-3">
           <div className="flex gap-6">
             {[100, 80, 80, 60, 80, 60].map((w, i) => (
-              <div key={i} className="h-4 rounded bg-gray-200 dark:bg-gray-700" style={{ width: w }} />
+              <div
+                key={i}
+                className="h-4 rounded bg-gray-200 dark:bg-gray-700"
+                style={{ width: w }}
+              />
             ))}
           </div>
         </div>
@@ -38,7 +46,11 @@ export default function AthleteLoading() {
           <div key={i} className="border-b px-4 py-3 last:border-0">
             <div className="flex gap-6">
               {[100, 80, 80, 60, 80, 60].map((w, j) => (
-                <div key={j} className="h-4 rounded bg-gray-100 dark:bg-gray-800" style={{ width: w }} />
+                <div
+                  key={j}
+                  className="h-4 rounded bg-gray-100 dark:bg-gray-800"
+                  style={{ width: w }}
+                />
               ))}
             </div>
           </div>
