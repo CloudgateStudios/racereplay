@@ -102,4 +102,3 @@ jobs:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           tag_name: ${{ env.tag }}
-          generate_release_notes: true
