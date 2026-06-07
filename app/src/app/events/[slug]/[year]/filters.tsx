@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useTransition, useCallback } from "react";
+import { useTransition, useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,6 +21,7 @@ export function EventFilters({ genders, divisions }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -38,6 +39,16 @@ export function EventFilters({ genders, divisions }: Props) {
     [router, pathname, searchParams]
   );
 
+  // Debounced variant for the text search box — waits 200ms after the user
+  // stops typing before pushing to the router to reduce excessive URL updates.
+  const updateSearchDebounced = useCallback(
+    (value: string) => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => updateParam("q", value), 200);
+    },
+    [updateParam]
+  );
+
   const genderValue: string = searchParams.get("gender") ?? "all";
   const divisionValue: string = searchParams.get("division") ?? "all";
 
@@ -52,7 +63,7 @@ export function EventFilters({ genders, divisions }: Props) {
           <Input
             placeholder="Name or bib…"
             defaultValue={searchParams.get("q") ?? ""}
-            onChange={(e) => updateParam("q", e.target.value)}
+            onChange={(e) => updateSearchDebounced(e.target.value)}
             className="w-56"
           />
         </div>
