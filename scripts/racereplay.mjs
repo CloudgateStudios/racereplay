@@ -200,7 +200,11 @@ function fmtElapsed(ms) {
  * @returns {string}
  */
 function cleanLabel(label) {
-  const clean = (label || "").split("/")[0].split("|")[0].trim();
+  // Strip everything after "/" or "|" (e.g. "Run/Finish" → "Run", "Bike 56mi|89km" → "Bike 56mi")
+  let clean = (label || "").split("/")[0].split("|")[0].trim();
+  // Strip a trailing " Finish" word for labels like "Bike Finish" → "Bike"
+  clean = clean.replace(/\s+finish$/i, "").trim();
+  // Pure start/finish labels produce an empty string; the caller supplies a positional fallback
   if (/^(finish|start)$/i.test(clean)) return "";
   return clean;
 }
