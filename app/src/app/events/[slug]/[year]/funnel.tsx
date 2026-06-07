@@ -19,8 +19,10 @@ interface Props {
 export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Props) {
   const [expanded, setExpanded] = useState(false);
 
-  const finishPct =
-    totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0;
+  const pctOf = (n: number) =>
+    totalAthletes > 0 ? ((n / totalAthletes) * 100).toFixed(1) : "0.0";
+
+  const finishPct = pctOf(finisherCount);
 
   // Build the full ordered row list for the bar chart
   const rows = [
@@ -31,12 +33,12 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
     { key: "finished", label: "Finished", count: finisherCount, isFinish: true },
   ];
 
-  // Find the segment with the largest absolute drop (excluding "Started" row)
+  // Find the segment with the largest genuine drop (previous count must be higher)
   let maxDropIdx = -1;
   let maxDrop = 0;
   for (let i = 1; i < rows.length; i++) {
     const drop = rows[i - 1].count - rows[i].count;
-    if (drop > maxDrop) {
+    if (drop > 0 && drop > maxDrop) {
       maxDrop = drop;
       maxDropIdx = i;
     }
@@ -75,8 +77,7 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
           <div className="bg-muted/40 mt-1 rounded-lg border px-4 py-3">
             <div className="divide-border divide-y">
               {rows.map((row, i) => {
-                const pct =
-                  totalAthletes > 0 ? Math.round((row.count / totalAthletes) * 100) : 0;
+                const pct = pctOf(row.count);
                 const isBigDrop = i === maxDropIdx;
                 return (
                   <div key={row.key} className="flex items-center justify-between py-2">
@@ -105,8 +106,7 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
             .filter((row, i) => expanded || i === 0 || row.isFinish)
             .map((row, _, visible) => {
               const originalIdx = rows.findIndex((r) => r.key === row.key);
-              const pct =
-                totalAthletes > 0 ? Math.round((row.count / totalAthletes) * 100) : 0;
+              const pct = pctOf(row.count);
               const barPct = totalAthletes > 0 ? (row.count / totalAthletes) * 100 : 0;
               const isBigDrop = originalIdx === maxDropIdx;
               const drop = originalIdx > 0 ? rows[originalIdx - 1].count - row.count : 0;
