@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EventFilters } from "./filters";
+import { EventFunnel } from "./funnel";
 import { SortHeader } from "./sort-header";
 
 const PAGE_SIZE = 50;
@@ -172,63 +173,11 @@ export default async function EventPage({ params, searchParams }: Props) {
       </div>
 
       {/* Athlete funnel */}
-      <div className="mb-6">
-        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
-          Participation
-        </p>
-        <div className="bg-muted/40 flex flex-col items-center gap-y-3 rounded-lg border p-4 sm:flex-row sm:flex-wrap sm:justify-center">
-          {/* Starters */}
-          <div className="flex flex-col items-center px-4 text-center">
-            <span className="text-2xl font-bold tabular-nums">
-              {totalAthletes.toLocaleString()}
-            </span>
-            <span className="text-muted-foreground mt-0.5 text-xs">Started</span>
-            <span className="text-muted-foreground mt-0.5 text-xs">100%</span>
-          </div>
-
-          {/* Arrow + gate for each segment.
-              Skip any segment named "Finish" — the dedicated "Finished" node below
-              already represents that count and avoids the funnel going back up due
-              to athletes who missed the final timing mat but still have FIN status. */}
-          {segmentCounts
-            .filter((seg) => !seg.isFinish)
-            .map((seg) => {
-              const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
-              return (
-                <div key={seg.segmentId} className="flex flex-col items-center sm:flex-row">
-                  <span className="text-muted-foreground px-1 text-lg select-none">
-                    <span className="sm:hidden">↓</span>
-                    <span className="hidden sm:inline">→</span>
-                  </span>
-                  <div className="flex flex-col items-center px-4 text-center">
-                    <span className="text-2xl font-bold tabular-nums">
-                      {seg.count.toLocaleString()}
-                    </span>
-                    <span className="text-muted-foreground mt-0.5 text-xs">{seg.name}</span>
-                    <span className="text-muted-foreground mt-0.5 text-xs">{pct}%</span>
-                  </div>
-                </div>
-              );
-            })}
-
-          {/* Arrow + Finishers */}
-          <div className="flex flex-col items-center sm:flex-row">
-            <span className="text-muted-foreground px-1 text-lg select-none">
-              <span className="sm:hidden">↓</span>
-              <span className="hidden sm:inline">→</span>
-            </span>
-            <div className="flex flex-col items-center px-4 text-center">
-              <span className="text-primary text-2xl font-bold tabular-nums">
-                {finisherCount.toLocaleString()}
-              </span>
-              <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
-              <span className="text-muted-foreground mt-0.5 text-xs">
-                {totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <EventFunnel
+        totalAthletes={totalAthletes}
+        finisherCount={finisherCount}
+        segmentCounts={segmentCounts}
+      />
 
       <Suspense>
         <EventFilters genders={genders} divisions={divisions} />
