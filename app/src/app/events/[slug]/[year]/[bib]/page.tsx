@@ -70,6 +70,22 @@ export default async function AthletePage({ params }: Props) {
 
   const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
 
+  // Pre-compute cumulative times in segment display order so we can reference
+  // them by index in the render — avoids mutating a variable inside JSX which
+  // triggers the react-hooks/immutability lint rule.
+  // If any leg time is null the running total resets to null for that row and
+  // all subsequent rows, mirroring the chain-break logic in the pipeline.
+  const cumulativeTimes: (number | null)[] = [];
+  let running: number | null = 0;
+  for (const seg of athlete.segments) {
+    if (seg.timeSeconds != null && running !== null) {
+      running += seg.timeSeconds;
+    } else {
+      running = null;
+    }
+    cumulativeTimes.push(running);
+  }
+
   return (
     <div>
       {/* Breadcrumb */}
@@ -141,18 +157,22 @@ export default async function AthletePage({ params }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>Leg</TableHead>
-              <TableHead className="text-right">Time</TableHead>
+              <TableHead className="text-right">Leg Time</TableHead>
+              <TableHead className="text-right">Total Time</TableHead>
               <TableHead className="text-center text-green-600">Passed</TableHead>
               <TableHead className="text-center text-red-500">Got Passed</TableHead>
               <TableHead className="text-center">Net</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {athlete.segments.map((as) => (
+            {athlete.segments.map((as, i) => (
               <TableRow key={as.segmentId}>
                 <TableCell className="font-medium">{as.segment.name}</TableCell>
                 <TableCell className="text-right font-mono text-sm tabular-nums">
                   {formatSeconds(as.timeSeconds)}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-right font-mono text-sm tabular-nums">
+                  {cumulativeTimes[i] != null ? formatSeconds(cumulativeTimes[i]) : "—"}
                 </TableCell>
                 <TableCell className="text-center font-medium text-green-600 tabular-nums">
                   {as.gained != null ? `+${as.gained}` : "—"}
@@ -167,6 +187,7 @@ export default async function AthletePage({ params }: Props) {
             ))}
             <TableRow className="bg-muted/30 border-t-2">
               <TableCell className="font-bold">Overall</TableCell>
+              <TableCell />
               <TableCell className="text-right font-mono text-sm font-bold tabular-nums">
                 {athlete.finishTime || "—"}
               </TableCell>
