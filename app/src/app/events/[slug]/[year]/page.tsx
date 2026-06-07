@@ -95,7 +95,11 @@ export default async function EventPage({ params, searchParams }: Props) {
   // ingest script doesn't leave phantom filter categories.
   const hasDivisions = await prisma.athlete
     .count({
-      where: { eventId: event.id, division: { not: "" }, AND: { division: { not: { equals: " " } } } },
+      where: {
+        eventId: event.id,
+        division: { not: "" },
+        AND: { division: { not: { equals: " " } } },
+      },
     })
     .then((n) => n > 0);
 
