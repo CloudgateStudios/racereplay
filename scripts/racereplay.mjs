@@ -49,6 +49,64 @@ const PAGE        = 20;   // records per API page (RTRT caps at 20 regardless of
 const DELAY       = 100;  // ms between page requests within a single timing point
 const CONCURRENCY = 4;    // timing points fetched in parallel
 
+// ─── Terminal Progress Display ────────────────────────────────────────────────
+
+/**
+ * Manages a growing list of terminal lines where each line can be updated
+ * in place via targeted ANSI cursor movement.
+ *
+ * Usage:
+ *   const i = display.addLine("starting...");  // appends a new line, returns its index
+ *   display.update(i, "page 5/100 ...");        // rewrites that specific line in place
+ *   display.update(i, "✅ done");               // finalize — line stays, never changes again
+ *
+ * Completed lines remain visible and scroll up naturally as new lines are
+ * added below them. Falls back to plain console.log when stdout is not a TTY
+ * (e.g. piped output or CI logs).
+ */
+class ProgressDisplay {
+  constructor() {
+    this._lines    = []; // text for every line ever added
+    this._rendered = 0;  // number of lines currently on screen
+    this._tty      = process.stdout.isTTY ?? false;
+  }
+
+  /**
+   * Appends a new line at the bottom of the display and returns its index.
+   * @param {string} text
+   * @returns {number} line index for use with update()
+   */
+  addLine(text) {
+    const i = this._lines.length;
+    this._lines.push(text);
+    if (this._tty) {
+      process.stdout.write(`${text}\n`);
+      this._rendered = this._lines.length;
+    } else {
+      console.log(text);
+    }
+    return i;
+  }
+
+  /**
+   * Rewrites a previously added line in place.
+   * @param {number} i    - Index returned by addLine()
+   * @param {string} text - Replacement text (no newline)
+   */
+  update(i, text) {
+    this._lines[i] = text;
+    if (!this._tty) {
+      console.log(text);
+      return;
+    }
+    // How many lines above the current cursor position is line i?
+    const up = this._rendered - i;
+    process.stdout.write(`\x1b[${up}A`);      // move cursor up to line i
+    process.stdout.write(`\r\x1b[K${text}`);  // clear and rewrite
+    process.stdout.write(`\x1b[${up}B\r`);    // move cursor back to bottom
+  }
+}
+
 // ─── Fetch Helpers ────────────────────────────────────────────────────────────
 
 /**
@@ -163,23 +221,22 @@ async function fetchAllPoints(eventId, appid, token) {
  * @param {string}  pointName  - Timing point name, e.g. "START" or "5K"
  * @param {string}  appid      - RTRT app ID
  * @param {{value: string}} tokenRef - Mutable token holder; updated on retry
- * @param {number}  [hintTotal=0] - Expected total athletes (used to estimate page count)
- * @param {string}  [logPrefix="   "] - Prefix for progress log lines
+ * @param {number}   [hintTotal=0]  - Expected total athletes (used to estimate page count)
+ * @param {Function} [onProgress]   - Called with a status string whenever progress changes.
+ *                                    Defaults to a no-op; callers supply a ProgressDisplay slot.
  * @returns {Promise<Map<string, object>>} Map of bib → split record
  */
-async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTotal = 0, logPrefix = "   ") {
+async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTotal = 0, onProgress = () => {}) {
   const map        = new Map();
   let   start      = 1;
   let   retries    = 0;
   const estPages   = hintTotal > 0 ? Math.ceil(hintTotal / PAGE) : 0;
   const pointStart = Date.now();
-  const LOG_EVERY  = 50; // print a progress line every N pages
 
   const progress = (page, records) => {
-    if (page % LOG_EVERY !== 0 && page !== 1) return;
     const elapsed = ((Date.now() - pointStart) / 1000).toFixed(0);
     const pageStr = estPages > 0 ? `page ${page}/${estPages}` : `page ${page}`;
-    console.log(`${logPrefix}⏳ ${pageStr}  •  ${records} records  •  ${elapsed}s elapsed`);
+    onProgress(`⏳ ${pageStr}  •  ${records} records  •  ${elapsed}s elapsed`);
   };
 
   while (true) {
@@ -193,7 +250,7 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTo
       if (retries < 3) {
         retries++;
         const wait = retries * 5000;
-        process.stdout.write(`\n${logPrefix}[network retry ${retries} in ${wait / 1000}s: ${networkErr.message}]`);
+        onProgress(`⚠️  network retry ${retries}/3 in ${wait / 1000}s — ${networkErr.message}`);
         await new Promise((r) => setTimeout(r, wait));
         tokenRef.value = await register(appid);
         continue;
@@ -212,7 +269,7 @@ async function fetchAllSplitsAtPoint(eventId, pointName, appid, tokenRef, hintTo
       if (retries < 3) {
         retries++;
         const wait = retries * 5000;
-        process.stdout.write(`\n${logPrefix}[retry ${retries} in ${wait / 1000}s]`);
+        onProgress(`⚠️  API retry ${retries}/3 in ${wait / 1000}s`);
         await new Promise((r) => setTimeout(r, wait));
         tokenRef.value = await register(appid);
         continue;
@@ -783,20 +840,27 @@ Examples:
       console.log(`\n   Fetching ${toFetch.length} point(s) with concurrency=${CONCURRENCY}...\n`);
 
       // Each worker gets its own token to avoid concurrent token-refresh races
-      const tokens    = await Promise.all(
-        Array.from({ length: Math.min(CONCURRENCY, toFetch.length) }, () => register(appid))
+      const workerCount = Math.min(CONCURRENCY, toFetch.length);
+      const tokens      = await Promise.all(
+        Array.from({ length: workerCount }, () => register(appid))
       );
       const tokenRefs = tokens.map((value) => ({ value }));
       const queue     = [...toFetch];
+      const display   = new ProgressDisplay();
 
       async function runWorker(workerToken) {
         while (queue.length > 0) {
           const { pt, idx } = queue.shift();
-          const prefix      = `   [${idx + 1}/${pointsToFetch.length}] ${pt.name.padEnd(8)} `;
-          console.log(`${prefix}starting...`);
-          const ptStart = Date.now();
+          const label       = `   [${idx + 1}/${pointsToFetch.length}] ${pt.name.padEnd(8)}`;
+          const ptStart     = Date.now();
 
-          const map = await fetchAllSplitsAtPoint(eventId, pt.name, appid, workerToken, hintTotal, prefix);
+          // Each point gets its own line; update it in place while fetching
+          const lineIdx = display.addLine(`${label} starting...`);
+
+          const map = await fetchAllSplitsAtPoint(
+            eventId, pt.name, appid, workerToken, hintTotal,
+            (status) => display.update(lineIdx, `${label} ${status}`)
+          );
           await saveSplits(pt.name, map);
 
           completed++;
@@ -806,7 +870,8 @@ Examples:
           const avgSecs = (Date.now() - fetchStart) / 1000 / completed;
           const etaSecs = Math.round(left * avgSecs);
           const eta     = etaSecs > 60 ? `~${Math.round(etaSecs / 60)}m` : `~${etaSecs}s`;
-          console.log(`${prefix}✅ ${map.size} records in ${ptSecs}s  •  ${elapsed}s total  •  ${left > 0 ? eta + " remaining" : "all done"}`);
+          // Finalize the line — it stays on screen and is never updated again
+          display.update(lineIdx, `${label} ✅ ${map.size} records in ${ptSecs}s  •  ${elapsed}s total  •  ${left > 0 ? eta + " remaining" : "all done"}`);
         }
       }
 
