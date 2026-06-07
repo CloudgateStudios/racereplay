@@ -191,7 +191,17 @@ export function timeToSeconds(t: string): number | null {
 
 // ─── Column validation ────────────────────────────────────────────────────────
 
-const EXPECTED_COLS = ["Bib", "Name", "Gender", "Division", "Country", "City", "Team", "Status", "Wave Finish Time"];
+const EXPECTED_COLS = [
+  "Bib",
+  "Name",
+  "Gender",
+  "Division",
+  "Country",
+  "City",
+  "Team",
+  "Status",
+  "Wave Finish Time",
+];
 const EXPECTED_FINISH_COLS = ["Overall Finish Time", "Finish Time"];
 const EXPECTED_RANK_COLS = ["Overall Rank", "Gender Rank", "Division Rank"];
 
@@ -323,21 +333,33 @@ async function main() {
 
       // Accumulate category totals — use the athlete's own gender/division as the name
       const overallTotal = toInt(obj["Overall Category Total"]);
-      const genderTotal  = toInt(obj["Gender Category Total"]);
+      const genderTotal = toInt(obj["Gender Category Total"]);
       const divisionTotal = toInt(obj["Division Category Total"]);
       if (overallTotal != null) {
-        categoryTotalMap.set("overall|Overall", { category: "overall", name: "Overall", total: overallTotal });
+        categoryTotalMap.set("overall|Overall", {
+          category: "overall",
+          name: "Overall",
+          total: overallTotal,
+        });
       }
       if (genderTotal != null && athleteData.gender) {
         const key = `gender|${athleteData.gender}`;
         if (!categoryTotalMap.has(key)) {
-          categoryTotalMap.set(key, { category: "gender", name: athleteData.gender, total: genderTotal });
+          categoryTotalMap.set(key, {
+            category: "gender",
+            name: athleteData.gender,
+            total: genderTotal,
+          });
         }
       }
       if (divisionTotal != null && athleteData.division) {
         const key = `division|${athleteData.division}`;
         if (!categoryTotalMap.has(key)) {
-          categoryTotalMap.set(key, { category: "division", name: athleteData.division, total: divisionTotal });
+          categoryTotalMap.set(key, {
+            category: "division",
+            name: athleteData.division,
+            total: divisionTotal,
+          });
         }
       }
 
