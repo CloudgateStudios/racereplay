@@ -805,7 +805,7 @@ function buildOutputCSV(athletes, passingMap, legNames) {
     "Overall Rank",
     "Gender Rank",
     "Division Rank",
-    "Finish Time",
+    "Overall Finish Time",
     ...legNames.map((l) => `${l} Time`),
     "Wave Offset (Seconds)",
     ...legNames.flatMap((l) => [`${l} Gained`, `${l} Lost`, `${l} Net`]),
@@ -921,7 +921,7 @@ async function discoverTimingPoints(eventId, appid, token, forcedPoints) {
     ...legPoints.map((p, i) => ({
       name: p.name,
       label: p.label,
-      legName: cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
+      legName: p.isFinish === "1" ? "Finish" : cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
       isStart: false,
       isFinish: p.isFinish === "1",
     })),
