@@ -55,7 +55,8 @@ export const ModelName = {
   Event: 'Event',
   Segment: 'Segment',
   Athlete: 'Athlete',
-  AthleteSegment: 'AthleteSegment'
+  AthleteSegment: 'AthleteSegment',
+  CategoryResult: 'CategoryResult'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -113,8 +114,11 @@ export const AthleteScalarFieldEnum = {
   gender: 'gender',
   division: 'division',
   country: 'country',
+  city: 'city',
+  team: 'team',
   status: 'status',
   finishTime: 'finishTime',
+  waveTime: 'waveTime',
   overallRank: 'overallRank',
   genderRank: 'genderRank',
   divisionRank: 'divisionRank'
@@ -128,12 +132,24 @@ export const AthleteSegmentScalarFieldEnum = {
   athleteId: 'athleteId',
   segmentId: 'segmentId',
   timeSeconds: 'timeSeconds',
+  epochTime: 'epochTime',
   gained: 'gained',
   lost: 'lost',
   net: 'net'
 } as const
 
 export type AthleteSegmentScalarFieldEnum = (typeof AthleteSegmentScalarFieldEnum)[keyof typeof AthleteSegmentScalarFieldEnum]
+
+
+export const CategoryResultScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  category: 'category',
+  name: 'name',
+  total: 'total'
+} as const
+
+export type CategoryResultScalarFieldEnum = (typeof CategoryResultScalarFieldEnum)[keyof typeof CategoryResultScalarFieldEnum]
 
 
 export const SortOrder = {

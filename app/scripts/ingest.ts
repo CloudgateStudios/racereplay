@@ -191,7 +191,7 @@ export function timeToSeconds(t: string): number | null {
 
 // ─── Column validation ────────────────────────────────────────────────────────
 
-const EXPECTED_COLS = ["Bib", "Name", "Gender", "Division", "Country", "Status"];
+const EXPECTED_COLS = ["Bib", "Name", "Gender", "Division", "Country", "City", "Team", "Status", "Wave Finish Time"];
 const EXPECTED_FINISH_COLS = ["Overall Finish Time", "Finish Time"];
 const EXPECTED_RANK_COLS = ["Overall Rank", "Gender Rank", "Division Rank"];
 
@@ -294,6 +294,12 @@ async function main() {
   let completed = 0;
   const ingestStart = Date.now();
 
+  // Collect category totals keyed by "category|name" → total.
+  // Multiple athletes share the same category total (e.g. all males have
+  // the same "gender total"). We accumulate unique entries here and upsert
+  // them after the athlete loop.
+  const categoryTotalMap = new Map<string, { category: string; name: string; total: number }>();
+
   async function ingestWorker() {
     while (queue.length > 0) {
       const row = queue.shift();
@@ -305,12 +311,35 @@ async function main() {
         gender: (obj["Gender"] ?? "").trim(),
         division: (obj["Division"] ?? "").trim(),
         country: (obj["Country"] ?? "").trim(),
+        city: (obj["City"] ?? "").trim() || null,
+        team: (obj["Team"] ?? "").trim() || null,
         status: toAthleteStatus(obj["Status"]),
         finishTime: (obj["Overall Finish Time"] || obj["Finish Time"] || "").trim() || null,
+        waveTime: (obj["Wave Finish Time"] ?? "").trim() || null,
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),
         divisionRank: toInt(obj["Division Rank"]),
       };
+
+      // Accumulate category totals — use the athlete's own gender/division as the name
+      const overallTotal = toInt(obj["Overall Category Total"]);
+      const genderTotal  = toInt(obj["Gender Category Total"]);
+      const divisionTotal = toInt(obj["Division Category Total"]);
+      if (overallTotal != null) {
+        categoryTotalMap.set("overall|Overall", { category: "overall", name: "Overall", total: overallTotal });
+      }
+      if (genderTotal != null && athleteData.gender) {
+        const key = `gender|${athleteData.gender}`;
+        if (!categoryTotalMap.has(key)) {
+          categoryTotalMap.set(key, { category: "gender", name: athleteData.gender, total: genderTotal });
+        }
+      }
+      if (divisionTotal != null && athleteData.division) {
+        const key = `division|${athleteData.division}`;
+        if (!categoryTotalMap.has(key)) {
+          categoryTotalMap.set(key, { category: "division", name: athleteData.division, total: divisionTotal });
+        }
+      }
 
       // Upsert athlete + all its segments in one transaction to cut round trips
       await prisma.$transaction(async (tx) => {
@@ -324,6 +353,7 @@ async function main() {
           const segmentId = segmentMap[leg];
           const segData = {
             timeSeconds: toFloat(obj[`${leg} Time`]),
+            epochTime: toFloat(obj[`${leg} EpochTime`]),
             gained: toInt(obj[`${leg} Gained`]),
             lost: toInt(obj[`${leg} Lost`]),
             net: toInt(obj[`${leg} Net`]),
@@ -353,6 +383,20 @@ async function main() {
   console.log(
     `\nDone. ${completed} athletes ingested in ${((Date.now() - ingestStart) / 1000).toFixed(1)}s.\n`
   );
+
+  // ── Upsert CategoryResults ─────────────────────────────────────────────────
+  if (categoryTotalMap.size > 0) {
+    console.log(`Upserting ${categoryTotalMap.size} category result(s)...`);
+    for (const { category, name, total } of categoryTotalMap.values()) {
+      await prisma.categoryResult.upsert({
+        where: { eventId_category_name: { eventId: event.id, category, name } },
+        update: { total },
+        create: { eventId: event.id, category, name, total },
+      });
+    }
+    console.log("Category results done.\n");
+  }
+
   await prisma.$disconnect();
 }
 

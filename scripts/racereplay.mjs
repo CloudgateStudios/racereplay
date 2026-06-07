@@ -804,16 +804,23 @@ function buildOutputCSV(athletes, passingMap, legNames) {
     "Name",
     "Gender",
     "Country",
+    "City",
+    "Team",
     "Division",
     "Status",
     "Overall Rank",
     "Gender Rank",
     "Division Rank",
     "Overall Finish Time",
+    "Wave Finish Time",
     ...legNames.map((l) => `${l} Time`),
+    ...legNames.map((l) => `${l} EpochTime`),
     "Wave Offset (Seconds)",
     ...legNames.flatMap((l) => [`${l} Gained`, `${l} Lost`, `${l} Net`]),
     "Overall Net",
+    "Overall Category Total",
+    "Gender Category Total",
+    "Division Category Total",
   ];
 
   const rows = athletes.map((a) => {
@@ -827,13 +834,17 @@ function buildOutputCSV(athletes, passingMap, legNames) {
       a.name,
       a.gender,
       a.country,
+      a.city ?? "",
+      a.team ?? "",
       a.division,
       a.status,
       a.overallRank ?? "",
       a.genderRank ?? "",
       a.divisionRank ?? "",
       fmtTimeLong(a.finishSecs),
+      a.waveTime ?? "",
       ...legNames.map((l) => fmtTimeLong(a.legSecs[l])),
+      ...legNames.map((l) => a.legEpochs?.[l] ?? ""),
       a.waveOffset ?? 0,
     ];
 
@@ -846,6 +857,12 @@ function buildOutputCSV(athletes, passingMap, legNames) {
     } else {
       for (let i = 0; i < legNames.length * 3 + 1; i++) row.push("");
     }
+
+    row.push(
+      a.categoryTotals?.overall ?? "",
+      a.categoryTotals?.gender ?? "",
+      a.categoryTotals?.division ?? "",
+    );
 
     return row.map(esc).join(",");
   });
@@ -1113,18 +1130,37 @@ async function buildAthleteRecords(eventId, pointsToFetch, outputDir) {
 
     if (startEpoch != null) rtrtStarts.set(bib, startEpoch);
 
+    // Per-leg epoch times (wall-clock Unix timestamp of each mat crossing)
+    const legEpochs = {};
+    for (const legPt of legPointDefs) {
+      const split = allSplits.get(legPt.name)?.get(bib);
+      legEpochs[legPt.legName] = split?.epochTime ? parseFloat(split.epochTime) : null;
+    }
+
+    // Category totals from the finish split results (total finishers per category)
+    const categoryTotals = {
+      overall: results["course"]?.t != null ? parseInt(results["course"].t, 10) : null,
+      gender:  results["course-sex"]?.t != null ? parseInt(results["course-sex"].t, 10) : null,
+      division: results["course-sex-division"]?.t != null ? parseInt(results["course-sex-division"].t, 10) : null,
+    };
+
     athletes.push({
       bib,
       name: profile.name ?? "",
       gender,
       country: profile.country_iso?.toUpperCase() ?? profile.country ?? "",
+      city: profile.city ?? "",
+      team: profile.team ?? "",
       division: profile.division ?? "",
       status: finishSplit ? "FIN" : "DNF",
       overallRank: overallRank != null ? parseInt(overallRank, 10) : null,
       genderRank: genderRank != null ? parseInt(genderRank, 10) : null,
       divisionRank: divisionRank != null ? parseInt(divisionRank, 10) : null,
       finishSecs: finishCumSecs ?? null,
+      waveTime: finishSplit?.waveTime ?? null,
       legSecs,
+      legEpochs,
+      categoryTotals,
       startEpoch,
       waveOffset: null,
       cumPositions: {},

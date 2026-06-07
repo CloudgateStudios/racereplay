@@ -129,13 +129,6 @@ export type BoolWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
-export type EnumAthleteStatusFilter<$PrismaModel = never> = {
-  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
-  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel> | $Enums.AthleteStatus
-}
-
 export type StringNullableFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
@@ -149,6 +142,13 @@ export type StringNullableFilter<$PrismaModel = never> = {
   endsWith?: string | Prisma.StringFieldRefInput<$PrismaModel>
   mode?: Prisma.QueryMode
   not?: Prisma.NestedStringNullableFilter<$PrismaModel> | string | null
+}
+
+export type EnumAthleteStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel> | $Enums.AthleteStatus
 }
 
 export type IntNullableFilter<$PrismaModel = never> = {
@@ -167,16 +167,6 @@ export type SortOrderInput = {
   nulls?: Prisma.NullsOrder
 }
 
-export type EnumAthleteStatusWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
-  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumAthleteStatusWithAggregatesFilter<$PrismaModel> | $Enums.AthleteStatus
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
-}
-
 export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
@@ -193,6 +183,16 @@ export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type EnumAthleteStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAthleteStatusWithAggregatesFilter<$PrismaModel> | $Enums.AthleteStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
 }
 
 export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -362,13 +362,6 @@ export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
-export type NestedEnumAthleteStatusFilter<$PrismaModel = never> = {
-  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
-  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel> | $Enums.AthleteStatus
-}
-
 export type NestedStringNullableFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
@@ -383,6 +376,13 @@ export type NestedStringNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedStringNullableFilter<$PrismaModel> | string | null
 }
 
+export type NestedEnumAthleteStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel> | $Enums.AthleteStatus
+}
+
 export type NestedIntNullableFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
@@ -392,16 +392,6 @@ export type NestedIntNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
   not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
-}
-
-export type NestedEnumAthleteStatusWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
-  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumAthleteStatusWithAggregatesFilter<$PrismaModel> | $Enums.AthleteStatus
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
 }
 
 export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -419,6 +409,16 @@ export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumAthleteStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AthleteStatus | Prisma.EnumAthleteStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AthleteStatus[] | Prisma.ListEnumAthleteStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAthleteStatusWithAggregatesFilter<$PrismaModel> | $Enums.AthleteStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAthleteStatusFilter<$PrismaModel>
 }
 
 export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {

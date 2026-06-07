@@ -15,14 +15,15 @@ model Race {
 }
 
 model Event {
-  id       Int         @id @default(autoincrement())
-  race     Race        @relation(fields: [raceId], references: [id])
-  raceId   Int
-  year     Int
-  type     EventType
-  date     DateTime    @db.Date
-  athletes Athlete[]
-  segments Segment[]
+  id               Int              @id @default(autoincrement())
+  race             Race             @relation(fields: [raceId], references: [id])
+  raceId           Int
+  year             Int
+  type             EventType
+  date             DateTime         @db.Date
+  athletes         Athlete[]
+  segments         Segment[]
+  categoryResults  CategoryResult[]
 
   @@unique([raceId, year])
 }
@@ -46,8 +47,11 @@ model Athlete {
   gender       String
   division     String
   country      String
+  city         String?
+  team         String?
   status       AthleteStatus
   finishTime   String?
+  waveTime     String?
   overallRank  Int?
   genderRank   Int?
   divisionRank Int?
@@ -63,11 +67,23 @@ model AthleteSegment {
   segment     Segment  @relation(fields: [segmentId], references: [id])
   segmentId   Int
   timeSeconds Float?
+  epochTime   Float?
   gained      Int?
   lost        Int?
   net         Int?
 
   @@unique([athleteId, segmentId])
+}
+
+model CategoryResult {
+  id        Int    @id @default(autoincrement())
+  event     Event  @relation(fields: [eventId], references: [id])
+  eventId   Int
+  category  String
+  name      String
+  total     Int
+
+  @@unique([eventId, category, name])
 }
 
 enum EventType {
