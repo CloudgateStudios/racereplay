@@ -250,6 +250,121 @@ function buildRankMap(athletes, getTime) {
   return map;
 }
 
+// ─── Fenwick Tree (Binary Indexed Tree) ───────────────────────────────────────
+// Standard BIT for prefix-sum queries in O(log n).
+// Indices are 1-based; size must be >= max rank used.
+
+class FenwickTree {
+  constructor(size) { this._t = new Int32Array(size + 1); this._n = size; }
+  update(i, delta = 1) { for (; i <= this._n; i += i & -i) this._t[i] += delta; }
+  query(i) { let s = 0; for (; i > 0; i -= i & -i) s += this._t[i]; return s; }
+  reset() { this._t.fill(0); }
+}
+
+// O(n log n) passing algorithm — identical semantics to computePassingData.
+//
+// For each leg we need:
+//   gained[x] = #{y : yBefore < xBefore  AND  yAfter > xAfter}
+//   lost[x]   = #{y : yBefore > xBefore  AND  yAfter < xAfter}
+//
+// Pass A (descending afterRank): process worst-after-rank first.
+//   When we reach x, every already-inserted athlete has afterRank > xAfter.
+//   gained[x] = count of already-inserted with beforeRank < xBefore
+//             = tree.query(xBefore - 1)
+//   Then insert xBefore.
+//
+// Pass B (ascending afterRank): process best-after-rank first.
+//   When we reach x, every already-inserted athlete has afterRank < xAfter.
+//   lost[x]   = count of already-inserted with beforeRank > xBefore
+//             = (already inserted) - tree.query(xBefore)
+//   Then insert xBefore.
+//
+// Gun-start leg (no wave data, first leg): every beforeRank is 1 so we skip
+// the Fenwick tree entirely and use the closed-form:
+//   gained[x] = n - afterRank[x]   (everyone finishing after x)
+//   lost[x]   = afterRank[x] - 1   (everyone finishing before x)
+
+function computePassingDataFast(athletes, legNames, hasWaveData = false) {
+  const legs = legNames.map((name, i) => ({
+    name,
+    getBefore:
+      i === 0
+        ? hasWaveData
+          ? (a) => a.waveOffset
+          : null
+        : (a) => a.cumPositions[legNames[i - 1]],
+    getAfter: (a) => a.cumPositions[name],
+  }));
+
+  const results = new Map();
+  for (const a of athletes) {
+    const entry = {};
+    for (const leg of legNames) entry[leg] = { gained: 0, lost: 0 };
+    results.set(a.bib, entry);
+  }
+
+  for (const leg of legs) {
+    const afterMap  = buildRankMap(athletes, leg.getAfter);
+    let   eligible  = athletes.filter((a) => afterMap.has(a.bib));
+    const isGunStart = leg.name === legNames[0] && !hasWaveData;
+
+    if (isGunStart) {
+      // Closed-form: everyone started at the same position
+      for (const x of eligible) {
+        const xAfter = afterMap.get(x.bib);
+        const legData = results.get(x.bib)[leg.name];
+        legData.gained = eligible.length - xAfter;
+        legData.lost   = xAfter - 1;
+      }
+      continue;
+    }
+
+    const beforeMap = buildRankMap(athletes, leg.getBefore);
+    eligible = eligible.filter((a) => beforeMap.has(a.bib));
+    if (eligible.length === 0) continue;
+
+    const n    = eligible.length;
+    const tree = new FenwickTree(n);
+
+    // Compress beforeRank to [1..n] preserving relative order.
+    // buildRankMap ranks against the full athletes array so values can exceed
+    // eligible.length — accessing Int32Array out-of-bounds returns undefined
+    // which propagates as NaN through arithmetic.
+    const localBefore = new Map(
+      [...eligible]
+        .sort((a, b) => beforeMap.get(a.bib) - beforeMap.get(b.bib))
+        .map((a, i) => [a.bib, i + 1])
+    );
+
+    // Pass A — gained (process worst-after-rank first)
+    const byAfterDesc = [...eligible].sort(
+      (a, b) => afterMap.get(b.bib) - afterMap.get(a.bib)
+    );
+    for (const x of byAfterDesc) {
+      const xBefore = localBefore.get(x.bib);
+      results.get(x.bib)[leg.name].gained =
+        xBefore > 1 ? tree.query(xBefore - 1) : 0;
+      tree.update(xBefore);
+    }
+
+    // Pass B — lost (process best-after-rank first)
+    tree.reset();
+    const byAfterAsc = [...eligible].sort(
+      (a, b) => afterMap.get(a.bib) - afterMap.get(b.bib)
+    );
+    let inserted = 0;
+    for (const x of byAfterAsc) {
+      const xBefore = localBefore.get(x.bib);
+      results.get(x.bib)[leg.name].lost =
+        inserted - tree.query(xBefore);
+      tree.update(xBefore);
+      inserted++;
+    }
+  }
+
+  return results;
+}
+
 function computePassingData(athletes, legNames, hasWaveData = false) {
   const legs = legNames.map((name, i) => ({
     name,
@@ -380,94 +495,6 @@ function printReport(athletes, passingMap, legNames, hasWaveData) {
   }
   console.log(`\n  Overall invariant: ${invariantOk ? "✅ PASS" : "❌ FAIL"}`);
 
-  const sorted = finishers
-    .filter((a) => a.overallRank != null)
-    .sort((a, b) => a.overallRank - b.overallRank);
-
-  console.log("\n\n🏆 TOP 5 FINISHERS — Leg-by-leg passing breakdown");
-  console.log("─".repeat(70));
-  console.log(
-    `  ${"Rank".padEnd(5)} ${"Name".padEnd(28)} ${"Div".padEnd(
-      8
-    )} ${"Finish".padEnd(9)} Net`
-  );
-  console.log("─".repeat(70));
-
-  for (const a of sorted.slice(0, 5)) {
-    const d = passingMap.get(a.bib);
-    if (!d) continue;
-    const net = legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0);
-    console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
-        a.division,
-        8
-      )} ${fmtTimeLong(a.finishSecs).padEnd(9)} ${net >= 0 ? "+" : ""}${net}`
-    );
-    for (const leg of legNames) {
-      const { gained, lost } = d[leg];
-      const legNet = gained - lost;
-      console.log(
-        `         ${pad(leg, 8)}  +${rpad(gained, 3)} / -${rpad(
-          lost,
-          3
-        )}  net ${legNet >= 0 ? "+" : ""}${legNet}`
-      );
-    }
-    console.log();
-  }
-
-  const withNet = finishers
-    .map((a) => {
-      const d = passingMap.get(a.bib);
-      if (!d) return null;
-      const net = legNames.reduce((sum, l) => sum + d[l].gained - d[l].lost, 0);
-      return { ...a, net };
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.net - a.net);
-
-  console.log("\n🚀 BIGGEST CLIMBERS (most net positions gained)");
-  console.log("─".repeat(70));
-  for (const a of withNet.slice(0, 10)) {
-    const d = passingMap.get(a.bib);
-    const perLeg = legNames
-      .map(
-        (l) =>
-          `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${
-            d[l].gained - d[l].lost
-          }`
-      )
-      .join("  ");
-    console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
-        a.division,
-        8
-      )} ${fmtTimeLong(a.finishSecs).padEnd(9)} +${a.net}`
-    );
-    console.log(`         ${perLeg}`);
-  }
-
-  console.log("\n📉 BIGGEST FALLERS (most net positions lost)");
-  console.log("─".repeat(70));
-  for (const a of withNet.slice(-10).reverse()) {
-    const d = passingMap.get(a.bib);
-    const perLeg = legNames
-      .map(
-        (l) =>
-          `${l}:${d[l].gained - d[l].lost >= 0 ? "+" : ""}${
-            d[l].gained - d[l].lost
-          }`
-      )
-      .join("  ");
-    console.log(
-      `  ${rpad(a.overallRank, 4)}  ${pad(a.name, 28)} ${pad(
-        a.division,
-        8
-      )} ${fmtTimeLong(a.finishSecs).padEnd(9)} ${a.net}`
-    );
-    console.log(`         ${perLeg}`);
-  }
-
   console.log("\n" + "═".repeat(70) + "\n");
 }
 
@@ -542,6 +569,7 @@ const forcedPoints =
   pointsIdx !== -1
     ? args[pointsIdx + 1]?.split(",").map((p) => p.trim())
     : null;
+const verifyMode = args.includes("--verify");
 
 if (!eventId) {
   console.error(`
@@ -844,11 +872,39 @@ Examples:
       : "No per-athlete start times — using chip time comparisons only.";
     console.log(`   ${modeMsg}`);
 
-    const passingMap = computePassingData(
+    const passingMap = computePassingDataFast(
       normalizedAthletes,
       legNames,
       hasWaveData
     );
+
+    if (verifyMode) {
+      console.log("\n🔍 --verify: running O(n²) reference algorithm to diff results...");
+      const refMap = computePassingData(normalizedAthletes, legNames, hasWaveData);
+      let mismatches = 0;
+      for (const a of normalizedAthletes) {
+        const fast = passingMap.get(a.bib);
+        const ref  = refMap.get(a.bib);
+        if (!fast || !ref) continue;
+        for (const leg of legNames) {
+          if (fast[leg].gained !== ref[leg].gained || fast[leg].lost !== ref[leg].lost) {
+            if (mismatches === 0) console.log("   BIB       LEG      FAST gained/lost  REF gained/lost");
+            console.log(
+              `   ${String(a.bib).padEnd(9)} ${leg.padEnd(8)} ` +
+              `fast=${fast[leg].gained}/${fast[leg].lost}  ref=${ref[leg].gained}/${ref[leg].lost}`
+            );
+            mismatches++;
+            if (mismatches >= 20) { console.log("   ... (truncated at 20 mismatches)"); break; }
+          }
+        }
+        if (mismatches >= 20) break;
+      }
+      if (mismatches === 0) {
+        console.log("   ✅ PASS — fast and reference algorithms produce identical results.");
+      } else {
+        console.log(`\n   ❌ FAIL — ${mismatches} mismatch(es) found. Results written using fast algorithm.`);
+      }
+    }
 
     printReport(normalizedAthletes, passingMap, legNames, hasWaveData);
 
