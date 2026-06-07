@@ -46,7 +46,7 @@ model Athlete {
   gender       String
   division     String
   country      String
-  status       String
+  status       AthleteStatus
   finishTime   String?
   overallRank  Int?
   genderRank   Int?
@@ -73,4 +73,11 @@ model AthleteSegment {
 enum EventType {
   TRIATHLON
   ROAD_RACE
+}
+
+enum AthleteStatus {
+  FIN
+  DNF
+  DSQ
+  DNS
 }

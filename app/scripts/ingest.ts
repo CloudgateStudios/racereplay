@@ -42,7 +42,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.resolve(__dirname, "../.env.local") });
 
 import fs from "fs/promises";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient, AthleteStatus } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -152,6 +152,16 @@ export function detectLegs(headers: string[]): string[] {
   return headers
     .filter((h) => h.endsWith(" Time") && !SKIP_TIME_COLS.has(h))
     .map((h) => h.replace(/ Time$/, ""));
+}
+
+// ─── Status helper ────────────────────────────────────────────────────────────
+
+const VALID_STATUSES = new Set<string>(Object.values(AthleteStatus));
+
+export function toAthleteStatus(val: string | undefined): AthleteStatus {
+  const upper = (val ?? "").trim().toUpperCase();
+  if (VALID_STATUSES.has(upper)) return upper as AthleteStatus;
+  return AthleteStatus.FIN;
 }
 
 // ─── Value helpers ────────────────────────────────────────────────────────────
@@ -295,7 +305,7 @@ async function main() {
         gender: (obj["Gender"] ?? "").trim(),
         division: (obj["Division"] ?? "").trim(),
         country: (obj["Country"] ?? "").trim(),
-        status: (obj["Status"] ?? "").trim(),
+        status: toAthleteStatus(obj["Status"]),
         finishTime: (obj["Overall Finish Time"] || obj["Finish Time"] || "").trim() || null,
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),

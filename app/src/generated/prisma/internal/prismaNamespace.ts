@@ -973,6 +973,20 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'AthleteStatus'
+ */
+export type EnumAthleteStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AthleteStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AthleteStatus[]'
+ */
+export type ListEnumAthleteStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AthleteStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>

@@ -8,6 +8,7 @@ import {
   toInt,
   toFloat,
   warnMissingColumns,
+  toAthleteStatus,
 } from "./ingest";
 
 // ─── parseCSVRow ──────────────────────────────────────────────────────────────
@@ -285,5 +286,39 @@ describe("warnMissingColumns", () => {
     const messages = warn.mock.calls.map((c) => c[0] as string);
     expect(messages.some((m) => m.includes("finish times will be empty"))).toBe(false);
     warn.mockRestore();
+  });
+});
+
+// ─── toAthleteStatus ──────────────────────────────────────────────────────────
+
+describe("toAthleteStatus", () => {
+  it("returns FIN for 'FIN'", () => {
+    expect(toAthleteStatus("FIN")).toBe("FIN");
+  });
+
+  it("returns DNF for 'DNF'", () => {
+    expect(toAthleteStatus("DNF")).toBe("DNF");
+  });
+
+  it("returns DSQ for 'DSQ'", () => {
+    expect(toAthleteStatus("DSQ")).toBe("DSQ");
+  });
+
+  it("returns DNS for 'DNS'", () => {
+    expect(toAthleteStatus("DNS")).toBe("DNS");
+  });
+
+  it("is case-insensitive", () => {
+    expect(toAthleteStatus("fin")).toBe("FIN");
+    expect(toAthleteStatus("dnf")).toBe("DNF");
+  });
+
+  it("defaults to FIN for unknown values", () => {
+    expect(toAthleteStatus("UNKNOWN")).toBe("FIN");
+    expect(toAthleteStatus("")).toBe("FIN");
+  });
+
+  it("defaults to FIN for undefined", () => {
+    expect(toAthleteStatus(undefined)).toBe("FIN");
   });
 });

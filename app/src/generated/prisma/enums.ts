@@ -15,3 +15,13 @@ export const EventType = {
 } as const
 
 export type EventType = (typeof EventType)[keyof typeof EventType]
+
+
+export const AthleteStatus = {
+  FIN: 'FIN',
+  DNF: 'DNF',
+  DSQ: 'DSQ',
+  DNS: 'DNS'
+} as const
+
+export type AthleteStatus = (typeof AthleteStatus)[keyof typeof AthleteStatus]
