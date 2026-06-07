@@ -5,20 +5,7 @@ without requiring new pages or major architecture changes.
 
 ---
 
-## 1. Search debounce on event results page
-
-**Current behavior:** The search box in the event results table fires a
-`router.push` on every keystroke. `useTransition` keeps it non-blocking, but
-typing quickly still produces a noisy URL history and can feel jittery.
-
-**Enhancement:** Add a 150–200ms debounce before pushing the search value to
-the URL. This is a one-line change with a small `useDebounce` hook.
-
-**Files:** `app/src/app/events/[slug]/[year]/filters.tsx`
-
----
-
-## 2. Mobile table layout
+## 1. Mobile table layout
 
 **Current behavior:** The results table on the event page is a full-width
 horizontal scroll on mobile. There is no indicator that more columns exist off
@@ -36,22 +23,7 @@ screen, and the passing/lost/net columns are easy to miss.
 
 ---
 
-## 3. Skeleton loading screens
-
-**Current behavior:** All event and athlete pages are fully server-rendered with
-`force-dynamic`. The page shows nothing until the database query completes.
-
-**Enhancement:** Add `loading.tsx` files alongside the main pages with skeleton
-placeholders that match the layout. This gives instant visual feedback and makes
-slow queries feel faster.
-
-**Files to add:**
-- `app/src/app/events/[slug]/[year]/loading.tsx`
-- `app/src/app/events/[slug]/[year]/[bib]/loading.tsx`
-
----
-
-## 4. Richer SEO and social metadata
+## 2. Richer SEO and social metadata
 
 **Current behavior:** Pages have basic `<title>` tags. No `description`,
 `og:image`, or structured data.
@@ -68,7 +40,7 @@ slow queries feel faster.
 
 ---
 
-## 5. Manual dark mode toggle
+## 3. Manual dark mode toggle
 
 **Current behavior:** Dark mode follows the system `prefers-color-scheme` media
 query. There is no way for a user to manually override this.
@@ -81,7 +53,7 @@ on load to avoid flash of wrong theme.
 
 ---
 
-## 6. Athlete funnel visualization improvements
+## 4. Athlete funnel visualization improvements
 
 **Current behavior:** The event page shows a simple "Started → [Segments] →
 Finished" funnel as text badges with counts.
@@ -95,21 +67,21 @@ Finished" funnel as text badges with counts.
 
 ---
 
-## 7. Shareable athlete result links
+## 5. Shareable athlete result links
 
 **Current behavior:** The athlete detail page URL (`/events/[slug]/[year]/[bib]`)
 is already deep-linkable, but there is no share button or clipboard copy action
 anywhere.
 
 **Enhancement:** Add a "Share" button on the athlete detail page that copies the
-current URL to the clipboard. Combine with og:image generation (see item 4) so
+current URL to the clipboard. Combine with og:image generation (see item 2) so
 shared links render a rich preview in iMessage, Slack, Twitter, etc.
 
 **Files:** `app/src/app/events/[slug]/[year]/[bib]/page.tsx`
 
 ---
 
-## 8. Persistent filter state via URL
+## 6. Persistent filter state via URL
 
 **Current behavior:** Gender, division, search, sort, and page are all stored in
 URL search params, which is correct. However, navigating to an athlete detail
