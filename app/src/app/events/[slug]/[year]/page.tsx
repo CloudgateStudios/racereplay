@@ -248,16 +248,16 @@ export default async function EventPage({ params, searchParams }: Props) {
         {/* Fade hint for horizontal overflow on mobile */}
         <div className="from-background pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-8 bg-gradient-to-l to-transparent sm:hidden" />
         <div className="overflow-x-auto rounded-md border">
-          <Table>
+          <Table className="table-fixed sm:table-auto">
             <TableHeader>
               <TableRow>
-                <TableHead>
+                <TableHead className="w-14 sm:w-auto">
                   <SortHeader column="rank" label="Rank" currentSort={sort} currentDir={dir} />
                 </TableHead>
                 <TableHead className="hidden sm:table-cell">
                   <SortHeader column="bib" label="Bib" currentSort={sort} currentDir={dir} />
                 </TableHead>
-                <TableHead>
+                <TableHead className="w-auto">
                   <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
                 </TableHead>
                 {hasDivisions && (
@@ -275,7 +275,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                     {seg.name} Net
                   </TableHead>
                 ))}
-                <TableHead className="text-center">Overall Net</TableHead>
+                <TableHead className="w-24 text-center sm:w-auto">Overall Net</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
