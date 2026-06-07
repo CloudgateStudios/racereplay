@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+
 import pkg from "../../package.json";
 import "./globals.css";
 
