@@ -135,7 +135,7 @@ function rowToObj(headers: string[], row: string[]): Record<string, string> {
 
 // ─── Leg detection ────────────────────────────────────────────────────────────
 
-const SKIP_TIME_COLS = new Set(["Finish Time", "Wave Offset (Seconds)"]);
+const SKIP_TIME_COLS = new Set(["Overall Finish Time", "Finish Time", "Wave Offset (Seconds)"]);
 
 function detectLegs(headers: string[]): string[] {
   return headers
@@ -233,7 +233,7 @@ async function main() {
       division: obj["Division"] ?? "",
       country: obj["Country"] ?? "",
       status: obj["Status"] ?? "",
-      finishTime: obj["Finish Time"] ?? "",
+      finishTime: obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "",
       overallRank: toInt(obj["Overall Rank"]),
       genderRank: toInt(obj["Gender Rank"]),
       divisionRank: toInt(obj["Division Rank"]),
