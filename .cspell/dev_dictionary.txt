@@ -3,10 +3,12 @@ antialiased
 arra
 autoincrement
 athleteid
+cloudgate
 cspell
 depcheck
 destructive
 displayorder
+doesn
 dotenv
 econnrefused
 eventid
