@@ -22,13 +22,33 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
   const finishPct =
     totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0;
 
+  // Build the full ordered row list for the bar chart
+  const rows = [
+    { key: "started", label: "Started", count: totalAthletes, isFinish: false },
+    ...segmentCounts
+      .filter((seg) => !seg.isFinish)
+      .map((seg) => ({ key: String(seg.segmentId), label: seg.name, count: seg.count, isFinish: false })),
+    { key: "finished", label: "Finished", count: finisherCount, isFinish: true },
+  ];
+
+  // Find the segment with the largest absolute drop (excluding "Started" row)
+  let maxDropIdx = -1;
+  let maxDrop = 0;
+  for (let i = 1; i < rows.length; i++) {
+    const drop = rows[i - 1].count - rows[i].count;
+    if (drop > maxDrop) {
+      maxDrop = drop;
+      maxDropIdx = i;
+    }
+  }
+
   return (
     <div className="mb-6">
       <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
         Participation
       </p>
 
-      {/* ── Mobile summary pill (collapsed by default) ── */}
+      {/* ── Mobile: summary pill, expandable ── */}
       <div className="sm:hidden">
         <button
           onClick={() => setExpanded((v) => !v)}
@@ -51,91 +71,93 @@ export function EventFunnel({ totalAthletes, finisherCount, segmentCounts }: Pro
           )}
         </button>
 
-        {/* Expanded segment breakdown on mobile */}
         {expanded && (
           <div className="bg-muted/40 mt-1 rounded-lg border px-4 py-3">
             <div className="divide-border divide-y">
-              {/* Started row */}
-              <div className="flex items-center justify-between py-2">
-                <span className="text-muted-foreground text-sm">Started</span>
-                <span className="text-sm font-semibold tabular-nums">
-                  {totalAthletes.toLocaleString()}{" "}
-                  <span className="text-muted-foreground font-normal">100%</span>
-                </span>
-              </div>
-
-              {/* Per-segment rows */}
-              {segmentCounts
-                .filter((seg) => !seg.isFinish)
-                .map((seg) => {
-                  const pct =
-                    totalAthletes > 0
-                      ? Math.round((seg.count / totalAthletes) * 100)
-                      : 0;
-                  return (
-                    <div key={seg.segmentId} className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground text-sm">{seg.name}</span>
-                      <span className="text-sm font-semibold tabular-nums">
-                        {seg.count.toLocaleString()}{" "}
-                        <span className="text-muted-foreground font-normal">{pct}%</span>
-                      </span>
-                    </div>
-                  );
-                })}
-
-              {/* Finished row */}
-              <div className="flex items-center justify-between py-2">
-                <span className="text-muted-foreground text-sm">Finished</span>
-                <span className="text-primary text-sm font-semibold tabular-nums">
-                  {finisherCount.toLocaleString()}{" "}
-                  <span className="text-muted-foreground font-normal">{finishPct}%</span>
-                </span>
-              </div>
+              {rows.map((row, i) => {
+                const pct =
+                  totalAthletes > 0 ? Math.round((row.count / totalAthletes) * 100) : 0;
+                const isBigDrop = i === maxDropIdx;
+                return (
+                  <div key={row.key} className="flex items-center justify-between py-2">
+                    <span className={`text-sm ${isBigDrop ? "text-orange-500 font-medium" : "text-muted-foreground"}`}>
+                      {row.label}
+                      {isBigDrop && (
+                        <span className="ml-1 text-xs">↓ biggest drop</span>
+                      )}
+                    </span>
+                    <span className={`text-sm font-semibold tabular-nums ${row.isFinish ? "text-primary" : ""}`}>
+                      {row.count.toLocaleString()}{" "}
+                      <span className="text-muted-foreground font-normal">{pct}%</span>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Desktop full horizontal funnel (unchanged) ── */}
-      <div className="bg-muted/40 hidden rounded-lg border p-4 sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-        {/* Starters */}
-        <div className="flex flex-col items-center px-4 text-center">
-          <span className="text-2xl font-bold tabular-nums">
-            {totalAthletes.toLocaleString()}
-          </span>
-          <span className="text-muted-foreground mt-0.5 text-xs">Started</span>
-          <span className="text-muted-foreground mt-0.5 text-xs">100%</span>
-        </div>
-
-        {segmentCounts
-          .filter((seg) => !seg.isFinish)
-          .map((seg) => {
+      {/* ── Desktop: horizontal bar chart ── */}
+      <div className="bg-muted/40 hidden rounded-lg border px-6 py-4 sm:block">
+        <div className="space-y-2">
+          {rows.map((row, i) => {
             const pct =
-              totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
+              totalAthletes > 0 ? Math.round((row.count / totalAthletes) * 100) : 0;
+            const barPct = totalAthletes > 0 ? (row.count / totalAthletes) * 100 : 0;
+            const isBigDrop = i === maxDropIdx;
+            const drop = i > 0 ? rows[i - 1].count - row.count : 0;
+
             return (
-              <div key={seg.segmentId} className="flex flex-row items-center">
-                <span className="text-muted-foreground px-1 text-lg select-none">→</span>
-                <div className="flex flex-col items-center px-4 text-center">
-                  <span className="text-2xl font-bold tabular-nums">
-                    {seg.count.toLocaleString()}
+              <div key={row.key} className="flex items-center gap-3">
+                {/* Label */}
+                <span
+                  className={`w-20 shrink-0 text-right text-sm ${
+                    isBigDrop
+                      ? "font-medium text-orange-500"
+                      : row.isFinish
+                        ? "text-primary font-medium"
+                        : "text-muted-foreground"
+                  }`}
+                >
+                  {row.label}
+                </span>
+
+                {/* Bar */}
+                <div className="h-6 flex-1 overflow-hidden rounded-sm bg-transparent">
+                  <div
+                    className={`h-full rounded-sm transition-all ${
+                      isBigDrop
+                        ? "bg-orange-400/70"
+                        : row.isFinish
+                          ? "bg-primary/70"
+                          : "bg-primary/30"
+                    }`}
+                    style={{ width: `${barPct}%` }}
+                  />
+                </div>
+
+                {/* Count + pct */}
+                <div className="w-32 shrink-0 text-sm tabular-nums">
+                  <span
+                    className={`font-semibold ${
+                      isBigDrop
+                        ? "text-orange-500"
+                        : row.isFinish
+                          ? "text-primary"
+                          : ""
+                    }`}
+                  >
+                    {row.count.toLocaleString()}
                   </span>
-                  <span className="text-muted-foreground mt-0.5 text-xs">{seg.name}</span>
-                  <span className="text-muted-foreground mt-0.5 text-xs">{pct}%</span>
+                  <span className="text-muted-foreground ml-1">{pct}%</span>
+                  {isBigDrop && drop > 0 && (
+                    <span className="text-orange-400 ml-2 text-xs">−{drop.toLocaleString()}</span>
+                  )}
                 </div>
               </div>
             );
           })}
-
-        {/* Finishers */}
-        <div className="flex flex-row items-center">
-          <span className="text-muted-foreground px-1 text-lg select-none">→</span>
-          <div className="flex flex-col items-center px-4 text-center">
-            <span className="text-primary text-2xl font-bold tabular-nums">
-              {finisherCount.toLocaleString()}
-            </span>
-            <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
-            <span className="text-muted-foreground mt-0.5 text-xs">{finishPct}%</span>
-          </div>
         </div>
       </div>
     </div>
