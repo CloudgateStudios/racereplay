@@ -246,7 +246,7 @@ export type AthleteGroupByOutputType = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime: string | null
   overallRank: number | null
   genderRank: number | null
   divisionRank: number | null
@@ -284,7 +284,7 @@ export type AthleteWhereInput = {
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
   status?: Prisma.StringFilter<"Athlete"> | string
-  finishTime?: Prisma.StringFilter<"Athlete"> | string
+  finishTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
@@ -301,7 +301,7 @@ export type AthleteOrderByWithRelationInput = {
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  finishTime?: Prisma.SortOrder
+  finishTime?: Prisma.SortOrderInput | Prisma.SortOrder
   overallRank?: Prisma.SortOrderInput | Prisma.SortOrder
   genderRank?: Prisma.SortOrderInput | Prisma.SortOrder
   divisionRank?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -322,7 +322,7 @@ export type AthleteWhereUniqueInput = Prisma.AtLeast<{
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
   status?: Prisma.StringFilter<"Athlete"> | string
-  finishTime?: Prisma.StringFilter<"Athlete"> | string
+  finishTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
@@ -339,7 +339,7 @@ export type AthleteOrderByWithAggregationInput = {
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  finishTime?: Prisma.SortOrder
+  finishTime?: Prisma.SortOrderInput | Prisma.SortOrder
   overallRank?: Prisma.SortOrderInput | Prisma.SortOrder
   genderRank?: Prisma.SortOrderInput | Prisma.SortOrder
   divisionRank?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -362,7 +362,7 @@ export type AthleteScalarWhereWithAggregatesInput = {
   division?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   country?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   status?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
-  finishTime?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
+  finishTime?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableWithAggregatesFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableWithAggregatesFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableWithAggregatesFilter<"Athlete"> | number | null
@@ -375,7 +375,7 @@ export type AthleteCreateInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -392,7 +392,7 @@ export type AthleteUncheckedCreateInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -406,7 +406,7 @@ export type AthleteUpdateInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -423,7 +423,7 @@ export type AthleteUncheckedUpdateInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -439,7 +439,7 @@ export type AthleteCreateManyInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -452,7 +452,7 @@ export type AthleteUpdateManyMutationInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -467,7 +467,7 @@ export type AthleteUncheckedUpdateManyInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -596,6 +596,10 @@ export type AthleteUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.AthleteScalarWhereInput | Prisma.AthleteScalarWhereInput[]
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -625,7 +629,7 @@ export type AthleteCreateWithoutEventInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -640,7 +644,7 @@ export type AthleteUncheckedCreateWithoutEventInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -685,7 +689,7 @@ export type AthleteScalarWhereInput = {
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
   status?: Prisma.StringFilter<"Athlete"> | string
-  finishTime?: Prisma.StringFilter<"Athlete"> | string
+  finishTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
@@ -698,7 +702,7 @@ export type AthleteCreateWithoutSegmentsInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -714,7 +718,7 @@ export type AthleteUncheckedCreateWithoutSegmentsInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -743,7 +747,7 @@ export type AthleteUpdateWithoutSegmentsInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -759,7 +763,7 @@ export type AthleteUncheckedUpdateWithoutSegmentsInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -773,7 +777,7 @@ export type AthleteCreateManyEventInput = {
   division: string
   country: string
   status: string
-  finishTime: string
+  finishTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -786,7 +790,7 @@ export type AthleteUpdateWithoutEventInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -801,7 +805,7 @@ export type AthleteUncheckedUpdateWithoutEventInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -816,7 +820,7 @@ export type AthleteUncheckedUpdateManyWithoutEventInput = {
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  finishTime?: Prisma.StringFieldUpdateOperationsInput | string
+  finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -946,7 +950,7 @@ export type $AthletePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     division: string
     country: string
     status: string
-    finishTime: string
+    finishTime: string | null
     overallRank: number | null
     genderRank: number | null
     divisionRank: number | null

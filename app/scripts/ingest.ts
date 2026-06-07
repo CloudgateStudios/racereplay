@@ -244,7 +244,7 @@ async function main() {
         division: obj["Division"] ?? "",
         country: obj["Country"] ?? "",
         status: obj["Status"] ?? "",
-        finishTime: obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "",
+        finishTime: obj["Overall Finish Time"] || obj["Finish Time"] || null,
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),
         divisionRank: toInt(obj["Division Rank"]),
