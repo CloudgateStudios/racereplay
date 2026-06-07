@@ -113,9 +113,18 @@ describe("detectLegs", () => {
 
   it("handles a triathlon column set correctly", () => {
     const headers = [
-      "Bib", "Name", "Gender", "Division",
-      "Swim Time", "T1 Time", "Bike Time", "T2 Time", "Run Time",
-      "Finish Time", "Overall Finish Time", "Wave Offset (Seconds)",
+      "Bib",
+      "Name",
+      "Gender",
+      "Division",
+      "Swim Time",
+      "T1 Time",
+      "Bike Time",
+      "T2 Time",
+      "Run Time",
+      "Finish Time",
+      "Overall Finish Time",
+      "Wave Offset (Seconds)",
     ];
     expect(detectLegs(headers)).toEqual(["Swim", "T1", "Bike", "T2", "Run"]);
   });
