@@ -239,12 +239,12 @@ async function main() {
       const obj = rowToObj(headers, row);
 
       const athleteData = {
-        name: obj["Name"] ?? "",
-        gender: obj["Gender"] ?? "",
-        division: obj["Division"] ?? "",
-        country: obj["Country"] ?? "",
-        status: obj["Status"] ?? "",
-        finishTime: obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "",
+        name: (obj["Name"] ?? "").trim(),
+        gender: (obj["Gender"] ?? "").trim(),
+        division: (obj["Division"] ?? "").trim(),
+        country: (obj["Country"] ?? "").trim(),
+        status: (obj["Status"] ?? "").trim(),
+        finishTime: (obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "").trim(),
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),
         divisionRank: toInt(obj["Division Rank"]),
