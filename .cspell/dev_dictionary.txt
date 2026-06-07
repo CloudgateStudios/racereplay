@@ -35,5 +35,6 @@ shadcn
 tabular
 tailwindcss
 turbopack
+upserting
 upserts
 woff
