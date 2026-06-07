@@ -33,7 +33,7 @@ export function EventFilters({ genders, divisions }: Props) {
       }
       params.delete("page");
       startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
       });
     },
     [router, pathname, searchParams]

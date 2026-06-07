@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EventFilters } from "./filters";
+import { EventFunnel } from "./funnel";
 import { SortHeader } from "./sort-header";
 
 const PAGE_SIZE = 50;
@@ -172,63 +173,11 @@ export default async function EventPage({ params, searchParams }: Props) {
       </div>
 
       {/* Athlete funnel */}
-      <div className="mb-6">
-        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
-          Participation
-        </p>
-        <div className="bg-muted/40 flex flex-col items-center gap-y-3 rounded-lg border p-4 sm:flex-row sm:flex-wrap sm:justify-center">
-          {/* Starters */}
-          <div className="flex flex-col items-center px-4 text-center">
-            <span className="text-2xl font-bold tabular-nums">
-              {totalAthletes.toLocaleString()}
-            </span>
-            <span className="text-muted-foreground mt-0.5 text-xs">Started</span>
-            <span className="text-muted-foreground mt-0.5 text-xs">100%</span>
-          </div>
-
-          {/* Arrow + gate for each segment.
-              Skip any segment named "Finish" — the dedicated "Finished" node below
-              already represents that count and avoids the funnel going back up due
-              to athletes who missed the final timing mat but still have FIN status. */}
-          {segmentCounts
-            .filter((seg) => !seg.isFinish)
-            .map((seg) => {
-              const pct = totalAthletes > 0 ? Math.round((seg.count / totalAthletes) * 100) : 0;
-              return (
-                <div key={seg.segmentId} className="flex flex-col items-center sm:flex-row">
-                  <span className="text-muted-foreground px-1 text-lg select-none">
-                    <span className="sm:hidden">↓</span>
-                    <span className="hidden sm:inline">→</span>
-                  </span>
-                  <div className="flex flex-col items-center px-4 text-center">
-                    <span className="text-2xl font-bold tabular-nums">
-                      {seg.count.toLocaleString()}
-                    </span>
-                    <span className="text-muted-foreground mt-0.5 text-xs">{seg.name}</span>
-                    <span className="text-muted-foreground mt-0.5 text-xs">{pct}%</span>
-                  </div>
-                </div>
-              );
-            })}
-
-          {/* Arrow + Finishers */}
-          <div className="flex flex-col items-center sm:flex-row">
-            <span className="text-muted-foreground px-1 text-lg select-none">
-              <span className="sm:hidden">↓</span>
-              <span className="hidden sm:inline">→</span>
-            </span>
-            <div className="flex flex-col items-center px-4 text-center">
-              <span className="text-primary text-2xl font-bold tabular-nums">
-                {finisherCount.toLocaleString()}
-              </span>
-              <span className="text-muted-foreground mt-0.5 text-xs">Finished</span>
-              <span className="text-muted-foreground mt-0.5 text-xs">
-                {totalAthletes > 0 ? Math.round((finisherCount / totalAthletes) * 100) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <EventFunnel
+        totalAthletes={totalAthletes}
+        finisherCount={finisherCount}
+        segmentCounts={segmentCounts}
+      />
 
       <Suspense>
         <EventFilters genders={genders} divisions={divisions} />
@@ -240,81 +189,97 @@ export default async function EventPage({ params, searchParams }: Props) {
         {page > 1 ? ` — page ${page} of ${totalPages}` : ""}
       </p>
 
-      <div className="overflow-x-auto rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <SortHeader column="rank" label="Rank" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              <TableHead>
-                <SortHeader column="bib" label="Bib" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              <TableHead>
-                <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              {hasDivisions && <TableHead>Division</TableHead>}
-              <TableHead>Status</TableHead>
-              <TableHead>
-                <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
-              </TableHead>
-              {event.segments.map((seg) => (
-                <TableHead key={`${seg.id}-net`} className="text-center">
-                  {seg.name} Net
+      {/* Table: on mobile shows Rank, Name (+ status badge inline), Overall Net only.
+          Secondary columns (Bib, Division, Status, Finish, per-segment nets) are
+          hidden on small screens and revealed at sm breakpoint.
+          A right-edge fade hints at horizontal scroll on mobile. */}
+      <div className="relative">
+        {/* Fade hint for horizontal overflow on mobile */}
+        <div className="from-background pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-8 bg-gradient-to-l to-transparent sm:hidden" />
+        <div className="overflow-x-auto rounded-md border">
+          <Table className="table-fixed sm:table-auto">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-14 sm:w-auto">
+                  <SortHeader column="rank" label="Rank" currentSort={sort} currentDir={dir} />
                 </TableHead>
-              ))}
-              <TableHead className="text-center">Overall Net</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {athletes.map((athlete) => {
-              const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
-              return (
-                <TableRow key={athlete.id} className="hover:bg-muted/50">
-                  <TableCell className="tabular-nums">{athlete.overallRank ?? "—"}</TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">{athlete.bib}</TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/events/${slug}/${year}/${athlete.bib}`}
-                      className="font-medium hover:underline"
-                    >
-                      {athlete.name}
-                    </Link>
-                  </TableCell>
-                  {hasDivisions && (
-                    <TableCell className="text-muted-foreground text-sm">
-                      {athlete.division || "—"}
+                <TableHead className="hidden sm:table-cell">
+                  <SortHeader column="bib" label="Bib" currentSort={sort} currentDir={dir} />
+                </TableHead>
+                <TableHead className="w-auto">
+                  <SortHeader column="name" label="Name" currentSort={sort} currentDir={dir} />
+                </TableHead>
+                {hasDivisions && <TableHead className="hidden sm:table-cell">Division</TableHead>}
+                <TableHead className="hidden sm:table-cell">Status</TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <SortHeader column="finish" label="Finish" currentSort={sort} currentDir={dir} />
+                </TableHead>
+                {event.segments.map((seg) => (
+                  <TableHead key={`${seg.id}-net`} className="hidden text-center sm:table-cell">
+                    {seg.name} Net
+                  </TableHead>
+                ))}
+                <TableHead className="w-24 text-center sm:w-auto">Overall Net</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {athletes.map((athlete) => {
+                const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
+                return (
+                  <TableRow key={athlete.id} className="hover:bg-muted/50">
+                    <TableCell className="tabular-nums">{athlete.overallRank ?? "—"}</TableCell>
+                    <TableCell className="hidden font-mono text-sm tabular-nums sm:table-cell">
+                      {athlete.bib}
                     </TableCell>
-                  )}
-                  <TableCell>
-                    <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
-                      {athlete.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">
-                    {athlete.finishTime ?? "—"}
-                  </TableCell>
-                  {event.segments.map((seg) => {
-                    const s = athlete.segments.find((as) => as.segmentId === seg.id);
-                    return (
-                      <TableCell
-                        key={`${athlete.id}-${seg.id}-net`}
-                        className={`text-center font-medium tabular-nums ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
+                    <TableCell>
+                      <Link
+                        href={`/events/${slug}/${year}/${athlete.bib}`}
+                        className="font-medium hover:underline"
                       >
-                        {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
+                        {athlete.name}
+                      </Link>
+                      {/* Status badge shown inline on mobile only */}
+                      {athlete.status !== "FIN" && (
+                        <Badge variant="outline" className="ml-2 text-xs sm:hidden">
+                          {athlete.status}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    {hasDivisions && (
+                      <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
+                        {athlete.division || "—"}
                       </TableCell>
-                    );
-                  })}
-                  <TableCell
-                    className={`text-center font-bold tabular-nums ${overallNet > 0 ? "text-green-600" : overallNet < 0 ? "text-red-500" : ""}`}
-                  >
-                    {overallNet > 0 ? `+${overallNet}` : overallNet}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    )}
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
+                        {athlete.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden font-mono text-sm tabular-nums sm:table-cell">
+                      {athlete.finishTime ?? "—"}
+                    </TableCell>
+                    {event.segments.map((seg) => {
+                      const s = athlete.segments.find((as) => as.segmentId === seg.id);
+                      return (
+                        <TableCell
+                          key={`${athlete.id}-${seg.id}-net`}
+                          className={`hidden text-center font-medium tabular-nums sm:table-cell ${(s?.net ?? 0) > 0 ? "text-green-600" : (s?.net ?? 0) < 0 ? "text-red-500" : ""}`}
+                        >
+                          {s?.net != null ? (s.net > 0 ? `+${s.net}` : s.net) : "—"}
+                        </TableCell>
+                      );
+                    })}
+                    <TableCell
+                      className={`text-center font-bold tabular-nums ${overallNet > 0 ? "text-green-600" : overallNet < 0 ? "text-red-500" : ""}`}
+                    >
+                      {overallNet > 0 ? `+${overallNet}` : overallNet}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}
