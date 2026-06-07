@@ -292,7 +292,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono text-sm tabular-nums">
-                    {athlete.finishTime || "—"}
+                    {athlete.finishTime ?? "—"}
                   </TableCell>
                   {event.segments.map((seg) => {
                     const s = athlete.segments.find((as) => as.segmentId === seg.id);

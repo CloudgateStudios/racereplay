@@ -295,7 +295,7 @@ async function main() {
         division: (obj["Division"] ?? "").trim(),
         country: (obj["Country"] ?? "").trim(),
         status: (obj["Status"] ?? "").trim(),
-        finishTime: (obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "").trim(),
+        finishTime: (obj["Overall Finish Time"] || obj["Finish Time"] || "").trim() || null,
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),
         divisionRank: toInt(obj["Division Rank"]),
