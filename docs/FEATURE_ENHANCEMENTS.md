@@ -5,30 +5,13 @@ without requiring new pages or major architecture changes.
 
 ---
 
-## 1. Mobile table layout
-
-**Current behavior:** The results table on the event page is a full-width
-horizontal scroll on mobile. There is no indicator that more columns exist off
-screen, and the passing/lost/net columns are easy to miss.
-
-**Enhancement options (pick one or layer them):**
-- Show only the most important columns on mobile (Rank, Name, Overall Net) and
-  reveal the rest behind a toggle or horizontal scroll with a fade indicator.
-- Switch to a card layout on small screens where each athlete is a stacked card
-  showing their key stats.
-- Add a sticky first column (Rank or Name) so the athlete identity stays visible
-  while scrolling right.
-
-**Files:** `app/src/app/events/[slug]/[year]/page.tsx`
-
----
-
 ## 2. Richer SEO and social metadata
 
 **Current behavior:** Pages have basic `<title>` tags. No `description`,
 `og:image`, or structured data.
 
 **Enhancement:**
+
 - Add per-page `description` metadata (event name, date, athlete count).
 - Add `og:image` generation via Next.js's `ImageResponse` for event and athlete
   pages — a simple card showing the race name, year, and athlete name/bib would
@@ -59,6 +42,7 @@ on load to avoid flash of wrong theme.
 Finished" funnel as text badges with counts.
 
 **Enhancement:**
+
 - Add percentage labels next to each count (e.g. "4,821 — 94.2%").
 - Visually highlight the segment with the highest DNF/dropout rate.
 - Consider a simple bar or step chart for events with large fields.
