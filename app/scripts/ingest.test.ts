@@ -7,6 +7,7 @@ import {
   timeToSeconds,
   toInt,
   toFloat,
+  toAthleteStatus,
 } from "./ingest";
 
 // ─── parseCSVRow ──────────────────────────────────────────────────────────────
@@ -212,5 +213,39 @@ describe("toFloat", () => {
 
   it("returns null for non-numeric string", () => {
     expect(toFloat("abc")).toBeNull();
+  });
+});
+
+// ─── toAthleteStatus ──────────────────────────────────────────────────────────
+
+describe("toAthleteStatus", () => {
+  it("returns FIN for 'FIN'", () => {
+    expect(toAthleteStatus("FIN")).toBe("FIN");
+  });
+
+  it("returns DNF for 'DNF'", () => {
+    expect(toAthleteStatus("DNF")).toBe("DNF");
+  });
+
+  it("returns DSQ for 'DSQ'", () => {
+    expect(toAthleteStatus("DSQ")).toBe("DSQ");
+  });
+
+  it("returns DNS for 'DNS'", () => {
+    expect(toAthleteStatus("DNS")).toBe("DNS");
+  });
+
+  it("is case-insensitive", () => {
+    expect(toAthleteStatus("fin")).toBe("FIN");
+    expect(toAthleteStatus("dnf")).toBe("DNF");
+  });
+
+  it("defaults to FIN for unknown values", () => {
+    expect(toAthleteStatus("UNKNOWN")).toBe("FIN");
+    expect(toAthleteStatus("")).toBe("FIN");
+  });
+
+  it("defaults to FIN for undefined", () => {
+    expect(toAthleteStatus(undefined)).toBe("FIN");
   });
 });

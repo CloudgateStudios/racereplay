@@ -98,7 +98,8 @@ export const SegmentScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
   name: 'name',
-  displayOrder: 'displayOrder'
+  displayOrder: 'displayOrder',
+  isFinish: 'isFinish'
 } as const
 
 export type SegmentScalarFieldEnum = (typeof SegmentScalarFieldEnum)[keyof typeof SegmentScalarFieldEnum]

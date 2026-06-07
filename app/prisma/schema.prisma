@@ -33,6 +33,7 @@ model Segment {
   eventId      Int
   name         String
   displayOrder Int
+  isFinish     Boolean          @default(false)
   athletes     AthleteSegment[]
 }
 
@@ -45,8 +46,8 @@ model Athlete {
   gender       String
   division     String
   country      String
-  status       String
-  finishTime   String
+  status       AthleteStatus
+  finishTime   String?
   overallRank  Int?
   genderRank   Int?
   divisionRank Int?
@@ -72,4 +73,11 @@ model AthleteSegment {
 enum EventType {
   TRIATHLON
   ROAD_RACE
+}
+
+enum AthleteStatus {
+  FIN
+  DNF
+  DSQ
+  DNS
 }
