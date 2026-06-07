@@ -119,28 +119,35 @@ export default async function AthletePage({ params }: Props) {
         </div>
       </div>
 
-      {/* Rank summary */}
+      {/* Rank summary — only render cards that have real data */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "Finish Time", value: athlete.finishTime || "—" },
+          {
+            label: "Finish Time",
+            value:
+              athlete.finishTime && athlete.finishTime !== "--:--:--" ? athlete.finishTime : null,
+          },
           {
             label: "Overall Rank",
-            value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—",
+            value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : null,
           },
           {
             label: "Gender Rank",
-            value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—",
+            value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : null,
           },
           {
             label: "Division Rank",
-            value: athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—",
+            value:
+              athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : null,
           },
-        ].map(({ label, value }) => (
-          <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
-            <p className="text-muted-foreground text-sm">{label}</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
-          </div>
-        ))}
+        ]
+          .filter(({ value }) => value != null)
+          .map(({ label, value }) => (
+            <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
+              <p className="text-muted-foreground text-sm">{label}</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
+            </div>
+          ))}
       </div>
 
       {/* Passing breakdown */}

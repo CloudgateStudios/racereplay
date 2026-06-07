@@ -222,51 +222,75 @@ async function main() {
   console.log(`Segments: ${Object.keys(segmentMap).join(", ")}`);
 
   // ── Upsert Athletes + AthleteSegments ─────────────────────────────────────
-  let count = 0;
-  for (const row of rows) {
-    const obj = rowToObj(headers, row);
-    if (!obj["Bib"]) continue;
+  // Process athletes in parallel using a worker pool to avoid the ~1M sequential
+  // DB round trips that make large events (Chicago: 55k × 19 segments) very slow.
+  // Each worker pulls from a shared queue, upserts the athlete, then upserts all
+  // of its segments in a single Prisma transaction — reducing latency overhead.
+  const CONCURRENCY = 20;
+  const queue = rows.filter((r) => rowToObj(headers, r)["Bib"]);
+  const total = queue.length;
+  let completed = 0;
+  const ingestStart = Date.now();
 
-    const athleteData = {
-      name: obj["Name"] ?? "",
-      gender: obj["Gender"] ?? "",
-      division: obj["Division"] ?? "",
-      country: obj["Country"] ?? "",
-      status: obj["Status"] ?? "",
-      finishTime: obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "",
-      overallRank: toInt(obj["Overall Rank"]),
-      genderRank: toInt(obj["Gender Rank"]),
-      divisionRank: toInt(obj["Division Rank"]),
-    };
+  async function ingestWorker() {
+    while (queue.length > 0) {
+      const row = queue.shift();
+      if (!row) break;
+      const obj = rowToObj(headers, row);
 
-    const athlete = await prisma.athlete.upsert({
-      where: { eventId_bib: { eventId: event.id, bib: obj["Bib"] } },
-      update: athleteData,
-      create: { eventId: event.id, bib: obj["Bib"], ...athleteData },
-    });
-
-    for (const leg of legs) {
-      const segmentId = segmentMap[leg];
-      const segData = {
-        timeSeconds: toFloat(obj[`${leg} Time`]),
-        gained: toInt(obj[`${leg} Gained`]),
-        lost: toInt(obj[`${leg} Lost`]),
-        net: toInt(obj[`${leg} Net`]),
+      const athleteData = {
+        name: obj["Name"] ?? "",
+        gender: obj["Gender"] ?? "",
+        division: obj["Division"] ?? "",
+        country: obj["Country"] ?? "",
+        status: obj["Status"] ?? "",
+        finishTime: obj["Overall Finish Time"] ?? obj["Finish Time"] ?? "",
+        overallRank: toInt(obj["Overall Rank"]),
+        genderRank: toInt(obj["Gender Rank"]),
+        divisionRank: toInt(obj["Division Rank"]),
       };
-      await prisma.athleteSegment.upsert({
-        where: { athleteId_segmentId: { athleteId: athlete.id, segmentId } },
-        update: segData,
-        create: { athleteId: athlete.id, segmentId, ...segData },
-      });
-    }
 
-    count++;
-    if (count % 250 === 0) {
-      process.stdout.write(`  ${count}/${rows.length} athletes...\r`);
+      // Upsert athlete + all its segments in one transaction to cut round trips
+      await prisma.$transaction(async (tx) => {
+        const athlete = await tx.athlete.upsert({
+          where: { eventId_bib: { eventId: event.id, bib: obj["Bib"] } },
+          update: athleteData,
+          create: { eventId: event.id, bib: obj["Bib"], ...athleteData },
+        });
+
+        for (const leg of legs) {
+          const segmentId = segmentMap[leg];
+          const segData = {
+            timeSeconds: toFloat(obj[`${leg} Time`]),
+            gained: toInt(obj[`${leg} Gained`]),
+            lost: toInt(obj[`${leg} Lost`]),
+            net: toInt(obj[`${leg} Net`]),
+          };
+          await tx.athleteSegment.upsert({
+            where: { athleteId_segmentId: { athleteId: athlete.id, segmentId } },
+            update: segData,
+            create: { athleteId: athlete.id, segmentId, ...segData },
+          });
+        }
+      });
+
+      completed++;
+      if (completed % 500 === 0 || completed === total) {
+        const elapsed = ((Date.now() - ingestStart) / 1000).toFixed(0);
+        const pct = Math.round((completed / total) * 100);
+        const rate = (completed / ((Date.now() - ingestStart) / 1000)).toFixed(0);
+        process.stdout.write(
+          `  ${completed}/${total} (${pct}%)  ${rate} athletes/s  ${elapsed}s elapsed\r`
+        );
+      }
     }
   }
 
-  console.log(`\nDone. ${count} athletes ingested.\n`);
+  await Promise.all(Array.from({ length: CONCURRENCY }, ingestWorker));
+
+  console.log(
+    `\nDone. ${completed} athletes ingested in ${((Date.now() - ingestStart) / 1000).toFixed(1)}s.\n`
+  );
   await prisma.$disconnect();
 }
 
