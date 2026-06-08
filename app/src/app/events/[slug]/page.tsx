@@ -21,6 +21,7 @@ export async function generateMetadata({ params }: Props) {
     title: race.name,
     description: `${race.name} race results — ${years} year${years !== 1 ? "s" : ""} of data on Race Replay.`,
     openGraph: {
+      siteName: "Race Replay",
       title: race.name,
       description: `${race.name} race results on Race Replay.`,
     },

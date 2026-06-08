@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description:
     "Browse every race tracked by Race Replay — leg-by-leg passing data for triathlons and road races.",
   openGraph: {
+    siteName: "Race Replay",
     title: "All Races — Race Replay",
     description: "Browse every race tracked by Race Replay.",
   },

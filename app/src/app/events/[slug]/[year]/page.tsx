@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props) {
   return {
     title,
     description,
-    openGraph: { title, description },
+    openGraph: { siteName: "Race Replay", title, description },
   };
 }
 

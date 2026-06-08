@@ -191,12 +191,30 @@ export function OgCard({
         )}
       </div>
 
-      {hasBottom && (
-        <div style={{ display: "flex", gap: "48px", alignItems: "flex-end" }}>
-          {stats.length > 0 && <StatRow stats={stats} />}
-          {bottomSlot}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        {hasBottom ? (
+          <div style={{ display: "flex", gap: "48px", alignItems: "flex-end" }}>
+            {stats.length > 0 && <StatRow stats={stats} />}
+            {bottomSlot}
+          </div>
+        ) : (
+          <div style={{ display: "flex" }} />
+        )}
+        {/* CTA */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            background: "#f97316",
+            borderRadius: "9999px",
+            padding: "10px 24px",
+          }}
+        >
+          <span style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, letterSpacing: "0.02em" }}>
+            racereplay.app
+          </span>
         </div>
-      )}
+      </div>
     </div>
   );
 }
