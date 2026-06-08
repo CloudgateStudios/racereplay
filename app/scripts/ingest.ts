@@ -146,7 +146,7 @@ export function rowToObj(headers: string[], row: string[]): Record<string, strin
 
 // ─── Leg detection ────────────────────────────────────────────────────────────
 
-const SKIP_TIME_COLS = new Set(["Overall Finish Time", "Finish Time", "Wave Finish Time", "Wave Offset (Seconds)"]);
+const SKIP_TIME_COLS = new Set(["Overall Finish Time", "Wave Finish Time", "Wave Offset (Seconds)"]);
 
 export function detectLegs(headers: string[]): string[] {
   return headers
@@ -202,7 +202,7 @@ const EXPECTED_COLS = [
   "Status",
   "Wave Finish Time",
 ];
-const EXPECTED_FINISH_COLS = ["Overall Finish Time", "Finish Time"];
+const EXPECTED_FINISH_COLS = ["Overall Finish Time"];
 const EXPECTED_RANK_COLS = ["Overall Rank", "Gender Rank", "Division Rank"];
 
 export function warnMissingColumns(headers: string[]): void {

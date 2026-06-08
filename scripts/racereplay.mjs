@@ -942,7 +942,7 @@ async function discoverTimingPoints(eventId, appid, token, forcedPoints) {
     ...legPoints.map((p, i) => ({
       name: p.name,
       label: p.label,
-      legName: p.isFinish === "1" ? "Finish" : cleanLabel(p.label || p.name) || `Leg ${i + 1}`,
+      legName: cleanLabel(p.label || p.name) || (p.isFinish === "1" ? "Finish" : `Leg ${i + 1}`),
       isStart: false,
       isFinish: p.isFinish === "1",
     })),

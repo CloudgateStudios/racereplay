@@ -90,7 +90,7 @@ describe("rowToObj", () => {
 describe("detectLegs", () => {
   it("extracts leg names from columns ending in ' Time'", () => {
     const headers = ["Bib", "Name", "Swim Time", "Bike Time", "Run Time", "Finish Time"];
-    expect(detectLegs(headers)).toEqual(["Swim", "Bike", "Run"]);
+    expect(detectLegs(headers)).toEqual(["Swim", "Bike", "Run", "Finish"]);
   });
 
   it("skips Overall Finish Time", () => {
@@ -98,9 +98,9 @@ describe("detectLegs", () => {
     expect(detectLegs(headers)).toEqual(["Swim"]);
   });
 
-  it("skips Finish Time", () => {
+  it("detects Finish Time as a leg (it is a segment, not the overall time)", () => {
     const headers = ["Swim Time", "Finish Time"];
-    expect(detectLegs(headers)).toEqual(["Swim"]);
+    expect(detectLegs(headers)).toEqual(["Swim", "Finish"]);
   });
 
   it("skips Wave Offset (Seconds)", () => {
@@ -129,8 +129,8 @@ describe("detectLegs", () => {
       "Bike Time",
       "T2 Time",
       "Run Time",
-      "Finish Time",
       "Overall Finish Time",
+      "Wave Finish Time",
       "Wave Offset (Seconds)",
     ];
     expect(detectLegs(headers)).toEqual(["Swim", "T1", "Bike", "T2", "Run"]);
@@ -277,7 +277,7 @@ describe("warnMissingColumns", () => {
     warn.mockRestore();
   });
 
-  it("does not warn about finish time when Finish Time is present", () => {
+  it("does not warn about finish time when Overall Finish Time is present", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     warnMissingColumns([
       "Bib",
@@ -286,7 +286,7 @@ describe("warnMissingColumns", () => {
       "Division",
       "Country",
       "Status",
-      "Finish Time",
+      "Overall Finish Time",
       "Overall Rank",
       "Gender Rank",
       "Division Rank",
