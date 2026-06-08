@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/CloudgateStudios/race_replay/compare/0.4.0...0.5.0) (2026-06-08)
+
+### Features
+
+- capture and store complete RTRT athlete data ([#59](https://github.com/CloudgateStudios/race_replay/issues/59)) ([6a1727c](https://github.com/CloudgateStudios/race_replay/commit/6a1727c9000869f32554701f9f2445335d947008))
+- mobile-friendly table layout for event results ([#58](https://github.com/CloudgateStudios/race_replay/issues/58)) ([430167e](https://github.com/CloudgateStudios/race_replay/commit/430167ed93af36e79a0924e1fe26d393547534f9))
+
 ## [0.4.0](https://github.com/CloudgateStudios/race_replay/compare/0.3.2...0.4.0) (2026-06-07)
 
 ### Features
