@@ -5,6 +5,7 @@ import { formatSeconds, netColor, netLabel } from "@/lib/formatting";
 
 export const dynamic = "force-dynamic";
 import { Badge } from "@/components/ui/badge";
+import { ShareButton } from "@/components/share-button";
 import {
   Table,
   TableBody,
@@ -105,7 +106,10 @@ export default async function AthletePage({ params }: Props) {
 
       {/* Athlete header */}
       <div className="mt-3 mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">{athlete.name}</h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-4xl font-bold tracking-tight">{athlete.name}</h1>
+          <ShareButton />
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="secondary">Bib {athlete.bib}</Badge>
           {athlete.division && <Badge variant="secondary">{athlete.division}</Badge>}
