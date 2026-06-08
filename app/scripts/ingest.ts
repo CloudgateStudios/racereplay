@@ -146,7 +146,11 @@ export function rowToObj(headers: string[], row: string[]): Record<string, strin
 
 // ─── Leg detection ────────────────────────────────────────────────────────────
 
-const SKIP_TIME_COLS = new Set(["Overall Finish Time", "Finish Time", "Wave Offset (Seconds)"]);
+const SKIP_TIME_COLS = new Set([
+  "Overall Finish Time",
+  "Wave Finish Time",
+  "Wave Offset (Seconds)",
+]);
 
 export function detectLegs(headers: string[]): string[] {
   return headers
@@ -202,7 +206,7 @@ const EXPECTED_COLS = [
   "Status",
   "Wave Finish Time",
 ];
-const EXPECTED_FINISH_COLS = ["Overall Finish Time", "Finish Time"];
+const EXPECTED_FINISH_COLS = ["Overall Finish Time"];
 const EXPECTED_RANK_COLS = ["Overall Rank", "Gender Rank", "Division Rank"];
 
 export function warnMissingColumns(headers: string[]): void {
@@ -292,6 +296,23 @@ async function main() {
     segmentMap[name] = segment.id;
   }
   console.log(`Segments: ${Object.keys(segmentMap).join(", ")}`);
+
+  // ── Remove stale segments ─────────────────────────────────────────────────
+  // If a segment's name changed between scraper runs (e.g. "Bike Finish" →
+  // "Bike"), the old segment would otherwise persist as an orphan.  Delete
+  // any segment for this event whose name is NOT in the current legs list,
+  // cascading through AthleteSegment first (no FK cascade on the schema).
+  const staleSegments = await prisma.segment.findMany({
+    where: { eventId: event.id, name: { notIn: legs } },
+    select: { id: true, name: true },
+  });
+  if (staleSegments.length > 0) {
+    const staleIds = staleSegments.map((s) => s.id);
+    const staleNames = staleSegments.map((s) => s.name).join(", ");
+    console.log(`Removing stale segment(s): ${staleNames}`);
+    await prisma.athleteSegment.deleteMany({ where: { segmentId: { in: staleIds } } });
+    await prisma.segment.deleteMany({ where: { id: { in: staleIds } } });
+  }
 
   // ── Upsert Athletes + AthleteSegments ─────────────────────────────────────
   // Process athletes in parallel using a worker pool to avoid the ~1M sequential
