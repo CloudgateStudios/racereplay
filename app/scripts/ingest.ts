@@ -295,7 +295,9 @@ export function warnMissingColumns(headers: string[]): void {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { csvFile, slug, raceName, year, eventType, eventDate, dryRun, metadata } = parseArgs(process.argv);
+  const { csvFile, slug, raceName, year, eventType, eventDate, dryRun, metadata } = parseArgs(
+    process.argv
+  );
 
   console.log(`\nIngesting: ${csvFile}`);
   if (!dryRun) {
@@ -303,11 +305,11 @@ async function main() {
     console.log(`  Year:  ${year}`);
     console.log(`  Type:  ${eventType}`);
     console.log(`  Date:  ${eventDate.toISOString().slice(0, 10)}`);
-    if (metadata.location)     console.log(`  Location:     ${metadata.location}`);
-    if (metadata.country)      console.log(`  Country:      ${metadata.country}`);
+    if (metadata.location) console.log(`  Location:     ${metadata.location}`);
+    if (metadata.country) console.log(`  Country:      ${metadata.country}`);
     if (metadata.distanceType) console.log(`  Distance:     ${metadata.distanceType}`);
-    if (metadata.seriesName)   console.log(`  Series:       ${metadata.seriesName}`);
-    if (metadata.website)      console.log(`  Website:      ${metadata.website}`);
+    if (metadata.seriesName) console.log(`  Series:       ${metadata.seriesName}`);
+    if (metadata.website) console.log(`  Website:      ${metadata.website}`);
   }
   console.log();
 
