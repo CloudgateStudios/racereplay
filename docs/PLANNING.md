@@ -14,7 +14,7 @@ designed and batched before large-scale data ingestion.
 
 | # | Item | Description |
 |---|------|-------------|
-| 1 | T4 | Index on `normalizedName` — immediate, zero downtime |
+| 1 | T4 | ✅ Index on `normalizedName` — immediate, zero downtime |
 | 2 | S1 | Race metadata fields (location, distanceType, seriesName) |
 | 3 | T3 | `finishSeconds` on Athlete |
 | 4 | S2 | Event denormalized counts (finisherCount, totalCount) |
