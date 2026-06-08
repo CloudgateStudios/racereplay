@@ -48,6 +48,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.resolve(__dirname, "../.env.local") });
 
 import fs from "fs/promises";
+import { readFileSync } from "fs";
 import { PrismaClient, AthleteStatus } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -103,7 +104,7 @@ interface Args {
 function loadRacesConfig(): Record<string, RaceMetadata> {
   try {
     const configPath = path.resolve(__dirname, "races.config.json");
-    const raw = require("fs").readFileSync(configPath, "utf8");
+    const raw = readFileSync(configPath, "utf8");
     return JSON.parse(raw);
   } catch {
     return {};
