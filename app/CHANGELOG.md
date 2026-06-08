@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/CloudgateStudios/race_replay/compare/0.5.0...0.6.0) (2026-06-08)
+
+### Features
+
+- manual dark mode toggle ([#63](https://github.com/CloudgateStudios/race_replay/issues/63)) ([65a0d7a](https://github.com/CloudgateStudios/race_replay/commit/65a0d7ab4da18b9153d5def7d063f08c6ba777e7)), closes [#3](https://github.com/CloudgateStudios/race_replay/issues/3)
+- richer SEO and social metadata with dynamic OG images ([#61](https://github.com/CloudgateStudios/race_replay/issues/61)) ([b64293b](https://github.com/CloudgateStudios/race_replay/commit/b64293bab186e7204f5cea50c7e1580f5c197a13))
+- shareable athlete result links with native share support ([#62](https://github.com/CloudgateStudios/race_replay/issues/62)) ([7d65cba](https://github.com/CloudgateStudios/race_replay/commit/7d65cba24393ad2e399d54e2dad4ad83d8fcf9d8)), closes [#2](https://github.com/CloudgateStudios/race_replay/issues/2) [#6](https://github.com/CloudgateStudios/race_replay/issues/6) [#4](https://github.com/CloudgateStudios/race_replay/issues/4) [#5](https://github.com/CloudgateStudios/race_replay/issues/5)
+
+### Bug Fixes
+
+- exclude Wave Finish Time from leg detection ([#60](https://github.com/CloudgateStudios/race_replay/issues/60)) ([81f3653](https://github.com/CloudgateStudios/race_replay/commit/81f365325570f862674e841bf3a2f5987e5a857e))
+
 ## [0.5.0](https://github.com/CloudgateStudios/race_replay/compare/0.4.0...0.5.0) (2026-06-08)
 
 ### Features
