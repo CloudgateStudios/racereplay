@@ -33,7 +33,9 @@ export async function generateMetadata({ params }: Props) {
   const rankStr = athlete?.overallRank ? `#${athlete.overallRank} overall` : null;
   const timeStr = athlete?.finishTime ?? null;
   const parts = [rankStr, timeStr].filter(Boolean);
-  const title = athleteName;
+  // Include race + year in the title so the full string hits ~50 chars in SERP
+  // e.g. "Jeremy MacLean · IM 70.3 Chattanooga 2026 — Race Replay"
+  const title = `${athleteName} · ${race.name} ${year}`;
   const description = `${athleteName} at ${race.name} ${year}${parts.length ? ` — ${parts.join(", ")}` : ""}. See leg-by-leg passing data on Race Replay.`;
   return {
     title,
