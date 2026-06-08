@@ -65,8 +65,8 @@ export function normalizeName(name: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "") // strip combining diacritical marks
-    .replace(/[^a-z0-9\s]/g, "")     // remove punctuation
-    .replace(/\s+/g, " ")            // collapse whitespace
+    .replace(/[^a-z0-9\s]/g, "") // remove punctuation
+    .replace(/\s+/g, " ") // collapse whitespace
     .trim();
 }
 
