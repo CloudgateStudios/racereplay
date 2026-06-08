@@ -12,5 +12,19 @@
     "distanceType": "70.3",
     "seriesName": "IRONMAN 70.3",
     "website": "https://www.ironman.com/im703-oceanside"
+  },
+  "im-703-happy-valley": {
+    "location": "Happy Valley, OR",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/im703-happy-valley"
+  },
+  "im-wisconsin": {
+    "location": "Madison, WI",
+    "country": "US",
+    "distanceType": "140.6",
+    "seriesName": "IRONMAN",
+    "website": "https://www.ironman.com/im-wisconsin"
   }
 }
