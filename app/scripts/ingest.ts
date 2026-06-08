@@ -13,6 +13,10 @@
  *     --event-type <triathlon|road_race> \
  *     --event-date <YYYY-MM-DD>
  *
+ * Race metadata (location, country, distanceType, seriesName, website) is
+ * loaded automatically from scripts/races.config.json if an entry exists for
+ * the slug. CLI flags override the config file value for that field.
+ *
  * Examples:
  *   npx tsx scripts/ingest.ts ../scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
  *     --slug im-703-chattanooga \
@@ -21,12 +25,14 @@
  *     --event-type triathlon \
  *     --event-date 2026-05-18
  *
- *   npx tsx scripts/ingest.ts ../scripts/data/BASS2026_passing.csv \
- *     --slug shamrock-shuffle \
- *     --race-name "Bank of America Shamrock Shuffle" \
+ *   # Override a single field from the config:
+ *   npx tsx scripts/ingest.ts ../scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
+ *     --slug im-703-chattanooga \
+ *     --race-name "IM 70.3 Chattanooga" \
  *     --year 2026 \
- *     --event-type road_race \
- *     --event-date 2026-03-29
+ *     --event-type triathlon \
+ *     --event-date 2026-05-18 \
+ *     --website https://www.ironman.com/im703-chattanooga-2026
  *
  * Safe to re-run — all writes are upserts keyed on (slug, year, bib).
  *
@@ -75,6 +81,14 @@ const prisma = new PrismaClient({ adapter });
 
 // ─── Arg parsing ─────────────────────────────────────────────────────────────
 
+interface RaceMetadata {
+  location?: string;
+  country?: string;
+  distanceType?: string;
+  seriesName?: string;
+  website?: string;
+}
+
 interface Args {
   csvFile: string;
   slug: string;
@@ -83,6 +97,17 @@ interface Args {
   eventType: "TRIATHLON" | "ROAD_RACE";
   eventDate: Date;
   dryRun: boolean;
+  metadata: RaceMetadata;
+}
+
+function loadRacesConfig(): Record<string, RaceMetadata> {
+  try {
+    const configPath = path.resolve(__dirname, "races.config.json");
+    const raw = require("fs").readFileSync(configPath, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
 }
 
 function parseArgs(argv: string[]): Args {
@@ -123,14 +148,27 @@ function parseArgs(argv: string[]): Args {
     process.exit(1);
   }
 
+  const slug = flags["slug"] ?? "";
+
+  // Merge config file → CLI args (CLI takes precedence)
+  const configMetadata = loadRacesConfig()[slug] ?? {};
+  const metadata: RaceMetadata = {
+    location: flags["location"] ?? configMetadata.location,
+    country: flags["country"] ?? configMetadata.country,
+    distanceType: flags["distance-type"] ?? configMetadata.distanceType,
+    seriesName: flags["series-name"] ?? configMetadata.seriesName,
+    website: flags["website"] ?? configMetadata.website,
+  };
+
   return {
     csvFile: path.resolve(csvFile),
-    slug: flags["slug"] ?? "",
+    slug,
     raceName: flags["race-name"] ?? "",
     year: parseInt(flags["year"] ?? "0", 10),
     eventType: rawType as "TRIATHLON" | "ROAD_RACE",
     eventDate: new Date(flags["event-date"] ?? ""),
     dryRun,
+    metadata,
   };
 }
 
@@ -256,7 +294,7 @@ export function warnMissingColumns(headers: string[]): void {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { csvFile, slug, raceName, year, eventType, eventDate, dryRun } = parseArgs(process.argv);
+  const { csvFile, slug, raceName, year, eventType, eventDate, dryRun, metadata } = parseArgs(process.argv);
 
   console.log(`\nIngesting: ${csvFile}`);
   if (!dryRun) {
@@ -264,6 +302,11 @@ async function main() {
     console.log(`  Year:  ${year}`);
     console.log(`  Type:  ${eventType}`);
     console.log(`  Date:  ${eventDate.toISOString().slice(0, 10)}`);
+    if (metadata.location)     console.log(`  Location:     ${metadata.location}`);
+    if (metadata.country)      console.log(`  Country:      ${metadata.country}`);
+    if (metadata.distanceType) console.log(`  Distance:     ${metadata.distanceType}`);
+    if (metadata.seriesName)   console.log(`  Series:       ${metadata.seriesName}`);
+    if (metadata.website)      console.log(`  Website:      ${metadata.website}`);
   }
   console.log();
 
@@ -285,10 +328,15 @@ async function main() {
   }
 
   // ── Upsert Race ────────────────────────────────────────────────────────────
+  // Metadata fields (location, country, etc.) are only updated when a value is
+  // provided — undefined fields are omitted so existing DB values are preserved.
+  const metadataUpdate = Object.fromEntries(
+    Object.entries(metadata).filter(([, v]) => v !== undefined)
+  );
   const race = await prisma.race.upsert({
     where: { slug },
-    update: { name: raceName },
-    create: { slug, name: raceName },
+    update: { name: raceName, ...metadataUpdate },
+    create: { slug, name: raceName, ...metadataUpdate },
   });
   console.log(`Race: ${race.name} (id=${race.id})`);
 

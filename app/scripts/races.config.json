@@ -1,0 +1,16 @@
+{
+  "im-703-chattanooga": {
+    "location": "Chattanooga, TN",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/im703-chattanooga"
+  },
+  "im-703-oceanside": {
+    "location": "Oceanside, CA",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/im703-oceanside"
+  }
+}
