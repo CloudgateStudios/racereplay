@@ -2,8 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Use system preference for dark mode — no manual toggle needed */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* Dark mode: .dark class on <html> (set by ThemeToggle, with system-pref fallback) */
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -86,40 +86,38 @@
 }
 
 /* ── Dark mode — charcoal zinc base with orange-400 accent ────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.178 0.006 286); /* zinc-900 */
-    --foreground: oklch(0.961 0.006 76); /* stone-100 */
-    --card: oklch(0.24 0.006 286); /* zinc-800 */
-    --card-foreground: oklch(0.961 0.006 76);
-    --popover: oklch(0.24 0.006 286);
-    --popover-foreground: oklch(0.961 0.006 76);
-    --primary: oklch(0.75 0.183 52); /* orange-400 */
-    --primary-foreground: oklch(0.178 0.006 286); /* zinc-900 */
-    --secondary: oklch(0.297 0.006 286); /* zinc-700 */
-    --secondary-foreground: oklch(0.961 0.006 76);
-    --muted: oklch(0.24 0.006 286); /* zinc-800 */
-    --muted-foreground: oklch(0.706 0.008 286); /* zinc-400 */
-    --accent: oklch(0.297 0.006 286); /* zinc-700 */
-    --accent-foreground: oklch(0.961 0.006 76);
-    --destructive: oklch(0.704 0.191 22.2);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 12%);
-    --ring: oklch(0.75 0.183 52); /* orange-400 */
-    --chart-1: oklch(0.75 0.183 52);
-    --chart-2: oklch(0.706 0.008 286);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.24 0.006 286);
-    --sidebar-foreground: oklch(0.961 0.006 76);
-    --sidebar-primary: oklch(0.75 0.183 52);
-    --sidebar-primary-foreground: oklch(0.178 0.006 286);
-    --sidebar-accent: oklch(0.297 0.006 286);
-    --sidebar-accent-foreground: oklch(0.961 0.006 76);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.75 0.183 52);
-  }
+.dark {
+  --background: oklch(0.178 0.006 286); /* zinc-900 */
+  --foreground: oklch(0.961 0.006 76); /* stone-100 */
+  --card: oklch(0.24 0.006 286); /* zinc-800 */
+  --card-foreground: oklch(0.961 0.006 76);
+  --popover: oklch(0.24 0.006 286);
+  --popover-foreground: oklch(0.961 0.006 76);
+  --primary: oklch(0.75 0.183 52); /* orange-400 */
+  --primary-foreground: oklch(0.178 0.006 286); /* zinc-900 */
+  --secondary: oklch(0.297 0.006 286); /* zinc-700 */
+  --secondary-foreground: oklch(0.961 0.006 76);
+  --muted: oklch(0.24 0.006 286); /* zinc-800 */
+  --muted-foreground: oklch(0.706 0.008 286); /* zinc-400 */
+  --accent: oklch(0.297 0.006 286); /* zinc-700 */
+  --accent-foreground: oklch(0.961 0.006 76);
+  --destructive: oklch(0.704 0.191 22.2);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.75 0.183 52); /* orange-400 */
+  --chart-1: oklch(0.75 0.183 52);
+  --chart-2: oklch(0.706 0.008 286);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.24 0.006 286);
+  --sidebar-foreground: oklch(0.961 0.006 76);
+  --sidebar-primary: oklch(0.75 0.183 52);
+  --sidebar-primary-foreground: oklch(0.178 0.006 286);
+  --sidebar-accent: oklch(0.297 0.006 286);
+  --sidebar-accent-foreground: oklch(0.961 0.006 76);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.75 0.183 52);
 }
 
 @layer base {
