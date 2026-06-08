@@ -188,9 +188,9 @@ export default async function AthletePage({ params }: Props) {
                 <TableRow>
                   <TableHead>Year</TableHead>
                   <TableHead className="text-right">Finish Time</TableHead>
-                  <TableHead className="text-right">Overall Rank</TableHead>
-                  <TableHead className="text-right">Gender Rank</TableHead>
-                  <TableHead className="text-right">Division Rank</TableHead>
+                  <TableHead className="text-right">Overall</TableHead>
+                  <TableHead className="hidden sm:table-cell text-right">Gender</TableHead>
+                  <TableHead className="hidden sm:table-cell text-right">Division</TableHead>
                   <TableHead className="text-center">Net Passes</TableHead>
                   <TableHead />
                 </TableRow>
@@ -208,10 +208,10 @@ export default async function AthletePage({ params }: Props) {
                   <TableCell className="text-right tabular-nums">
                     {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="hidden sm:table-cell text-right tabular-nums">
                     {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="hidden sm:table-cell text-right tabular-nums">
                     {athlete.divisionRank != null
                       ? `#${athlete.divisionRank.toLocaleString()}`
                       : "—"}
@@ -235,10 +235,10 @@ export default async function AthletePage({ params }: Props) {
                       <TableCell className="text-right tabular-nums">
                         {h.overallRank != null ? `#${h.overallRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
+                      <TableCell className="hidden sm:table-cell text-right tabular-nums">
                         {h.genderRank != null ? `#${h.genderRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
+                      <TableCell className="hidden sm:table-cell text-right tabular-nums">
                         {h.divisionRank != null ? `#${h.divisionRank.toLocaleString()}` : "—"}
                       </TableCell>
                       <TableCell className={`text-center font-bold tabular-nums ${netColor(hNet)}`}>
