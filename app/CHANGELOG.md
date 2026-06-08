@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.1](https://github.com/CloudgateStudios/race_replay/compare/0.6.0...0.6.1) (2026-06-08)
+
+### Features
+
+- improve root SEO metadata and OG image CTA ([#66](https://github.com/CloudgateStudios/race_replay/issues/66)) ([24319d9](https://github.com/CloudgateStudios/race_replay/commit/24319d9f86ef9d76a030cb92643b7a15b8232bbd))
+
+### Bug Fixes
+
+- remove release step from prod deploy ([#65](https://github.com/CloudgateStudios/race_replay/issues/65)) ([d9ca700](https://github.com/CloudgateStudios/race_replay/commit/d9ca70012926266e4f7a38fbc7f9c64577b40398))
+
 ## [0.6.0](https://github.com/CloudgateStudios/race_replay/compare/0.5.0...0.6.0) (2026-06-08)
 
 ### Features
