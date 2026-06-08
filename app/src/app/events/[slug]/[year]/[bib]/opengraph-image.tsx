@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/prisma";
+import { loadOgFonts } from "@/lib/og-fonts";
+import { OgCard } from "@/lib/og-card";
 
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
@@ -22,161 +24,33 @@ export default async function Image({ params }: Props) {
   const athlete = event
     ? await prisma.athlete.findUnique({
         where: { eventId_bib: { eventId: event.id, bib } },
+        include: { segments: true },
       })
     : null;
 
-  const raceName = race?.name ?? "Race Replay";
-  const athleteName = athlete?.name ?? bib;
-  const finishTime = athlete?.finishTime ?? "—";
-  const overallRank = athlete?.overallRank;
-  const genderRank = athlete?.genderRank;
-  const division = athlete?.division ?? "";
-  const divisionRank = athlete?.divisionRank;
   const status = athlete?.status ?? "FIN";
   const isDNF = status !== "FIN";
+  const division = athlete?.division ?? "";
+  const totalNet = athlete?.segments.reduce((sum, s) => sum + (s.net ?? 0), 0) ?? 0;
+  const netLabel = totalNet > 0 ? `+${totalNet}` : String(totalNet);
+  const netColor = totalNet > 0 ? "#22c55e" : totalNet < 0 ? "#ef4444" : "#ffffff";
+
+  const stats = isDNF
+    ? [{ label: "Status", value: status, color: "#ef4444" }]
+    : [
+        ...(athlete?.finishTime ? [{ label: "Finish Time", value: athlete.finishTime }] : []),
+        { label: "Overall Net", value: netLabel, color: netColor },
+      ];
+
+  const fonts = await loadOgFonts();
 
   return new ImageResponse(
-    <div
-      style={{
-        width: "1200px",
-        height: "630px",
-        background: "#0f0f0f",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "64px",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <svg width="44" height="44" viewBox="0 0 28 28">
-          <polygon points="26,14 20,24 8,24 2,14 8,4 20,4" fill="#f97316" />
-          <polygon points="11,9 11,19 20,14" fill="white" />
-        </svg>
-        <span
-          style={{
-            color: "#f97316",
-            fontSize: "22px",
-            fontWeight: 900,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-          }}
-        >
-          Race Replay
-        </span>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        <div style={{ color: "#a3a3a3", fontSize: "22px", fontWeight: 600 }}>
-          {`${raceName} · ${year} · Bib ${bib}`}
-        </div>
-        <div
-          style={{
-            color: "#ffffff",
-            fontSize: "72px",
-            fontWeight: 900,
-            lineHeight: 1.05,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {athleteName}
-        </div>
-        {division && (
-          <div style={{ color: "#f97316", fontSize: "22px", fontWeight: 600 }}>{division}</div>
-        )}
-      </div>
-
-      <div style={{ display: "flex", gap: "48px" }}>
-        {!isDNF && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span
-              style={{
-                color: "#a3a3a3",
-                fontSize: "15px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Finish Time
-            </span>
-            <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
-              {finishTime}
-            </span>
-          </div>
-        )}
-        {overallRank && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span
-              style={{
-                color: "#a3a3a3",
-                fontSize: "15px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Overall
-            </span>
-            <span style={{ color: "#f97316", fontSize: "40px", fontWeight: 800 }}>
-              {`#${overallRank}`}
-            </span>
-          </div>
-        )}
-        {genderRank && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span
-              style={{
-                color: "#a3a3a3",
-                fontSize: "15px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Gender
-            </span>
-            <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
-              {`#${genderRank}`}
-            </span>
-          </div>
-        )}
-        {divisionRank && division && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span
-              style={{
-                color: "#a3a3a3",
-                fontSize: "15px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              {division}
-            </span>
-            <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
-              {`#${divisionRank}`}
-            </span>
-          </div>
-        )}
-        {isDNF && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span
-              style={{
-                color: "#a3a3a3",
-                fontSize: "15px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Status
-            </span>
-            <span style={{ color: "#ef4444", fontSize: "40px", fontWeight: 800 }}>{status}</span>
-          </div>
-        )}
-      </div>
-    </div>,
-    { width: 1200, height: 630 }
+    <OgCard
+      eyebrow={`${race?.name ?? ""} · ${yearStr} · Bib ${bib}`}
+      title={athlete?.name ?? bib}
+      label={division || undefined}
+      stats={stats}
+    />,
+    { width: 1200, height: 630, fonts }
   );
 }
