@@ -155,17 +155,19 @@ export default async function AthletePage({ params }: Props) {
           </p>
         </div>
         <div className="bg-card rounded-xl border p-4 shadow-sm">
-          <p className="text-muted-foreground text-sm">
-            {athlete.gender ? `${athlete.gender} Rank` : "Gender Rank"}
-          </p>
+          <p className="text-muted-foreground text-sm">Gender Rank</p>
+          {athlete.gender && (
+            <p className="text-muted-foreground text-xs">{athlete.gender}</p>
+          )}
           <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.genderRank == null ? "text-muted-foreground" : ""}`}>
             {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
           </p>
         </div>
         <div className="bg-card rounded-xl border p-4 shadow-sm">
-          <p className="text-muted-foreground text-sm">
-            {athlete.division ? `${athlete.division} Rank` : "Division Rank"}
-          </p>
+          <p className="text-muted-foreground text-sm">Division Rank</p>
+          {athlete.division && (
+            <p className="text-muted-foreground text-xs">{athlete.division}</p>
+          )}
           <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.divisionRank == null ? "text-muted-foreground" : ""}`}>
             {athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—"}
           </p>
