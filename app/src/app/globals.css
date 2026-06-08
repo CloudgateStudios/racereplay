@@ -2,8 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Use system preference for dark mode — no manual toggle needed */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* Dark mode: .dark class on <html> (set by ThemeToggle, with system-pref fallback) */
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -86,8 +86,7 @@
 }
 
 /* ── Dark mode — charcoal zinc base with orange-400 accent ────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
+.dark {
     --background: oklch(0.178 0.006 286); /* zinc-900 */
     --foreground: oklch(0.961 0.006 76); /* stone-100 */
     --card: oklch(0.24 0.006 286); /* zinc-800 */
@@ -118,8 +117,7 @@
     --sidebar-accent: oklch(0.297 0.006 286);
     --sidebar-accent-foreground: oklch(0.961 0.006 76);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.75 0.183 52);
-  }
+  --sidebar-ring: oklch(0.75 0.183 52);
 }
 
 @layer base {
