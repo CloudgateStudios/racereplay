@@ -146,7 +146,9 @@ export default async function AthletePage({ params }: Props) {
           <div>
             <p className="text-muted-foreground text-sm">Finish Time</p>
           </div>
-          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.finishTime == null ? "text-muted-foreground" : ""}`}>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.finishTime == null ? "text-muted-foreground" : ""}`}
+          >
             {athlete.finishTime ?? "—"}
           </p>
         </div>
@@ -154,7 +156,9 @@ export default async function AthletePage({ params }: Props) {
           <div>
             <p className="text-muted-foreground text-sm">Overall Rank</p>
           </div>
-          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.overallRank == null ? "text-muted-foreground" : ""}`}>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.overallRank == null ? "text-muted-foreground" : ""}`}
+          >
             {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
           </p>
         </div>
@@ -163,16 +167,22 @@ export default async function AthletePage({ params }: Props) {
             <p className="text-muted-foreground text-sm">Gender Rank</p>
             {athlete.gender && <p className="text-muted-foreground text-xs">{athlete.gender}</p>}
           </div>
-          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.genderRank == null ? "text-muted-foreground" : ""}`}>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.genderRank == null ? "text-muted-foreground" : ""}`}
+          >
             {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
           </p>
         </div>
         <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
           <div>
             <p className="text-muted-foreground text-sm">Division Rank</p>
-            {athlete.division && <p className="text-muted-foreground text-xs">{athlete.division}</p>}
+            {athlete.division && (
+              <p className="text-muted-foreground text-xs">{athlete.division}</p>
+            )}
           </div>
-          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.divisionRank == null ? "text-muted-foreground" : ""}`}>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.divisionRank == null ? "text-muted-foreground" : ""}`}
+          >
             {athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—"}
           </p>
         </div>
@@ -189,8 +199,8 @@ export default async function AthletePage({ params }: Props) {
                   <TableHead>Year</TableHead>
                   <TableHead className="text-right">Finish Time</TableHead>
                   <TableHead className="text-right">Overall</TableHead>
-                  <TableHead className="hidden sm:table-cell text-right">Gender</TableHead>
-                  <TableHead className="hidden sm:table-cell text-right">Division</TableHead>
+                  <TableHead className="hidden text-right sm:table-cell">Gender</TableHead>
+                  <TableHead className="hidden text-right sm:table-cell">Division</TableHead>
                   <TableHead className="text-center">Net Passes</TableHead>
                   <TableHead />
                 </TableRow>
@@ -239,13 +249,15 @@ export default async function AthletePage({ params }: Props) {
                       <TableCell className="text-right tabular-nums">
                         {row.overallRank != null ? `#${row.overallRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell text-right tabular-nums">
+                      <TableCell className="hidden text-right tabular-nums sm:table-cell">
                         {row.genderRank != null ? `#${row.genderRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell text-right tabular-nums">
+                      <TableCell className="hidden text-right tabular-nums sm:table-cell">
                         {row.divisionRank != null ? `#${row.divisionRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className={`text-center font-bold tabular-nums ${netColor(row.net)}`}>
+                      <TableCell
+                        className={`text-center font-bold tabular-nums ${netColor(row.net)}`}
+                      >
                         {netLabel(row.net)}
                       </TableCell>
                       <TableCell className="text-right">
