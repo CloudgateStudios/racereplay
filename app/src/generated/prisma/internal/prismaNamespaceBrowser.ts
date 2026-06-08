@@ -111,6 +111,7 @@ export const AthleteScalarFieldEnum = {
   eventId: 'eventId',
   bib: 'bib',
   name: 'name',
+  normalizedName: 'normalizedName',
   gender: 'gender',
   division: 'division',
   country: 'country',

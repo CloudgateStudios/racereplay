@@ -45,6 +45,31 @@ import fs from "fs/promises";
 import { PrismaClient, AthleteStatus } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
+/**
+ * Produces a stable, case-insensitive key from an athlete name.
+ * Used to match the same person across years / races.
+ *
+ * Steps:
+ *   1. Lowercase
+ *   2. Decompose accented chars (NFD) and strip combining marks — é→e, ñ→n
+ *   3. Remove all punctuation and non-alphanumeric characters
+ *   4. Collapse multiple spaces, trim
+ *
+ * Examples:
+ *   "Alfredo Ramírez Pinho" → "alfredo ramirez pinho"
+ *   "O'Brien, Sean"         → "obrien sean"
+ *   "Tom  Arra"             → "tom arra"
+ */
+export function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // strip combining diacritical marks
+    .replace(/[^a-z0-9\s]/g, "") // remove punctuation
+    .replace(/\s+/g, " ") // collapse whitespace
+    .trim();
+}
+
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
@@ -337,8 +362,10 @@ async function main() {
       if (!row) break;
       const obj = rowToObj(headers, row);
 
+      const athleteName = (obj["Name"] ?? "").trim();
       const athleteData = {
-        name: (obj["Name"] ?? "").trim(),
+        name: athleteName,
+        normalizedName: normalizeName(athleteName),
         gender: (obj["Gender"] ?? "").trim(),
         division: (obj["Division"] ?? "").trim(),
         country: (obj["Country"] ?? "").trim(),

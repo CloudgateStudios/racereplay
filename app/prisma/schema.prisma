@@ -42,9 +42,10 @@ model Athlete {
   id           Int              @id @default(autoincrement())
   event        Event            @relation(fields: [eventId], references: [id])
   eventId      Int
-  bib          String
-  name         String
-  gender       String
+  bib            String
+  name           String
+  normalizedName String?
+  gender         String
   division     String
   country      String
   city         String?

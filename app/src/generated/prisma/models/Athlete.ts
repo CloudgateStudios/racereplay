@@ -47,6 +47,7 @@ export type AthleteMinAggregateOutputType = {
   eventId: number | null
   bib: string | null
   name: string | null
+  normalizedName: string | null
   gender: string | null
   division: string | null
   country: string | null
@@ -65,6 +66,7 @@ export type AthleteMaxAggregateOutputType = {
   eventId: number | null
   bib: string | null
   name: string | null
+  normalizedName: string | null
   gender: string | null
   division: string | null
   country: string | null
@@ -83,6 +85,7 @@ export type AthleteCountAggregateOutputType = {
   eventId: number
   bib: number
   name: number
+  normalizedName: number
   gender: number
   division: number
   country: number
@@ -119,6 +122,7 @@ export type AthleteMinAggregateInputType = {
   eventId?: true
   bib?: true
   name?: true
+  normalizedName?: true
   gender?: true
   division?: true
   country?: true
@@ -137,6 +141,7 @@ export type AthleteMaxAggregateInputType = {
   eventId?: true
   bib?: true
   name?: true
+  normalizedName?: true
   gender?: true
   division?: true
   country?: true
@@ -155,6 +160,7 @@ export type AthleteCountAggregateInputType = {
   eventId?: true
   bib?: true
   name?: true
+  normalizedName?: true
   gender?: true
   division?: true
   country?: true
@@ -260,6 +266,7 @@ export type AthleteGroupByOutputType = {
   eventId: number
   bib: string
   name: string
+  normalizedName: string | null
   gender: string
   division: string
   country: string
@@ -301,6 +308,7 @@ export type AthleteWhereInput = {
   eventId?: Prisma.IntFilter<"Athlete"> | number
   bib?: Prisma.StringFilter<"Athlete"> | string
   name?: Prisma.StringFilter<"Athlete"> | string
+  normalizedName?: Prisma.StringNullableFilter<"Athlete"> | string | null
   gender?: Prisma.StringFilter<"Athlete"> | string
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
@@ -321,6 +329,7 @@ export type AthleteOrderByWithRelationInput = {
   eventId?: Prisma.SortOrder
   bib?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  normalizedName?: Prisma.SortOrderInput | Prisma.SortOrder
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
@@ -345,6 +354,7 @@ export type AthleteWhereUniqueInput = Prisma.AtLeast<{
   eventId?: Prisma.IntFilter<"Athlete"> | number
   bib?: Prisma.StringFilter<"Athlete"> | string
   name?: Prisma.StringFilter<"Athlete"> | string
+  normalizedName?: Prisma.StringNullableFilter<"Athlete"> | string | null
   gender?: Prisma.StringFilter<"Athlete"> | string
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
@@ -365,6 +375,7 @@ export type AthleteOrderByWithAggregationInput = {
   eventId?: Prisma.SortOrder
   bib?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  normalizedName?: Prisma.SortOrderInput | Prisma.SortOrder
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
@@ -391,6 +402,7 @@ export type AthleteScalarWhereWithAggregatesInput = {
   eventId?: Prisma.IntWithAggregatesFilter<"Athlete"> | number
   bib?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   name?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
+  normalizedName?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
   gender?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   division?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   country?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
@@ -407,6 +419,7 @@ export type AthleteScalarWhereWithAggregatesInput = {
 export type AthleteCreateInput = {
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -427,6 +440,7 @@ export type AthleteUncheckedCreateInput = {
   eventId: number
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -444,6 +458,7 @@ export type AthleteUncheckedCreateInput = {
 export type AthleteUpdateInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -464,6 +479,7 @@ export type AthleteUncheckedUpdateInput = {
   eventId?: Prisma.IntFieldUpdateOperationsInput | number
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -483,6 +499,7 @@ export type AthleteCreateManyInput = {
   eventId: number
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -499,6 +516,7 @@ export type AthleteCreateManyInput = {
 export type AthleteUpdateManyMutationInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -517,6 +535,7 @@ export type AthleteUncheckedUpdateManyInput = {
   eventId?: Prisma.IntFieldUpdateOperationsInput | number
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -550,6 +569,7 @@ export type AthleteCountOrderByAggregateInput = {
   eventId?: Prisma.SortOrder
   bib?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  normalizedName?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
@@ -576,6 +596,7 @@ export type AthleteMaxOrderByAggregateInput = {
   eventId?: Prisma.SortOrder
   bib?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  normalizedName?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
@@ -594,6 +615,7 @@ export type AthleteMinOrderByAggregateInput = {
   eventId?: Prisma.SortOrder
   bib?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  normalizedName?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
@@ -695,6 +717,7 @@ export type AthleteUpdateOneRequiredWithoutSegmentsNestedInput = {
 export type AthleteCreateWithoutEventInput = {
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -713,6 +736,7 @@ export type AthleteUncheckedCreateWithoutEventInput = {
   id?: number
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -761,6 +785,7 @@ export type AthleteScalarWhereInput = {
   eventId?: Prisma.IntFilter<"Athlete"> | number
   bib?: Prisma.StringFilter<"Athlete"> | string
   name?: Prisma.StringFilter<"Athlete"> | string
+  normalizedName?: Prisma.StringNullableFilter<"Athlete"> | string | null
   gender?: Prisma.StringFilter<"Athlete"> | string
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
@@ -777,6 +802,7 @@ export type AthleteScalarWhereInput = {
 export type AthleteCreateWithoutSegmentsInput = {
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -796,6 +822,7 @@ export type AthleteUncheckedCreateWithoutSegmentsInput = {
   eventId: number
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -828,6 +855,7 @@ export type AthleteUpdateToOneWithWhereWithoutSegmentsInput = {
 export type AthleteUpdateWithoutSegmentsInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -847,6 +875,7 @@ export type AthleteUncheckedUpdateWithoutSegmentsInput = {
   eventId?: Prisma.IntFieldUpdateOperationsInput | number
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -864,6 +893,7 @@ export type AthleteCreateManyEventInput = {
   id?: number
   bib: string
   name: string
+  normalizedName?: string | null
   gender: string
   division: string
   country: string
@@ -880,6 +910,7 @@ export type AthleteCreateManyEventInput = {
 export type AthleteUpdateWithoutEventInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -898,6 +929,7 @@ export type AthleteUncheckedUpdateWithoutEventInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -916,6 +948,7 @@ export type AthleteUncheckedUpdateManyWithoutEventInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
@@ -965,6 +998,7 @@ export type AthleteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   eventId?: boolean
   bib?: boolean
   name?: boolean
+  normalizedName?: boolean
   gender?: boolean
   division?: boolean
   country?: boolean
@@ -986,6 +1020,7 @@ export type AthleteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   eventId?: boolean
   bib?: boolean
   name?: boolean
+  normalizedName?: boolean
   gender?: boolean
   division?: boolean
   country?: boolean
@@ -1005,6 +1040,7 @@ export type AthleteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   eventId?: boolean
   bib?: boolean
   name?: boolean
+  normalizedName?: boolean
   gender?: boolean
   division?: boolean
   country?: boolean
@@ -1024,6 +1060,7 @@ export type AthleteSelectScalar = {
   eventId?: boolean
   bib?: boolean
   name?: boolean
+  normalizedName?: boolean
   gender?: boolean
   division?: boolean
   country?: boolean
@@ -1037,7 +1074,7 @@ export type AthleteSelectScalar = {
   divisionRank?: boolean
 }
 
-export type AthleteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "bib" | "name" | "gender" | "division" | "country" | "city" | "team" | "status" | "finishTime" | "waveTime" | "overallRank" | "genderRank" | "divisionRank", ExtArgs["result"]["athlete"]>
+export type AthleteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "bib" | "name" | "normalizedName" | "gender" | "division" | "country" | "city" | "team" | "status" | "finishTime" | "waveTime" | "overallRank" | "genderRank" | "divisionRank", ExtArgs["result"]["athlete"]>
 export type AthleteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
   segments?: boolean | Prisma.Athlete$segmentsArgs<ExtArgs>
@@ -1061,6 +1098,7 @@ export type $AthletePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     eventId: number
     bib: string
     name: string
+    normalizedName: string | null
     gender: string
     division: string
     country: string
@@ -1501,6 +1539,7 @@ export interface AthleteFieldRefs {
   readonly eventId: Prisma.FieldRef<"Athlete", 'Int'>
   readonly bib: Prisma.FieldRef<"Athlete", 'String'>
   readonly name: Prisma.FieldRef<"Athlete", 'String'>
+  readonly normalizedName: Prisma.FieldRef<"Athlete", 'String'>
   readonly gender: Prisma.FieldRef<"Athlete", 'String'>
   readonly division: Prisma.FieldRef<"Athlete", 'String'>
   readonly country: Prisma.FieldRef<"Athlete", 'String'>
