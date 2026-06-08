@@ -70,17 +70,16 @@ export default async function AthletePage({ params }: Props) {
   if (!athlete) notFound();
 
   // Multi-year history — find other appearances by this athlete in the same race
-  const raceHistory =
-    athlete.normalizedName
-      ? await prisma.athlete.findMany({
-          where: {
-            normalizedName: athlete.normalizedName,
-            event: { raceId: race.id, year: { not: year } },
-          },
-          include: { event: { select: { year: true } } },
-          orderBy: { event: { year: "asc" } },
-        })
-      : [];
+  const raceHistory = athlete.normalizedName
+    ? await prisma.athlete.findMany({
+        where: {
+          normalizedName: athlete.normalizedName,
+          event: { raceId: race.id, year: { not: year } },
+        },
+        include: { event: { select: { year: true } } },
+        orderBy: { event: { year: "asc" } },
+      })
+    : [];
 
   const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
 
@@ -196,27 +195,55 @@ export default async function AthletePage({ params }: Props) {
               <TableBody>
                 {/* Current year row */}
                 <TableRow className="bg-muted/30 font-medium">
-                  <TableCell>{year} <span className="text-muted-foreground text-xs font-normal">(this race)</span></TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums">{athlete.finishTime ?? "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">{athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">{athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">{athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—"}</TableCell>
-                  <TableCell className={`text-center font-bold tabular-nums ${netColor(overallNet)}`}>{netLabel(overallNet)}</TableCell>
+                  <TableCell>
+                    {year}{" "}
+                    <span className="text-muted-foreground text-xs font-normal">(this race)</span>
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm tabular-nums">
+                    {athlete.finishTime ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {athlete.divisionRank != null
+                      ? `#${athlete.divisionRank.toLocaleString()}`
+                      : "—"}
+                  </TableCell>
+                  <TableCell
+                    className={`text-center font-bold tabular-nums ${netColor(overallNet)}`}
+                  >
+                    {netLabel(overallNet)}
+                  </TableCell>
                   <TableCell />
                 </TableRow>
                 {/* Other year rows */}
                 {raceHistory.map((h) => {
-                  const hNet = h.overallRank != null && athlete.overallRank != null
-                    ? athlete.overallRank - h.overallRank
-                    : null;
+                  const hNet =
+                    h.overallRank != null && athlete.overallRank != null
+                      ? athlete.overallRank - h.overallRank
+                      : null;
                   return (
                     <TableRow key={h.event.year}>
                       <TableCell>{h.event.year}</TableCell>
-                      <TableCell className="text-right font-mono text-sm tabular-nums">{h.finishTime ?? "—"}</TableCell>
-                      <TableCell className="text-right tabular-nums">{h.overallRank != null ? `#${h.overallRank.toLocaleString()}` : "—"}</TableCell>
-                      <TableCell className="text-right tabular-nums">{h.genderRank != null ? `#${h.genderRank.toLocaleString()}` : "—"}</TableCell>
-                      <TableCell className="text-right tabular-nums">{h.divisionRank != null ? `#${h.divisionRank.toLocaleString()}` : "—"}</TableCell>
-                      <TableCell className="text-center tabular-nums text-muted-foreground">—</TableCell>
+                      <TableCell className="text-right font-mono text-sm tabular-nums">
+                        {h.finishTime ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {h.overallRank != null ? `#${h.overallRank.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {h.genderRank != null ? `#${h.genderRank.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {h.divisionRank != null ? `#${h.divisionRank.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-center tabular-nums">
+                        —
+                      </TableCell>
                       <TableCell className="text-right">
                         <Link
                           href={`/events/${slug}/${h.event.year}/${h.bib}`}
