@@ -8,7 +8,10 @@ dnf
 dnfs
 irm
 ironman
+obrien
 oceanside
+pinho
+ramírez
 rockford
 rtrt
 shamrock
