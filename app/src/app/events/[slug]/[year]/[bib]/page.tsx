@@ -76,7 +76,10 @@ export default async function AthletePage({ params }: Props) {
           normalizedName: athlete.normalizedName,
           event: { raceId: race.id, year: { not: year } },
         },
-        include: { event: { select: { year: true } } },
+        include: {
+          event: { select: { year: true } },
+          segments: { select: { net: true } },
+        },
         orderBy: { event: { year: "asc" } },
       })
     : [];
@@ -222,10 +225,7 @@ export default async function AthletePage({ params }: Props) {
                 </TableRow>
                 {/* Other year rows */}
                 {raceHistory.map((h) => {
-                  const hNet =
-                    h.overallRank != null && athlete.overallRank != null
-                      ? athlete.overallRank - h.overallRank
-                      : null;
+                  const hNet = h.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
                   return (
                     <TableRow key={h.event.year}>
                       <TableCell>{h.event.year}</TableCell>
@@ -241,8 +241,8 @@ export default async function AthletePage({ params }: Props) {
                       <TableCell className="text-right tabular-nums">
                         {h.divisionRank != null ? `#${h.divisionRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-center tabular-nums">
-                        —
+                      <TableCell className={`text-center font-bold tabular-nums ${netColor(hNet)}`}>
+                        {netLabel(hNet)}
                       </TableCell>
                       <TableCell className="text-right">
                         <Link
