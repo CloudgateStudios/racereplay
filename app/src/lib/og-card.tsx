@@ -135,7 +135,9 @@ export function OgCard({
             padding: "12px 32px",
           }}
         >
-          <span style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, letterSpacing: "0.02em" }}>
+          <span
+            style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, letterSpacing: "0.02em" }}
+          >
             Find your race at racereplay.app
           </span>
         </div>
@@ -210,7 +212,9 @@ export function OgCard({
             padding: "10px 24px",
           }}
         >
-          <span style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, letterSpacing: "0.02em" }}>
+          <span
+            style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, letterSpacing: "0.02em" }}
+          >
             racereplay.app
           </span>
         </div>
