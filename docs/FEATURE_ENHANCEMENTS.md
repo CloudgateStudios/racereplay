@@ -20,13 +20,12 @@ without requiring new pages or major architecture changes.
 
 ---
 
-## 4. Athlete funnel visualization improvements ⚠️ Partially complete
+## 4. Athlete funnel visualization improvements ✅ Complete
 
-**What's done:** Percentage labels next to each segment count were added in PR #58.
+**Implemented in PR #58.**
 
-**Still to do:**
-
-- Visually highlight the segment with the highest DNF/dropout rate.
-- Consider a simple bar or step chart for events with large fields.
+- Percentage labels next to each segment count.
+- Proportional horizontal bar chart per leg on desktop (collapsible to Start + Finish summary); expandable list on mobile.
+- Segment with the largest absolute dropout is automatically highlighted in orange with a "↓ biggest drop" label and drop count.
 
 **Files:** `app/src/app/events/[slug]/[year]/funnel.tsx`
