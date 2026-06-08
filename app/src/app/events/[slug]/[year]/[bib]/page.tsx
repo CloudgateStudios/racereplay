@@ -142,32 +142,36 @@ export default async function AthletePage({ params }: Props) {
 
       {/* Rank summary — gender/division label includes the category value */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="bg-card rounded-xl border p-4 shadow-sm">
-          <p className="text-muted-foreground text-sm">Finish Time</p>
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Finish Time</p>
+          </div>
           <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.finishTime == null ? "text-muted-foreground" : ""}`}>
             {athlete.finishTime ?? "—"}
           </p>
         </div>
-        <div className="bg-card rounded-xl border p-4 shadow-sm">
-          <p className="text-muted-foreground text-sm">Overall Rank</p>
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Overall Rank</p>
+          </div>
           <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.overallRank == null ? "text-muted-foreground" : ""}`}>
             {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
           </p>
         </div>
-        <div className="bg-card rounded-xl border p-4 shadow-sm">
-          <p className="text-muted-foreground text-sm">Gender Rank</p>
-          {athlete.gender && (
-            <p className="text-muted-foreground text-xs">{athlete.gender}</p>
-          )}
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Gender Rank</p>
+            {athlete.gender && <p className="text-muted-foreground text-xs">{athlete.gender}</p>}
+          </div>
           <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.genderRank == null ? "text-muted-foreground" : ""}`}>
             {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
           </p>
         </div>
-        <div className="bg-card rounded-xl border p-4 shadow-sm">
-          <p className="text-muted-foreground text-sm">Division Rank</p>
-          {athlete.division && (
-            <p className="text-muted-foreground text-xs">{athlete.division}</p>
-          )}
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Division Rank</p>
+            {athlete.division && <p className="text-muted-foreground text-xs">{athlete.division}</p>}
+          </div>
           <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.divisionRank == null ? "text-muted-foreground" : ""}`}>
             {athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—"}
           </p>
