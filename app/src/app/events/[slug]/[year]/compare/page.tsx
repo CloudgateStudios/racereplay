@@ -380,23 +380,23 @@ function ComparisonView({
         </div>
       </div>
 
-      {/* Swap / change link */}
-      <div className="flex gap-4 text-sm">
+      {/* Actions */}
+      <div className="flex flex-wrap gap-2">
         <Link
           href={`/events/${slug}/${year}/compare?a=${athleteB.bib}&b=${athleteA.bib}`}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="hover:bg-muted inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
         >
           ⇄ Swap A and B
         </Link>
         <Link
           href={`/events/${slug}/${year}/compare?a=${athleteA.bib}`}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="hover:bg-muted inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
         >
           Change Athlete B
         </Link>
         <Link
           href={`/events/${slug}/${year}/compare`}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:bg-muted inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
         >
           Start over
         </Link>
