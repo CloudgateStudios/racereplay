@@ -81,7 +81,7 @@ export default async function Image({ params }: Props) {
       {/* Athlete name + event */}
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{ color: "#a3a3a3", fontSize: "22px", fontWeight: 600 }}>
-          {raceName} · {year} · Bib {bib}
+          {`${raceName} · ${year} · Bib ${bib}`}
         </div>
         <div
           style={{
@@ -133,7 +133,7 @@ export default async function Image({ params }: Props) {
               Overall
             </span>
             <span style={{ color: "#f97316", fontSize: "40px", fontWeight: 800 }}>
-              #{overallRank}
+              {`#${overallRank}`}
             </span>
           </div>
         )}
@@ -151,7 +151,7 @@ export default async function Image({ params }: Props) {
               Gender
             </span>
             <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
-              #{genderRank}
+              {`#${genderRank}`}
             </span>
           </div>
         )}
@@ -169,7 +169,7 @@ export default async function Image({ params }: Props) {
               {division}
             </span>
             <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
-              #{divisionRank}
+              {`#${divisionRank}`}
             </span>
           </div>
         )}

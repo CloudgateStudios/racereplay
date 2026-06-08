@@ -137,12 +137,14 @@ export default async function Image({ params }: Props) {
           >
             Finishers
           </span>
-          <span style={{ color: "#f97316", fontSize: "40px", fontWeight: 800 }}>
-            {finisherCount.toLocaleString()}{" "}
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+            <span style={{ color: "#f97316", fontSize: "40px", fontWeight: 800 }}>
+              {finisherCount.toLocaleString()}
+            </span>
             <span style={{ color: "#a3a3a3", fontSize: "24px", fontWeight: 500 }}>
               {finishPct}%
             </span>
-          </span>
+          </div>
         </div>
       </div>
     </div>,
