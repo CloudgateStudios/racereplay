@@ -26,8 +26,7 @@ export default async function Image({ params }: Props) {
   const finisherCount = event
     ? await prisma.athlete.count({ where: { eventId: event.id, status: "FIN" } })
     : 0;
-  const finishPct =
-    totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0.0";
+  const finishPct = totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0.0";
 
   const eventDate = event
     ? new Date(event.date).toLocaleDateString("en-US", {

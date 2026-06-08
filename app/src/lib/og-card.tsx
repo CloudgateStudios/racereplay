@@ -43,10 +43,7 @@ function StatRow({ stats }: { stats: OgStat[] }) {
   return (
     <div style={{ display: "flex", gap: "48px" }}>
       {stats.map((stat) => (
-        <div
-          key={stat.label}
-          style={{ display: "flex", flexDirection: "column", gap: "6px" }}
-        >
+        <div key={stat.label} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span
             style={{
               color: "#a3a3a3",
@@ -124,9 +121,7 @@ export function OgCard({
             {title}
           </div>
           {subtitle && (
-            <div style={{ color: "#a3a3a3", fontSize: "28px", fontWeight: 500 }}>
-              {subtitle}
-            </div>
+            <div style={{ color: "#a3a3a3", fontSize: "28px", fontWeight: 500 }}>{subtitle}</div>
           )}
         </div>
       </div>
@@ -174,14 +169,10 @@ export function OgCard({
           {title}
         </div>
         {subtitle && (
-          <div style={{ color: "#a3a3a3", fontSize: "36px", fontWeight: 700 }}>
-            {subtitle}
-          </div>
+          <div style={{ color: "#a3a3a3", fontSize: "36px", fontWeight: 700 }}>{subtitle}</div>
         )}
         {label && (
-          <div style={{ color: labelColor, fontSize: "22px", fontWeight: 600 }}>
-            {label}
-          </div>
+          <div style={{ color: labelColor, fontSize: "22px", fontWeight: 600 }}>{label}</div>
         )}
       </div>
 

@@ -9,11 +9,7 @@ export const contentType = "image/png";
 export default async function Image() {
   const fonts = await loadOgFonts();
   return new ImageResponse(
-    <OgCard
-      centered
-      title="Race Replay"
-      subtitle="See every pass, know your race."
-    />,
+    <OgCard centered title="Race Replay" subtitle="See every pass, know your race." />,
     { width: 1200, height: 630, fonts }
   );
 }
