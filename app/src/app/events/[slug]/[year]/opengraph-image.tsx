@@ -50,23 +50,11 @@ export default async function Image({ params }: Props) {
         fontFamily: "sans-serif",
       }}
     >
-      {/* Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <div
-          style={{
-            width: "36px",
-            height: "36px",
-            background: "#f97316",
-            borderRadius: "6px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{ width: "14px", height: "14px", background: "#0f0f0f", borderRadius: "2px" }}
-          />
-        </div>
+        <svg width="44" height="44" viewBox="0 0 28 28">
+          <polygon points="26,14 20,24 8,24 2,14 8,4 20,4" fill="#f97316"/>
+          <polygon points="11,9 11,19 20,14" fill="white"/>
+        </svg>
         <span
           style={{
             color: "#f97316",
@@ -80,7 +68,6 @@ export default async function Image({ params }: Props) {
         </span>
       </div>
 
-      {/* Main content */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div
           style={{
@@ -98,16 +85,15 @@ export default async function Image({ params }: Props) {
             color: "#ffffff",
             fontSize: "72px",
             fontWeight: 900,
-            lineHeight: 1.05,
+            lineHeight: "1.05",
             letterSpacing: "-0.02em",
           }}
         >
           {raceName}
         </div>
-        <div style={{ color: "#a3a3a3", fontSize: "36px", fontWeight: 700 }}>{year}</div>
+        <div style={{ color: "#a3a3a3", fontSize: "36px", fontWeight: 700 }}>{yearStr}</div>
       </div>
 
-      {/* Stats bar */}
       <div style={{ display: "flex", gap: "48px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span
