@@ -42,3 +42,8 @@ export type Athlete = Prisma.AthleteModel
  * 
  */
 export type AthleteSegment = Prisma.AthleteSegmentModel
+/**
+ * Model CategoryResult
+ * 
+ */
+export type CategoryResult = Prisma.CategoryResultModel

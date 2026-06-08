@@ -388,7 +388,8 @@ export const ModelName = {
   Event: 'Event',
   Segment: 'Segment',
   Athlete: 'Athlete',
-  AthleteSegment: 'AthleteSegment'
+  AthleteSegment: 'AthleteSegment',
+  CategoryResult: 'CategoryResult'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "race" | "event" | "segment" | "athlete" | "athleteSegment"
+    modelProps: "race" | "event" | "segment" | "athlete" | "athleteSegment" | "categoryResult"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +779,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CategoryResult: {
+      payload: Prisma.$CategoryResultPayload<ExtArgs>
+      fields: Prisma.CategoryResultFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CategoryResultFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CategoryResultFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>
+        }
+        findFirst: {
+          args: Prisma.CategoryResultFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CategoryResultFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>
+        }
+        findMany: {
+          args: Prisma.CategoryResultFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>[]
+        }
+        create: {
+          args: Prisma.CategoryResultCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>
+        }
+        createMany: {
+          args: Prisma.CategoryResultCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CategoryResultCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>[]
+        }
+        delete: {
+          args: Prisma.CategoryResultDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>
+        }
+        update: {
+          args: Prisma.CategoryResultUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>
+        }
+        deleteMany: {
+          args: Prisma.CategoryResultDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CategoryResultUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CategoryResultUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>[]
+        }
+        upsert: {
+          args: Prisma.CategoryResultUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoryResultPayload>
+        }
+        aggregate: {
+          args: Prisma.CategoryResultAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCategoryResult>
+        }
+        groupBy: {
+          args: Prisma.CategoryResultGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CategoryResultGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CategoryResultCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CategoryResultCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -856,8 +931,11 @@ export const AthleteScalarFieldEnum = {
   gender: 'gender',
   division: 'division',
   country: 'country',
+  city: 'city',
+  team: 'team',
   status: 'status',
   finishTime: 'finishTime',
+  waveTime: 'waveTime',
   overallRank: 'overallRank',
   genderRank: 'genderRank',
   divisionRank: 'divisionRank'
@@ -871,12 +949,24 @@ export const AthleteSegmentScalarFieldEnum = {
   athleteId: 'athleteId',
   segmentId: 'segmentId',
   timeSeconds: 'timeSeconds',
+  epochTime: 'epochTime',
   gained: 'gained',
   lost: 'lost',
   net: 'net'
 } as const
 
 export type AthleteSegmentScalarFieldEnum = (typeof AthleteSegmentScalarFieldEnum)[keyof typeof AthleteSegmentScalarFieldEnum]
+
+
+export const CategoryResultScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  category: 'category',
+  name: 'name',
+  total: 'total'
+} as const
+
+export type CategoryResultScalarFieldEnum = (typeof CategoryResultScalarFieldEnum)[keyof typeof CategoryResultScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1114,6 +1204,7 @@ export type GlobalOmitConfig = {
   segment?: Prisma.SegmentOmit
   athlete?: Prisma.AthleteOmit
   athleteSegment?: Prisma.AthleteSegmentOmit
+  categoryResult?: Prisma.CategoryResultOmit
 }
 
 /* Types for Logging */

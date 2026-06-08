@@ -31,6 +31,7 @@ export type AthleteSegmentAvgAggregateOutputType = {
   athleteId: number | null
   segmentId: number | null
   timeSeconds: number | null
+  epochTime: number | null
   gained: number | null
   lost: number | null
   net: number | null
@@ -41,6 +42,7 @@ export type AthleteSegmentSumAggregateOutputType = {
   athleteId: number | null
   segmentId: number | null
   timeSeconds: number | null
+  epochTime: number | null
   gained: number | null
   lost: number | null
   net: number | null
@@ -51,6 +53,7 @@ export type AthleteSegmentMinAggregateOutputType = {
   athleteId: number | null
   segmentId: number | null
   timeSeconds: number | null
+  epochTime: number | null
   gained: number | null
   lost: number | null
   net: number | null
@@ -61,6 +64,7 @@ export type AthleteSegmentMaxAggregateOutputType = {
   athleteId: number | null
   segmentId: number | null
   timeSeconds: number | null
+  epochTime: number | null
   gained: number | null
   lost: number | null
   net: number | null
@@ -71,6 +75,7 @@ export type AthleteSegmentCountAggregateOutputType = {
   athleteId: number
   segmentId: number
   timeSeconds: number
+  epochTime: number
   gained: number
   lost: number
   net: number
@@ -83,6 +88,7 @@ export type AthleteSegmentAvgAggregateInputType = {
   athleteId?: true
   segmentId?: true
   timeSeconds?: true
+  epochTime?: true
   gained?: true
   lost?: true
   net?: true
@@ -93,6 +99,7 @@ export type AthleteSegmentSumAggregateInputType = {
   athleteId?: true
   segmentId?: true
   timeSeconds?: true
+  epochTime?: true
   gained?: true
   lost?: true
   net?: true
@@ -103,6 +110,7 @@ export type AthleteSegmentMinAggregateInputType = {
   athleteId?: true
   segmentId?: true
   timeSeconds?: true
+  epochTime?: true
   gained?: true
   lost?: true
   net?: true
@@ -113,6 +121,7 @@ export type AthleteSegmentMaxAggregateInputType = {
   athleteId?: true
   segmentId?: true
   timeSeconds?: true
+  epochTime?: true
   gained?: true
   lost?: true
   net?: true
@@ -123,6 +132,7 @@ export type AthleteSegmentCountAggregateInputType = {
   athleteId?: true
   segmentId?: true
   timeSeconds?: true
+  epochTime?: true
   gained?: true
   lost?: true
   net?: true
@@ -220,6 +230,7 @@ export type AthleteSegmentGroupByOutputType = {
   athleteId: number
   segmentId: number
   timeSeconds: number | null
+  epochTime: number | null
   gained: number | null
   lost: number | null
   net: number | null
@@ -253,6 +264,7 @@ export type AthleteSegmentWhereInput = {
   athleteId?: Prisma.IntFilter<"AthleteSegment"> | number
   segmentId?: Prisma.IntFilter<"AthleteSegment"> | number
   timeSeconds?: Prisma.FloatNullableFilter<"AthleteSegment"> | number | null
+  epochTime?: Prisma.FloatNullableFilter<"AthleteSegment"> | number | null
   gained?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
   lost?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
   net?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
@@ -265,6 +277,7 @@ export type AthleteSegmentOrderByWithRelationInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrderInput | Prisma.SortOrder
+  epochTime?: Prisma.SortOrderInput | Prisma.SortOrder
   gained?: Prisma.SortOrderInput | Prisma.SortOrder
   lost?: Prisma.SortOrderInput | Prisma.SortOrder
   net?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -281,6 +294,7 @@ export type AthleteSegmentWhereUniqueInput = Prisma.AtLeast<{
   athleteId?: Prisma.IntFilter<"AthleteSegment"> | number
   segmentId?: Prisma.IntFilter<"AthleteSegment"> | number
   timeSeconds?: Prisma.FloatNullableFilter<"AthleteSegment"> | number | null
+  epochTime?: Prisma.FloatNullableFilter<"AthleteSegment"> | number | null
   gained?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
   lost?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
   net?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
@@ -293,6 +307,7 @@ export type AthleteSegmentOrderByWithAggregationInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrderInput | Prisma.SortOrder
+  epochTime?: Prisma.SortOrderInput | Prisma.SortOrder
   gained?: Prisma.SortOrderInput | Prisma.SortOrder
   lost?: Prisma.SortOrderInput | Prisma.SortOrder
   net?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -311,6 +326,7 @@ export type AthleteSegmentScalarWhereWithAggregatesInput = {
   athleteId?: Prisma.IntWithAggregatesFilter<"AthleteSegment"> | number
   segmentId?: Prisma.IntWithAggregatesFilter<"AthleteSegment"> | number
   timeSeconds?: Prisma.FloatNullableWithAggregatesFilter<"AthleteSegment"> | number | null
+  epochTime?: Prisma.FloatNullableWithAggregatesFilter<"AthleteSegment"> | number | null
   gained?: Prisma.IntNullableWithAggregatesFilter<"AthleteSegment"> | number | null
   lost?: Prisma.IntNullableWithAggregatesFilter<"AthleteSegment"> | number | null
   net?: Prisma.IntNullableWithAggregatesFilter<"AthleteSegment"> | number | null
@@ -318,6 +334,7 @@ export type AthleteSegmentScalarWhereWithAggregatesInput = {
 
 export type AthleteSegmentCreateInput = {
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -330,6 +347,7 @@ export type AthleteSegmentUncheckedCreateInput = {
   athleteId: number
   segmentId: number
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -337,6 +355,7 @@ export type AthleteSegmentUncheckedCreateInput = {
 
 export type AthleteSegmentUpdateInput = {
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -349,6 +368,7 @@ export type AthleteSegmentUncheckedUpdateInput = {
   athleteId?: Prisma.IntFieldUpdateOperationsInput | number
   segmentId?: Prisma.IntFieldUpdateOperationsInput | number
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -359,6 +379,7 @@ export type AthleteSegmentCreateManyInput = {
   athleteId: number
   segmentId: number
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -366,6 +387,7 @@ export type AthleteSegmentCreateManyInput = {
 
 export type AthleteSegmentUpdateManyMutationInput = {
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -376,6 +398,7 @@ export type AthleteSegmentUncheckedUpdateManyInput = {
   athleteId?: Prisma.IntFieldUpdateOperationsInput | number
   segmentId?: Prisma.IntFieldUpdateOperationsInput | number
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -401,6 +424,7 @@ export type AthleteSegmentCountOrderByAggregateInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrder
+  epochTime?: Prisma.SortOrder
   gained?: Prisma.SortOrder
   lost?: Prisma.SortOrder
   net?: Prisma.SortOrder
@@ -411,6 +435,7 @@ export type AthleteSegmentAvgOrderByAggregateInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrder
+  epochTime?: Prisma.SortOrder
   gained?: Prisma.SortOrder
   lost?: Prisma.SortOrder
   net?: Prisma.SortOrder
@@ -421,6 +446,7 @@ export type AthleteSegmentMaxOrderByAggregateInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrder
+  epochTime?: Prisma.SortOrder
   gained?: Prisma.SortOrder
   lost?: Prisma.SortOrder
   net?: Prisma.SortOrder
@@ -431,6 +457,7 @@ export type AthleteSegmentMinOrderByAggregateInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrder
+  epochTime?: Prisma.SortOrder
   gained?: Prisma.SortOrder
   lost?: Prisma.SortOrder
   net?: Prisma.SortOrder
@@ -441,6 +468,7 @@ export type AthleteSegmentSumOrderByAggregateInput = {
   athleteId?: Prisma.SortOrder
   segmentId?: Prisma.SortOrder
   timeSeconds?: Prisma.SortOrder
+  epochTime?: Prisma.SortOrder
   gained?: Prisma.SortOrder
   lost?: Prisma.SortOrder
   net?: Prisma.SortOrder
@@ -540,6 +568,7 @@ export type NullableFloatFieldUpdateOperationsInput = {
 
 export type AthleteSegmentCreateWithoutSegmentInput = {
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -550,6 +579,7 @@ export type AthleteSegmentUncheckedCreateWithoutSegmentInput = {
   id?: number
   athleteId: number
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -589,6 +619,7 @@ export type AthleteSegmentScalarWhereInput = {
   athleteId?: Prisma.IntFilter<"AthleteSegment"> | number
   segmentId?: Prisma.IntFilter<"AthleteSegment"> | number
   timeSeconds?: Prisma.FloatNullableFilter<"AthleteSegment"> | number | null
+  epochTime?: Prisma.FloatNullableFilter<"AthleteSegment"> | number | null
   gained?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
   lost?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
   net?: Prisma.IntNullableFilter<"AthleteSegment"> | number | null
@@ -596,6 +627,7 @@ export type AthleteSegmentScalarWhereInput = {
 
 export type AthleteSegmentCreateWithoutAthleteInput = {
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -606,6 +638,7 @@ export type AthleteSegmentUncheckedCreateWithoutAthleteInput = {
   id?: number
   segmentId: number
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -641,6 +674,7 @@ export type AthleteSegmentCreateManySegmentInput = {
   id?: number
   athleteId: number
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -648,6 +682,7 @@ export type AthleteSegmentCreateManySegmentInput = {
 
 export type AthleteSegmentUpdateWithoutSegmentInput = {
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -658,6 +693,7 @@ export type AthleteSegmentUncheckedUpdateWithoutSegmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   athleteId?: Prisma.IntFieldUpdateOperationsInput | number
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -667,6 +703,7 @@ export type AthleteSegmentUncheckedUpdateManyWithoutSegmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   athleteId?: Prisma.IntFieldUpdateOperationsInput | number
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -676,6 +713,7 @@ export type AthleteSegmentCreateManyAthleteInput = {
   id?: number
   segmentId: number
   timeSeconds?: number | null
+  epochTime?: number | null
   gained?: number | null
   lost?: number | null
   net?: number | null
@@ -683,6 +721,7 @@ export type AthleteSegmentCreateManyAthleteInput = {
 
 export type AthleteSegmentUpdateWithoutAthleteInput = {
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -693,6 +732,7 @@ export type AthleteSegmentUncheckedUpdateWithoutAthleteInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   segmentId?: Prisma.IntFieldUpdateOperationsInput | number
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -702,6 +742,7 @@ export type AthleteSegmentUncheckedUpdateManyWithoutAthleteInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   segmentId?: Prisma.IntFieldUpdateOperationsInput | number
   timeSeconds?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  epochTime?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   gained?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   net?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -714,6 +755,7 @@ export type AthleteSegmentSelect<ExtArgs extends runtime.Types.Extensions.Intern
   athleteId?: boolean
   segmentId?: boolean
   timeSeconds?: boolean
+  epochTime?: boolean
   gained?: boolean
   lost?: boolean
   net?: boolean
@@ -726,6 +768,7 @@ export type AthleteSegmentSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   athleteId?: boolean
   segmentId?: boolean
   timeSeconds?: boolean
+  epochTime?: boolean
   gained?: boolean
   lost?: boolean
   net?: boolean
@@ -738,6 +781,7 @@ export type AthleteSegmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   athleteId?: boolean
   segmentId?: boolean
   timeSeconds?: boolean
+  epochTime?: boolean
   gained?: boolean
   lost?: boolean
   net?: boolean
@@ -750,12 +794,13 @@ export type AthleteSegmentSelectScalar = {
   athleteId?: boolean
   segmentId?: boolean
   timeSeconds?: boolean
+  epochTime?: boolean
   gained?: boolean
   lost?: boolean
   net?: boolean
 }
 
-export type AthleteSegmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "athleteId" | "segmentId" | "timeSeconds" | "gained" | "lost" | "net", ExtArgs["result"]["athleteSegment"]>
+export type AthleteSegmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "athleteId" | "segmentId" | "timeSeconds" | "epochTime" | "gained" | "lost" | "net", ExtArgs["result"]["athleteSegment"]>
 export type AthleteSegmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   athlete?: boolean | Prisma.AthleteDefaultArgs<ExtArgs>
   segment?: boolean | Prisma.SegmentDefaultArgs<ExtArgs>
@@ -780,6 +825,7 @@ export type $AthleteSegmentPayload<ExtArgs extends runtime.Types.Extensions.Inte
     athleteId: number
     segmentId: number
     timeSeconds: number | null
+    epochTime: number | null
     gained: number | null
     lost: number | null
     net: number | null
@@ -1212,6 +1258,7 @@ export interface AthleteSegmentFieldRefs {
   readonly athleteId: Prisma.FieldRef<"AthleteSegment", 'Int'>
   readonly segmentId: Prisma.FieldRef<"AthleteSegment", 'Int'>
   readonly timeSeconds: Prisma.FieldRef<"AthleteSegment", 'Float'>
+  readonly epochTime: Prisma.FieldRef<"AthleteSegment", 'Float'>
   readonly gained: Prisma.FieldRef<"AthleteSegment", 'Int'>
   readonly lost: Prisma.FieldRef<"AthleteSegment", 'Int'>
   readonly net: Prisma.FieldRef<"AthleteSegment", 'Int'>

@@ -50,8 +50,11 @@ export type AthleteMinAggregateOutputType = {
   gender: string | null
   division: string | null
   country: string | null
+  city: string | null
+  team: string | null
   status: $Enums.AthleteStatus | null
   finishTime: string | null
+  waveTime: string | null
   overallRank: number | null
   genderRank: number | null
   divisionRank: number | null
@@ -65,8 +68,11 @@ export type AthleteMaxAggregateOutputType = {
   gender: string | null
   division: string | null
   country: string | null
+  city: string | null
+  team: string | null
   status: $Enums.AthleteStatus | null
   finishTime: string | null
+  waveTime: string | null
   overallRank: number | null
   genderRank: number | null
   divisionRank: number | null
@@ -80,8 +86,11 @@ export type AthleteCountAggregateOutputType = {
   gender: number
   division: number
   country: number
+  city: number
+  team: number
   status: number
   finishTime: number
+  waveTime: number
   overallRank: number
   genderRank: number
   divisionRank: number
@@ -113,8 +122,11 @@ export type AthleteMinAggregateInputType = {
   gender?: true
   division?: true
   country?: true
+  city?: true
+  team?: true
   status?: true
   finishTime?: true
+  waveTime?: true
   overallRank?: true
   genderRank?: true
   divisionRank?: true
@@ -128,8 +140,11 @@ export type AthleteMaxAggregateInputType = {
   gender?: true
   division?: true
   country?: true
+  city?: true
+  team?: true
   status?: true
   finishTime?: true
+  waveTime?: true
   overallRank?: true
   genderRank?: true
   divisionRank?: true
@@ -143,8 +158,11 @@ export type AthleteCountAggregateInputType = {
   gender?: true
   division?: true
   country?: true
+  city?: true
+  team?: true
   status?: true
   finishTime?: true
+  waveTime?: true
   overallRank?: true
   genderRank?: true
   divisionRank?: true
@@ -245,8 +263,11 @@ export type AthleteGroupByOutputType = {
   gender: string
   division: string
   country: string
+  city: string | null
+  team: string | null
   status: $Enums.AthleteStatus
   finishTime: string | null
+  waveTime: string | null
   overallRank: number | null
   genderRank: number | null
   divisionRank: number | null
@@ -283,8 +304,11 @@ export type AthleteWhereInput = {
   gender?: Prisma.StringFilter<"Athlete"> | string
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
+  city?: Prisma.StringNullableFilter<"Athlete"> | string | null
+  team?: Prisma.StringNullableFilter<"Athlete"> | string | null
   status?: Prisma.EnumAthleteStatusFilter<"Athlete"> | $Enums.AthleteStatus
   finishTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
+  waveTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
@@ -300,8 +324,11 @@ export type AthleteOrderByWithRelationInput = {
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  team?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   finishTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  waveTime?: Prisma.SortOrderInput | Prisma.SortOrder
   overallRank?: Prisma.SortOrderInput | Prisma.SortOrder
   genderRank?: Prisma.SortOrderInput | Prisma.SortOrder
   divisionRank?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -321,8 +348,11 @@ export type AthleteWhereUniqueInput = Prisma.AtLeast<{
   gender?: Prisma.StringFilter<"Athlete"> | string
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
+  city?: Prisma.StringNullableFilter<"Athlete"> | string | null
+  team?: Prisma.StringNullableFilter<"Athlete"> | string | null
   status?: Prisma.EnumAthleteStatusFilter<"Athlete"> | $Enums.AthleteStatus
   finishTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
+  waveTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
@@ -338,8 +368,11 @@ export type AthleteOrderByWithAggregationInput = {
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  team?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   finishTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  waveTime?: Prisma.SortOrderInput | Prisma.SortOrder
   overallRank?: Prisma.SortOrderInput | Prisma.SortOrder
   genderRank?: Prisma.SortOrderInput | Prisma.SortOrder
   divisionRank?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -361,8 +394,11 @@ export type AthleteScalarWhereWithAggregatesInput = {
   gender?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   division?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   country?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
+  city?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
+  team?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
   status?: Prisma.EnumAthleteStatusWithAggregatesFilter<"Athlete"> | $Enums.AthleteStatus
   finishTime?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
+  waveTime?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableWithAggregatesFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableWithAggregatesFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableWithAggregatesFilter<"Athlete"> | number | null
@@ -374,8 +410,11 @@ export type AthleteCreateInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -391,8 +430,11 @@ export type AthleteUncheckedCreateInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -405,8 +447,11 @@ export type AthleteUpdateInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -422,8 +467,11 @@ export type AthleteUncheckedUpdateInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -438,8 +486,11 @@ export type AthleteCreateManyInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -451,8 +502,11 @@ export type AthleteUpdateManyMutationInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -466,8 +520,11 @@ export type AthleteUncheckedUpdateManyInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -496,8 +553,11 @@ export type AthleteCountOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  team?: Prisma.SortOrder
   status?: Prisma.SortOrder
   finishTime?: Prisma.SortOrder
+  waveTime?: Prisma.SortOrder
   overallRank?: Prisma.SortOrder
   genderRank?: Prisma.SortOrder
   divisionRank?: Prisma.SortOrder
@@ -519,8 +579,11 @@ export type AthleteMaxOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  team?: Prisma.SortOrder
   status?: Prisma.SortOrder
   finishTime?: Prisma.SortOrder
+  waveTime?: Prisma.SortOrder
   overallRank?: Prisma.SortOrder
   genderRank?: Prisma.SortOrder
   divisionRank?: Prisma.SortOrder
@@ -534,8 +597,11 @@ export type AthleteMinOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   division?: Prisma.SortOrder
   country?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  team?: Prisma.SortOrder
   status?: Prisma.SortOrder
   finishTime?: Prisma.SortOrder
+  waveTime?: Prisma.SortOrder
   overallRank?: Prisma.SortOrder
   genderRank?: Prisma.SortOrder
   divisionRank?: Prisma.SortOrder
@@ -596,12 +662,12 @@ export type AthleteUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.AthleteScalarWhereInput | Prisma.AthleteScalarWhereInput[]
 }
 
-export type EnumAthleteStatusFieldUpdateOperationsInput = {
-  set?: $Enums.AthleteStatus
-}
-
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type EnumAthleteStatusFieldUpdateOperationsInput = {
+  set?: $Enums.AthleteStatus
 }
 
 export type NullableIntFieldUpdateOperationsInput = {
@@ -632,8 +698,11 @@ export type AthleteCreateWithoutEventInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -647,8 +716,11 @@ export type AthleteUncheckedCreateWithoutEventInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -692,8 +764,11 @@ export type AthleteScalarWhereInput = {
   gender?: Prisma.StringFilter<"Athlete"> | string
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
+  city?: Prisma.StringNullableFilter<"Athlete"> | string | null
+  team?: Prisma.StringNullableFilter<"Athlete"> | string | null
   status?: Prisma.EnumAthleteStatusFilter<"Athlete"> | $Enums.AthleteStatus
   finishTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
+  waveTime?: Prisma.StringNullableFilter<"Athlete"> | string | null
   overallRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   genderRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
   divisionRank?: Prisma.IntNullableFilter<"Athlete"> | number | null
@@ -705,8 +780,11 @@ export type AthleteCreateWithoutSegmentsInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -721,8 +799,11 @@ export type AthleteUncheckedCreateWithoutSegmentsInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -750,8 +831,11 @@ export type AthleteUpdateWithoutSegmentsInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -766,8 +850,11 @@ export type AthleteUncheckedUpdateWithoutSegmentsInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -780,8 +867,11 @@ export type AthleteCreateManyEventInput = {
   gender: string
   division: string
   country: string
+  city?: string | null
+  team?: string | null
   status: $Enums.AthleteStatus
   finishTime?: string | null
+  waveTime?: string | null
   overallRank?: number | null
   genderRank?: number | null
   divisionRank?: number | null
@@ -793,8 +883,11 @@ export type AthleteUpdateWithoutEventInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -808,8 +901,11 @@ export type AthleteUncheckedUpdateWithoutEventInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -823,8 +919,11 @@ export type AthleteUncheckedUpdateManyWithoutEventInput = {
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  team?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAthleteStatusFieldUpdateOperationsInput | $Enums.AthleteStatus
   finishTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waveTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   genderRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   divisionRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -869,8 +968,11 @@ export type AthleteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   gender?: boolean
   division?: boolean
   country?: boolean
+  city?: boolean
+  team?: boolean
   status?: boolean
   finishTime?: boolean
+  waveTime?: boolean
   overallRank?: boolean
   genderRank?: boolean
   divisionRank?: boolean
@@ -887,8 +989,11 @@ export type AthleteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   gender?: boolean
   division?: boolean
   country?: boolean
+  city?: boolean
+  team?: boolean
   status?: boolean
   finishTime?: boolean
+  waveTime?: boolean
   overallRank?: boolean
   genderRank?: boolean
   divisionRank?: boolean
@@ -903,8 +1008,11 @@ export type AthleteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   gender?: boolean
   division?: boolean
   country?: boolean
+  city?: boolean
+  team?: boolean
   status?: boolean
   finishTime?: boolean
+  waveTime?: boolean
   overallRank?: boolean
   genderRank?: boolean
   divisionRank?: boolean
@@ -919,14 +1027,17 @@ export type AthleteSelectScalar = {
   gender?: boolean
   division?: boolean
   country?: boolean
+  city?: boolean
+  team?: boolean
   status?: boolean
   finishTime?: boolean
+  waveTime?: boolean
   overallRank?: boolean
   genderRank?: boolean
   divisionRank?: boolean
 }
 
-export type AthleteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "bib" | "name" | "gender" | "division" | "country" | "status" | "finishTime" | "overallRank" | "genderRank" | "divisionRank", ExtArgs["result"]["athlete"]>
+export type AthleteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "bib" | "name" | "gender" | "division" | "country" | "city" | "team" | "status" | "finishTime" | "waveTime" | "overallRank" | "genderRank" | "divisionRank", ExtArgs["result"]["athlete"]>
 export type AthleteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
   segments?: boolean | Prisma.Athlete$segmentsArgs<ExtArgs>
@@ -953,8 +1064,11 @@ export type $AthletePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     gender: string
     division: string
     country: string
+    city: string | null
+    team: string | null
     status: $Enums.AthleteStatus
     finishTime: string | null
+    waveTime: string | null
     overallRank: number | null
     genderRank: number | null
     divisionRank: number | null
@@ -1390,8 +1504,11 @@ export interface AthleteFieldRefs {
   readonly gender: Prisma.FieldRef<"Athlete", 'String'>
   readonly division: Prisma.FieldRef<"Athlete", 'String'>
   readonly country: Prisma.FieldRef<"Athlete", 'String'>
+  readonly city: Prisma.FieldRef<"Athlete", 'String'>
+  readonly team: Prisma.FieldRef<"Athlete", 'String'>
   readonly status: Prisma.FieldRef<"Athlete", 'AthleteStatus'>
   readonly finishTime: Prisma.FieldRef<"Athlete", 'String'>
+  readonly waveTime: Prisma.FieldRef<"Athlete", 'String'>
   readonly overallRank: Prisma.FieldRef<"Athlete", 'Int'>
   readonly genderRank: Prisma.FieldRef<"Athlete", 'Int'>
   readonly divisionRank: Prisma.FieldRef<"Athlete", 'Int'>

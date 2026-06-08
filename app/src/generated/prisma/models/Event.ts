@@ -227,6 +227,7 @@ export type EventWhereInput = {
   race?: Prisma.XOR<Prisma.RaceScalarRelationFilter, Prisma.RaceWhereInput>
   athletes?: Prisma.AthleteListRelationFilter
   segments?: Prisma.SegmentListRelationFilter
+  categoryResults?: Prisma.CategoryResultListRelationFilter
 }
 
 export type EventOrderByWithRelationInput = {
@@ -238,6 +239,7 @@ export type EventOrderByWithRelationInput = {
   race?: Prisma.RaceOrderByWithRelationInput
   athletes?: Prisma.AthleteOrderByRelationAggregateInput
   segments?: Prisma.SegmentOrderByRelationAggregateInput
+  categoryResults?: Prisma.CategoryResultOrderByRelationAggregateInput
 }
 
 export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -253,6 +255,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   race?: Prisma.XOR<Prisma.RaceScalarRelationFilter, Prisma.RaceWhereInput>
   athletes?: Prisma.AthleteListRelationFilter
   segments?: Prisma.SegmentListRelationFilter
+  categoryResults?: Prisma.CategoryResultListRelationFilter
 }, "id" | "raceId_year">
 
 export type EventOrderByWithAggregationInput = {
@@ -286,6 +289,7 @@ export type EventCreateInput = {
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateInput = {
@@ -296,6 +300,7 @@ export type EventUncheckedCreateInput = {
   date: Date | string
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventUpdateInput = {
@@ -305,6 +310,7 @@ export type EventUpdateInput = {
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateInput = {
@@ -315,6 +321,7 @@ export type EventUncheckedUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateManyInput = {
@@ -473,12 +480,27 @@ export type EventUpdateOneRequiredWithoutAthletesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutAthletesInput, Prisma.EventUpdateWithoutAthletesInput>, Prisma.EventUncheckedUpdateWithoutAthletesInput>
 }
 
+export type EventCreateNestedOneWithoutCategoryResultsInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutCategoryResultsInput, Prisma.EventUncheckedCreateWithoutCategoryResultsInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutCategoryResultsInput
+  connect?: Prisma.EventWhereUniqueInput
+}
+
+export type EventUpdateOneRequiredWithoutCategoryResultsNestedInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutCategoryResultsInput, Prisma.EventUncheckedCreateWithoutCategoryResultsInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutCategoryResultsInput
+  upsert?: Prisma.EventUpsertWithoutCategoryResultsInput
+  connect?: Prisma.EventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutCategoryResultsInput, Prisma.EventUpdateWithoutCategoryResultsInput>, Prisma.EventUncheckedUpdateWithoutCategoryResultsInput>
+}
+
 export type EventCreateWithoutRaceInput = {
   year: number
   type: $Enums.EventType
   date: Date | string
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutRaceInput = {
@@ -488,6 +510,7 @@ export type EventUncheckedCreateWithoutRaceInput = {
   date: Date | string
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutRaceInput = {
@@ -533,6 +556,7 @@ export type EventCreateWithoutSegmentsInput = {
   date: Date | string
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutSegmentsInput = {
@@ -542,6 +566,7 @@ export type EventUncheckedCreateWithoutSegmentsInput = {
   type: $Enums.EventType
   date: Date | string
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutSegmentsInput = {
@@ -566,6 +591,7 @@ export type EventUpdateWithoutSegmentsInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutSegmentsInput = {
@@ -575,6 +601,7 @@ export type EventUncheckedUpdateWithoutSegmentsInput = {
   type?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateWithoutAthletesInput = {
@@ -583,6 +610,7 @@ export type EventCreateWithoutAthletesInput = {
   date: Date | string
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   segments?: Prisma.SegmentCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutAthletesInput = {
@@ -592,6 +620,7 @@ export type EventUncheckedCreateWithoutAthletesInput = {
   type: $Enums.EventType
   date: Date | string
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
+  categoryResults?: Prisma.CategoryResultUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutAthletesInput = {
@@ -616,6 +645,7 @@ export type EventUpdateWithoutAthletesInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   segments?: Prisma.SegmentUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutAthletesInput = {
@@ -624,6 +654,61 @@ export type EventUncheckedUpdateWithoutAthletesInput = {
   year?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUncheckedUpdateManyWithoutEventNestedInput
+}
+
+export type EventCreateWithoutCategoryResultsInput = {
+  year: number
+  type: $Enums.EventType
+  date: Date | string
+  race: Prisma.RaceCreateNestedOneWithoutEventsInput
+  athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
+  segments?: Prisma.SegmentCreateNestedManyWithoutEventInput
+}
+
+export type EventUncheckedCreateWithoutCategoryResultsInput = {
+  id?: number
+  raceId: number
+  year: number
+  type: $Enums.EventType
+  date: Date | string
+  athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
+  segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
+}
+
+export type EventCreateOrConnectWithoutCategoryResultsInput = {
+  where: Prisma.EventWhereUniqueInput
+  create: Prisma.XOR<Prisma.EventCreateWithoutCategoryResultsInput, Prisma.EventUncheckedCreateWithoutCategoryResultsInput>
+}
+
+export type EventUpsertWithoutCategoryResultsInput = {
+  update: Prisma.XOR<Prisma.EventUpdateWithoutCategoryResultsInput, Prisma.EventUncheckedUpdateWithoutCategoryResultsInput>
+  create: Prisma.XOR<Prisma.EventCreateWithoutCategoryResultsInput, Prisma.EventUncheckedCreateWithoutCategoryResultsInput>
+  where?: Prisma.EventWhereInput
+}
+
+export type EventUpdateToOneWithWhereWithoutCategoryResultsInput = {
+  where?: Prisma.EventWhereInput
+  data: Prisma.XOR<Prisma.EventUpdateWithoutCategoryResultsInput, Prisma.EventUncheckedUpdateWithoutCategoryResultsInput>
+}
+
+export type EventUpdateWithoutCategoryResultsInput = {
+  year?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
+  athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
+  segments?: Prisma.SegmentUpdateManyWithoutEventNestedInput
+}
+
+export type EventUncheckedUpdateWithoutCategoryResultsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  raceId?: Prisma.IntFieldUpdateOperationsInput | number
+  year?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
 }
 
@@ -640,6 +725,7 @@ export type EventUpdateWithoutRaceInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutRaceInput = {
@@ -649,6 +735,7 @@ export type EventUncheckedUpdateWithoutRaceInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
+  categoryResults?: Prisma.CategoryResultUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateManyWithoutRaceInput = {
@@ -666,11 +753,13 @@ export type EventUncheckedUpdateManyWithoutRaceInput = {
 export type EventCountOutputType = {
   athletes: number
   segments: number
+  categoryResults: number
 }
 
 export type EventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   athletes?: boolean | EventCountOutputTypeCountAthletesArgs
   segments?: boolean | EventCountOutputTypeCountSegmentsArgs
+  categoryResults?: boolean | EventCountOutputTypeCountCategoryResultsArgs
 }
 
 /**
@@ -697,6 +786,13 @@ export type EventCountOutputTypeCountSegmentsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.SegmentWhereInput
 }
 
+/**
+ * EventCountOutputType without action
+ */
+export type EventCountOutputTypeCountCategoryResultsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CategoryResultWhereInput
+}
+
 
 export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -707,6 +803,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   race?: boolean | Prisma.RaceDefaultArgs<ExtArgs>
   athletes?: boolean | Prisma.Event$athletesArgs<ExtArgs>
   segments?: boolean | Prisma.Event$segmentsArgs<ExtArgs>
+  categoryResults?: boolean | Prisma.Event$categoryResultsArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["event"]>
 
@@ -741,6 +838,7 @@ export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   race?: boolean | Prisma.RaceDefaultArgs<ExtArgs>
   athletes?: boolean | Prisma.Event$athletesArgs<ExtArgs>
   segments?: boolean | Prisma.Event$segmentsArgs<ExtArgs>
+  categoryResults?: boolean | Prisma.Event$categoryResultsArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -756,6 +854,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     race: Prisma.$RacePayload<ExtArgs>
     athletes: Prisma.$AthletePayload<ExtArgs>[]
     segments: Prisma.$SegmentPayload<ExtArgs>[]
+    categoryResults: Prisma.$CategoryResultPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1160,6 +1259,7 @@ export interface Prisma__EventClient<T, Null = never, ExtArgs extends runtime.Ty
   race<T extends Prisma.RaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RaceDefaultArgs<ExtArgs>>): Prisma.Prisma__RaceClient<runtime.Types.Result.GetResult<Prisma.$RacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   athletes<T extends Prisma.Event$athletesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$athletesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AthletePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   segments<T extends Prisma.Event$segmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$segmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SegmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  categoryResults<T extends Prisma.Event$categoryResultsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$categoryResultsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CategoryResultPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1640,6 +1740,30 @@ export type Event$segmentsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.SegmentScalarFieldEnum | Prisma.SegmentScalarFieldEnum[]
+}
+
+/**
+ * Event.categoryResults
+ */
+export type Event$categoryResultsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CategoryResult
+   */
+  select?: Prisma.CategoryResultSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CategoryResult
+   */
+  omit?: Prisma.CategoryResultOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoryResultInclude<ExtArgs> | null
+  where?: Prisma.CategoryResultWhereInput
+  orderBy?: Prisma.CategoryResultOrderByWithRelationInput | Prisma.CategoryResultOrderByWithRelationInput[]
+  cursor?: Prisma.CategoryResultWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CategoryResultScalarFieldEnum | Prisma.CategoryResultScalarFieldEnum[]
 }
 
 /**
