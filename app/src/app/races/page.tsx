@@ -7,7 +7,13 @@ import { RaceTypeIcon } from "@/components/race-type-icon";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "All Races — Race Replay",
+  title: "All Races",
+  description:
+    "Browse every race tracked by Race Replay — leg-by-leg passing data for triathlons and road races.",
+  openGraph: {
+    title: "All Races — Race Replay",
+    description: "Browse every race tracked by Race Replay.",
+  },
 };
 
 export default async function RacesPage() {

@@ -22,9 +22,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://racereplay.app";
+
 export const metadata: Metadata = {
-  title: "Race Replay",
+  title: {
+    default: "Race Replay",
+    template: "%s — Race Replay",
+  },
   description: "See who you passed — and who passed you, leg by leg.",
+  metadataBase: new URL(BASE_URL),
+  openGraph: {
+    siteName: "Race Replay",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
@@ -47,7 +61,17 @@ export default function RootLayout({
               className="hover:text-primary flex items-center gap-1.5 transition-colors"
               style={{ fontFamily: "var(--font-barlow-condensed), sans-serif" }}
             >
-              <span className="text-primary text-2xl leading-none font-black">⬡</span>
+              <svg
+                width="26"
+                height="26"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden
+              >
+                <polygon points="26,14 20,24 8,24 2,14 8,4 20,4" fill="#f97316" />
+                <polygon points="11,9 11,19 20,14" fill="white" />
+              </svg>
               <span className="text-lg font-black tracking-wide uppercase">Race Replay</span>
             </Link>
 

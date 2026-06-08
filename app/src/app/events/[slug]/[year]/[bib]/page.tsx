@@ -21,7 +21,24 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { slug, year, bib } = await params;
   const race = await prisma.race.findUnique({ where: { slug } });
-  return { title: race ? `Bib ${bib} — ${race.name} ${year} — Race Replay` : "Not Found" };
+  if (!race) return { title: "Not Found" };
+  const event = await prisma.event.findUnique({
+    where: { raceId_year: { raceId: race.id, year: parseInt(year, 10) } },
+  });
+  const athlete = event
+    ? await prisma.athlete.findUnique({ where: { eventId_bib: { eventId: event.id, bib } } })
+    : null;
+  const athleteName = athlete?.name ?? `Bib ${bib}`;
+  const rankStr = athlete?.overallRank ? `#${athlete.overallRank} overall` : null;
+  const timeStr = athlete?.finishTime ?? null;
+  const parts = [rankStr, timeStr].filter(Boolean);
+  const title = athleteName;
+  const description = `${athleteName} at ${race.name} ${year}${parts.length ? ` — ${parts.join(", ")}` : ""}. See leg-by-leg passing data on Race Replay.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+  };
 }
 
 export default async function AthletePage({ params }: Props) {

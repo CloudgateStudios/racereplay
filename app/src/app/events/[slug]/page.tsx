@@ -11,8 +11,20 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const race = await prisma.race.findUnique({ where: { slug } });
-  return { title: race ? `${race.name} — Race Replay` : "Not Found" };
+  const race = await prisma.race.findUnique({
+    where: { slug },
+    include: { _count: { select: { events: true } } },
+  });
+  if (!race) return { title: "Not Found" };
+  const years = race._count.events;
+  return {
+    title: race.name,
+    description: `${race.name} race results — ${years} year${years !== 1 ? "s" : ""} of data on Race Replay.`,
+    openGraph: {
+      title: race.name,
+      description: `${race.name} race results on Race Replay.`,
+    },
+  };
 }
 
 export default async function RacePage({ params }: Props) {
