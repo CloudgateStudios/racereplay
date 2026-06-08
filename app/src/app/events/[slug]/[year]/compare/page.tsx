@@ -277,6 +277,15 @@ function ComparisonView({
   const netA = athleteA.segments.reduce((s, seg) => s + (seg.net ?? 0), 0);
   const netB = athleteB.segments.reduce((s, seg) => s + (seg.net ?? 0), 0);
 
+  // Total race time from segment seconds (null if any segment is missing)
+  const totalSecondsA = athleteA.segments.every((s) => s.timeSeconds != null)
+    ? athleteA.segments.reduce((s, seg) => s + (seg.timeSeconds ?? 0), 0)
+    : null;
+  const totalSecondsB = athleteB.segments.every((s) => s.timeSeconds != null)
+    ? athleteB.segments.reduce((s, seg) => s + (seg.timeSeconds ?? 0), 0)
+    : null;
+  const totalDelta = totalSecondsA != null && totalSecondsB != null ? totalSecondsA - totalSecondsB : null;
+
   // Build segment rows aligned by segment name
   const segNames = athleteA.segments.map((s) => s.segment.name);
 
@@ -357,8 +366,11 @@ function ComparisonView({
                 <TableCell className={`text-right font-mono tabular-nums ${netB > netA ? "text-orange-500" : ""}`}>
                   {athleteB.finishTime ?? "—"}
                 </TableCell>
-                <TableCell className="hidden text-right font-mono tabular-nums text-sm text-muted-foreground sm:table-cell">
-                  —
+                <TableCell className="hidden text-right font-mono tabular-nums text-sm sm:table-cell">
+                  {totalDelta == null ? "—" : totalDelta === 0 ? "even" : totalDelta < 0
+                    ? <span className="text-blue-500">A +{formatSeconds(Math.abs(totalDelta))}</span>
+                    : <span className="text-orange-500">B +{formatSeconds(Math.abs(totalDelta))}</span>
+                  }
                 </TableCell>
                 <TableCell className={`hidden text-center tabular-nums sm:table-cell ${netColor(netA)}`}>
                   {netLabel(netA)}
