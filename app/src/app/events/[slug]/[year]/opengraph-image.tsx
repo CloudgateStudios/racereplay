@@ -142,7 +142,7 @@ export default async function Image({ params }: Props) {
               {finisherCount.toLocaleString()}
             </span>
             <span style={{ color: "#a3a3a3", fontSize: "24px", fontWeight: 500 }}>
-              {finishPct}%
+              {`${finishPct}%`}
             </span>
           </div>
         </div>
