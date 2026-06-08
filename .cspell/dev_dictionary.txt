@@ -21,6 +21,7 @@ neon
 nextjs
 noemit
 oklch
+opengraph
 overallrank
 popover
 postgres
