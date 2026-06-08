@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://race-replay.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://racereplay.app";
 
 export const metadata: Metadata = {
   title: {

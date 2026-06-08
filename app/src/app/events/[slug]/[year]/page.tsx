@@ -159,7 +159,7 @@ export default async function EventPage({ params, searchParams }: Props) {
     return `?${params.toString()}`;
   }
 
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://race-replay.com";
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://racereplay.app";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
