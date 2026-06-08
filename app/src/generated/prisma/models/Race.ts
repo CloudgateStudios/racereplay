@@ -38,18 +38,33 @@ export type RaceMinAggregateOutputType = {
   id: number | null
   slug: string | null
   name: string | null
+  location: string | null
+  country: string | null
+  distanceType: string | null
+  seriesName: string | null
+  website: string | null
 }
 
 export type RaceMaxAggregateOutputType = {
   id: number | null
   slug: string | null
   name: string | null
+  location: string | null
+  country: string | null
+  distanceType: string | null
+  seriesName: string | null
+  website: string | null
 }
 
 export type RaceCountAggregateOutputType = {
   id: number
   slug: number
   name: number
+  location: number
+  country: number
+  distanceType: number
+  seriesName: number
+  website: number
   _all: number
 }
 
@@ -66,18 +81,33 @@ export type RaceMinAggregateInputType = {
   id?: true
   slug?: true
   name?: true
+  location?: true
+  country?: true
+  distanceType?: true
+  seriesName?: true
+  website?: true
 }
 
 export type RaceMaxAggregateInputType = {
   id?: true
   slug?: true
   name?: true
+  location?: true
+  country?: true
+  distanceType?: true
+  seriesName?: true
+  website?: true
 }
 
 export type RaceCountAggregateInputType = {
   id?: true
   slug?: true
   name?: true
+  location?: true
+  country?: true
+  distanceType?: true
+  seriesName?: true
+  website?: true
   _all?: true
 }
 
@@ -171,6 +201,11 @@ export type RaceGroupByOutputType = {
   id: number
   slug: string
   name: string
+  location: string | null
+  country: string | null
+  distanceType: string | null
+  seriesName: string | null
+  website: string | null
   _count: RaceCountAggregateOutputType | null
   _avg: RaceAvgAggregateOutputType | null
   _sum: RaceSumAggregateOutputType | null
@@ -200,6 +235,11 @@ export type RaceWhereInput = {
   id?: Prisma.IntFilter<"Race"> | number
   slug?: Prisma.StringFilter<"Race"> | string
   name?: Prisma.StringFilter<"Race"> | string
+  location?: Prisma.StringNullableFilter<"Race"> | string | null
+  country?: Prisma.StringNullableFilter<"Race"> | string | null
+  distanceType?: Prisma.StringNullableFilter<"Race"> | string | null
+  seriesName?: Prisma.StringNullableFilter<"Race"> | string | null
+  website?: Prisma.StringNullableFilter<"Race"> | string | null
   events?: Prisma.EventListRelationFilter
 }
 
@@ -207,6 +247,11 @@ export type RaceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  location?: Prisma.SortOrderInput | Prisma.SortOrder
+  country?: Prisma.SortOrderInput | Prisma.SortOrder
+  distanceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  seriesName?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
   events?: Prisma.EventOrderByRelationAggregateInput
 }
 
@@ -217,6 +262,11 @@ export type RaceWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.RaceWhereInput[]
   NOT?: Prisma.RaceWhereInput | Prisma.RaceWhereInput[]
   name?: Prisma.StringFilter<"Race"> | string
+  location?: Prisma.StringNullableFilter<"Race"> | string | null
+  country?: Prisma.StringNullableFilter<"Race"> | string | null
+  distanceType?: Prisma.StringNullableFilter<"Race"> | string | null
+  seriesName?: Prisma.StringNullableFilter<"Race"> | string | null
+  website?: Prisma.StringNullableFilter<"Race"> | string | null
   events?: Prisma.EventListRelationFilter
 }, "id" | "slug">
 
@@ -224,6 +274,11 @@ export type RaceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  location?: Prisma.SortOrderInput | Prisma.SortOrder
+  country?: Prisma.SortOrderInput | Prisma.SortOrder
+  distanceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  seriesName?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.RaceCountOrderByAggregateInput
   _avg?: Prisma.RaceAvgOrderByAggregateInput
   _max?: Prisma.RaceMaxOrderByAggregateInput
@@ -238,11 +293,21 @@ export type RaceScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Race"> | number
   slug?: Prisma.StringWithAggregatesFilter<"Race"> | string
   name?: Prisma.StringWithAggregatesFilter<"Race"> | string
+  location?: Prisma.StringNullableWithAggregatesFilter<"Race"> | string | null
+  country?: Prisma.StringNullableWithAggregatesFilter<"Race"> | string | null
+  distanceType?: Prisma.StringNullableWithAggregatesFilter<"Race"> | string | null
+  seriesName?: Prisma.StringNullableWithAggregatesFilter<"Race"> | string | null
+  website?: Prisma.StringNullableWithAggregatesFilter<"Race"> | string | null
 }
 
 export type RaceCreateInput = {
   slug: string
   name: string
+  location?: string | null
+  country?: string | null
+  distanceType?: string | null
+  seriesName?: string | null
+  website?: string | null
   events?: Prisma.EventCreateNestedManyWithoutRaceInput
 }
 
@@ -250,12 +315,22 @@ export type RaceUncheckedCreateInput = {
   id?: number
   slug: string
   name: string
+  location?: string | null
+  country?: string | null
+  distanceType?: string | null
+  seriesName?: string | null
+  website?: string | null
   events?: Prisma.EventUncheckedCreateNestedManyWithoutRaceInput
 }
 
 export type RaceUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distanceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seriesName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   events?: Prisma.EventUpdateManyWithoutRaceNestedInput
 }
 
@@ -263,6 +338,11 @@ export type RaceUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distanceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seriesName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   events?: Prisma.EventUncheckedUpdateManyWithoutRaceNestedInput
 }
 
@@ -270,23 +350,43 @@ export type RaceCreateManyInput = {
   id?: number
   slug: string
   name: string
+  location?: string | null
+  country?: string | null
+  distanceType?: string | null
+  seriesName?: string | null
+  website?: string | null
 }
 
 export type RaceUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distanceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seriesName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type RaceUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distanceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seriesName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type RaceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  location?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  distanceType?: Prisma.SortOrder
+  seriesName?: Prisma.SortOrder
+  website?: Prisma.SortOrder
 }
 
 export type RaceAvgOrderByAggregateInput = {
@@ -297,12 +397,22 @@ export type RaceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  location?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  distanceType?: Prisma.SortOrder
+  seriesName?: Prisma.SortOrder
+  website?: Prisma.SortOrder
 }
 
 export type RaceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  location?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  distanceType?: Prisma.SortOrder
+  seriesName?: Prisma.SortOrder
+  website?: Prisma.SortOrder
 }
 
 export type RaceSumOrderByAggregateInput = {
@@ -316,6 +426,10 @@ export type RaceScalarRelationFilter = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -343,12 +457,22 @@ export type RaceUpdateOneRequiredWithoutEventsNestedInput = {
 export type RaceCreateWithoutEventsInput = {
   slug: string
   name: string
+  location?: string | null
+  country?: string | null
+  distanceType?: string | null
+  seriesName?: string | null
+  website?: string | null
 }
 
 export type RaceUncheckedCreateWithoutEventsInput = {
   id?: number
   slug: string
   name: string
+  location?: string | null
+  country?: string | null
+  distanceType?: string | null
+  seriesName?: string | null
+  website?: string | null
 }
 
 export type RaceCreateOrConnectWithoutEventsInput = {
@@ -370,12 +494,22 @@ export type RaceUpdateToOneWithWhereWithoutEventsInput = {
 export type RaceUpdateWithoutEventsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distanceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seriesName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type RaceUncheckedUpdateWithoutEventsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distanceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seriesName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -413,6 +547,11 @@ export type RaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   id?: boolean
   slug?: boolean
   name?: boolean
+  location?: boolean
+  country?: boolean
+  distanceType?: boolean
+  seriesName?: boolean
+  website?: boolean
   events?: boolean | Prisma.Race$eventsArgs<ExtArgs>
   _count?: boolean | Prisma.RaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["race"]>
@@ -421,21 +560,36 @@ export type RaceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   id?: boolean
   slug?: boolean
   name?: boolean
+  location?: boolean
+  country?: boolean
+  distanceType?: boolean
+  seriesName?: boolean
+  website?: boolean
 }, ExtArgs["result"]["race"]>
 
 export type RaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   slug?: boolean
   name?: boolean
+  location?: boolean
+  country?: boolean
+  distanceType?: boolean
+  seriesName?: boolean
+  website?: boolean
 }, ExtArgs["result"]["race"]>
 
 export type RaceSelectScalar = {
   id?: boolean
   slug?: boolean
   name?: boolean
+  location?: boolean
+  country?: boolean
+  distanceType?: boolean
+  seriesName?: boolean
+  website?: boolean
 }
 
-export type RaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name", ExtArgs["result"]["race"]>
+export type RaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "location" | "country" | "distanceType" | "seriesName" | "website", ExtArgs["result"]["race"]>
 export type RaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   events?: boolean | Prisma.Race$eventsArgs<ExtArgs>
   _count?: boolean | Prisma.RaceCountOutputTypeDefaultArgs<ExtArgs>
@@ -452,6 +606,11 @@ export type $RacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     id: number
     slug: string
     name: string
+    location: string | null
+    country: string | null
+    distanceType: string | null
+    seriesName: string | null
+    website: string | null
   }, ExtArgs["result"]["race"]>
   composites: {}
 }
@@ -879,6 +1038,11 @@ export interface RaceFieldRefs {
   readonly id: Prisma.FieldRef<"Race", 'Int'>
   readonly slug: Prisma.FieldRef<"Race", 'String'>
   readonly name: Prisma.FieldRef<"Race", 'String'>
+  readonly location: Prisma.FieldRef<"Race", 'String'>
+  readonly country: Prisma.FieldRef<"Race", 'String'>
+  readonly distanceType: Prisma.FieldRef<"Race", 'String'>
+  readonly seriesName: Prisma.FieldRef<"Race", 'String'>
+  readonly website: Prisma.FieldRef<"Race", 'String'>
 }
     
 

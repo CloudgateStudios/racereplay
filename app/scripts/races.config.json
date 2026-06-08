@@ -13,12 +13,12 @@
     "seriesName": "IRONMAN 70.3",
     "website": "https://www.ironman.com/im703-oceanside"
   },
-  "im-703-happy-valley": {
-    "location": "Happy Valley, OR",
+  "im-703-pennsylvania": {
+    "location": "Happy Valley, PA",
     "country": "US",
     "distanceType": "70.3",
     "seriesName": "IRONMAN 70.3",
-    "website": "https://www.ironman.com/im703-happy-valley"
+    "website": "https://www.ironman.com/races/im703-pennsylvania"
   },
   "im-wisconsin": {
     "location": "Madison, WI",
