@@ -59,6 +59,7 @@ model Athlete {
   segments     AthleteSegment[]
 
   @@unique([eventId, bib])
+  @@index([normalizedName])
 }
 
 model AthleteSegment {

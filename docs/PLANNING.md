@@ -6,6 +6,58 @@ designed and batched before large-scale data ingestion.
 
 ---
 
+## 🗺 Order of Operations
+
+### Phase 1 — Schema & tech debt
+> Land all migrations before significant data ingestion. Backfill effort grows
+> linearly with row count.
+
+| # | Item | Description |
+|---|------|-------------|
+| 1 | T4 | ✅ Index on `normalizedName` — immediate, zero downtime |
+| 2 | S1 | Race metadata fields (location, distanceType, seriesName) |
+| 3 | T3 | `finishSeconds` on Athlete |
+| 4 | S2 | Event denormalized counts (finisherCount, totalCount) |
+| 5 | T2 | Gender normalization — audit existing values first, then migrate |
+| 6 | T5 | Decide on `epochTime` — document or remove |
+| 7 | T6 | Ingest reporting improvements |
+| 8 | T1 | Country normalization (after S1 lands) |
+
+### Phase 2 — Quick-win enhancements
+> No schema changes needed. Can be built in any order.
+
+| # | Item | Description |
+|---|------|-------------|
+| 9 | N3 | "Find me" name search UX on results page |
+| 10 | E2 | Segment leaderboard on event page |
+| 11 | E3 | Most passes in a single leg leaderboard |
+| 12 | E1 | Year-over-year delta callout on athlete page (cleaner with T3 done) |
+| 13 | E4 | OG image for athlete pages |
+| 14 | E5 | Share improvements (tweet text, Web Share API) |
+
+### Phase 3 — New features unlocked by Phase 1
+> These depend on schema changes from Phase 1.
+
+| # | Item | Description |
+|---|------|-------------|
+| 15 | N1 | Race search / discovery (needs S1) |
+| 16 | N4 | Race series page (needs S1) |
+| 17 | N6 | Race comparison, two events side-by-side |
+| 18 | S3 | AthleteProfile model |
+| 19 | N2 | Athlete cross-race profile page (needs S3) |
+| 20 | N5 | Athlete personal bests (needs S3) |
+
+### Phase 4 — Later / conditional
+> Lower urgency or dependent on external factors.
+
+| # | Item | Description |
+|---|------|-------------|
+| 21 | E8 | Admin ingest UI (useful once catalog is growing fast) |
+| 22 | N7 | Embeddable widgets |
+| 23 | S4 | Segment position snapshots (only if scraper produces the data) |
+
+---
+
 ## Schema — Current State
 
 ```
