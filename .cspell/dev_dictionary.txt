@@ -32,6 +32,7 @@ raceid
 racereplay
 rpad
 segmentid
+serp
 shadcn
 tabular
 tailwindcss
