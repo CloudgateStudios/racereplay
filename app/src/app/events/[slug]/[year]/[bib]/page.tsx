@@ -137,45 +137,39 @@ export default async function AthletePage({ params }: Props) {
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="secondary">Bib {athlete.bib}</Badge>
-          {athlete.division && <Badge variant="secondary">{athlete.division}</Badge>}
-          {athlete.gender && <Badge variant="secondary">{athlete.gender}</Badge>}
-          {athlete.country && <Badge variant="outline">{athlete.country}</Badge>}
-          <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
-            {athlete.status}
-          </Badge>
         </div>
       </div>
 
-      {/* Rank summary — always render all four cards, show — for missing values */}
+      {/* Rank summary — gender/division label includes the category value */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          {
-            label: "Finish Time",
-            value: athlete.finishTime ?? null,
-          },
-          {
-            label: "Overall Rank",
-            value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : null,
-          },
-          {
-            label: "Gender Rank",
-            value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : null,
-          },
-          {
-            label: "Division Rank",
-            value:
-              athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : null,
-          },
-        ].map(({ label, value }) => (
-          <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
-            <p className="text-muted-foreground text-sm">{label}</p>
-            <p
-              className={`mt-1 text-2xl font-bold tabular-nums ${value == null ? "text-muted-foreground" : ""}`}
-            >
-              {value ?? "—"}
-            </p>
-          </div>
-        ))}
+        <div className="bg-card rounded-xl border p-4 shadow-sm">
+          <p className="text-muted-foreground text-sm">Finish Time</p>
+          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.finishTime == null ? "text-muted-foreground" : ""}`}>
+            {athlete.finishTime ?? "—"}
+          </p>
+        </div>
+        <div className="bg-card rounded-xl border p-4 shadow-sm">
+          <p className="text-muted-foreground text-sm">Overall Rank</p>
+          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.overallRank == null ? "text-muted-foreground" : ""}`}>
+            {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
+          </p>
+        </div>
+        <div className="bg-card rounded-xl border p-4 shadow-sm">
+          <p className="text-muted-foreground text-sm">
+            {athlete.gender ? `${athlete.gender} Rank` : "Gender Rank"}
+          </p>
+          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.genderRank == null ? "text-muted-foreground" : ""}`}>
+            {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
+          </p>
+        </div>
+        <div className="bg-card rounded-xl border p-4 shadow-sm">
+          <p className="text-muted-foreground text-sm">
+            {athlete.division ? `${athlete.division} Rank` : "Division Rank"}
+          </p>
+          <p className={`mt-1 text-2xl font-bold tabular-nums ${athlete.divisionRank == null ? "text-muted-foreground" : ""}`}>
+            {athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—"}
+          </p>
+        </div>
       </div>
 
       {/* Race history — only shown when this athlete has prior/future years */}
