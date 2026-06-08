@@ -50,8 +50,8 @@ export default async function Image({ params }: Props) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <svg width="44" height="44" viewBox="0 0 28 28">
-          <polygon points="26,14 20,24 8,24 2,14 8,4 20,4" fill="#f97316"/>
-          <polygon points="11,9 11,19 20,14" fill="white"/>
+          <polygon points="26,14 20,24 8,24 2,14 8,4 20,4" fill="#f97316" />
+          <polygon points="11,9 11,19 20,14" fill="white" />
         </svg>
         <span
           style={{
