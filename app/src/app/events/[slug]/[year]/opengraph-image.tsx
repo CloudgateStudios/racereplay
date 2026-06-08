@@ -20,15 +20,12 @@ export default async function Image({ params }: Props) {
       })
     : null;
 
-  const totalAthletes = event
-    ? await prisma.athlete.count({ where: { eventId: event.id } })
-    : 0;
+  const totalAthletes = event ? await prisma.athlete.count({ where: { eventId: event.id } }) : 0;
   const finisherCount = event
     ? await prisma.athlete.count({ where: { eventId: event.id, status: "FIN" } })
     : 0;
 
-  const finishPct =
-    totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0.0";
+  const finishPct = totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0.0";
 
   const raceName = race?.name ?? "Race Replay";
   const eventDate = event
@@ -41,73 +38,114 @@ export default async function Image({ params }: Props) {
     : "";
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "1200px",
-          height: "630px",
-          background: "#0f0f0f",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "64px",
-          fontFamily: "sans-serif",
-        }}
-      >
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+    <div
+      style={{
+        width: "1200px",
+        height: "630px",
+        background: "#0f0f0f",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "64px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      {/* Logo */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div
+          style={{
+            width: "36px",
+            height: "36px",
+            background: "#f97316",
+            borderRadius: "6px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <div
+            style={{ width: "14px", height: "14px", background: "#0f0f0f", borderRadius: "2px" }}
+          />
+        </div>
+        <span
+          style={{
+            color: "#f97316",
+            fontSize: "22px",
+            fontWeight: 900,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
+          Race Replay
+        </span>
+      </div>
+
+      {/* Main content */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div
+          style={{
+            color: "#f97316",
+            fontSize: "20px",
+            fontWeight: 600,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+          }}
+        >
+          {eventDate}
+        </div>
+        <div
+          style={{
+            color: "#ffffff",
+            fontSize: "72px",
+            fontWeight: 900,
+            lineHeight: 1.05,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {raceName}
+        </div>
+        <div style={{ color: "#a3a3a3", fontSize: "36px", fontWeight: 700 }}>{year}</div>
+      </div>
+
+      {/* Stats bar */}
+      <div style={{ display: "flex", gap: "48px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span
             style={{
-              width: "36px",
-              height: "36px",
-              background: "#f97316",
-              borderRadius: "6px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              color: "#a3a3a3",
+              fontSize: "15px",
+              fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
             }}
           >
-            <div style={{ width: "14px", height: "14px", background: "#0f0f0f", borderRadius: "2px" }} />
-          </div>
-          <span style={{ color: "#f97316", fontSize: "22px", fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-            Race Replay
+            Athletes
+          </span>
+          <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
+            {totalAthletes.toLocaleString()}
           </span>
         </div>
-
-        {/* Main content */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ color: "#f97316", fontSize: "20px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            {eventDate}
-          </div>
-          <div style={{ color: "#ffffff", fontSize: "72px", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
-            {raceName}
-          </div>
-          <div style={{ color: "#a3a3a3", fontSize: "36px", fontWeight: 700 }}>
-            {year}
-          </div>
-        </div>
-
-        {/* Stats bar */}
-        <div style={{ display: "flex", gap: "48px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ color: "#a3a3a3", fontSize: "15px", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              Athletes
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span
+            style={{
+              color: "#a3a3a3",
+              fontSize: "15px",
+              fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Finishers
+          </span>
+          <span style={{ color: "#f97316", fontSize: "40px", fontWeight: 800 }}>
+            {finisherCount.toLocaleString()}{" "}
+            <span style={{ color: "#a3a3a3", fontSize: "24px", fontWeight: 500 }}>
+              {finishPct}%
             </span>
-            <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 800 }}>
-              {totalAthletes.toLocaleString()}
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ color: "#a3a3a3", fontSize: "15px", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              Finishers
-            </span>
-            <span style={{ color: "#f97316", fontSize: "40px", fontWeight: 800 }}>
-              {finisherCount.toLocaleString()} <span style={{ color: "#a3a3a3", fontSize: "24px", fontWeight: 500 }}>{finishPct}%</span>
-            </span>
-          </div>
+          </span>
         </div>
       </div>
-    ),
+    </div>,
     { width: 1200, height: 630 }
   );
 }

@@ -38,14 +38,11 @@ export async function generateMetadata({ params }: Props) {
   const event = await prisma.event.findUnique({
     where: { raceId_year: { raceId: race.id, year: parseInt(year, 10) } },
   });
-  const totalAthletes = event
-    ? await prisma.athlete.count({ where: { eventId: event.id } })
-    : 0;
+  const totalAthletes = event ? await prisma.athlete.count({ where: { eventId: event.id } }) : 0;
   const finisherCount = event
     ? await prisma.athlete.count({ where: { eventId: event.id, status: "FIN" } })
     : 0;
-  const finishPct =
-    totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0";
+  const finishPct = totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0";
   const title = `${race.name} ${year}`;
   const description = `${race.name} ${year} results — ${totalAthletes.toLocaleString()} athletes, ${finisherCount.toLocaleString()} finishers (${finishPct}%). See leg-by-leg passing data on Race Replay.`;
   return {
