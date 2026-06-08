@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import Script from "next/script";
 
 import pkg from "../../package.json";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -54,16 +53,14 @@ export default function RootLayout({
       lang="en"
       className={`${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} h-full antialiased`}
     >
-      {/* Apply theme class before first paint to avoid flash of wrong theme */}
-      <Script id="theme-init" strategy="beforeInteractive">{`
-        (function () {
-          var stored = localStorage.getItem('theme');
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (stored === 'dark' || (!stored && prefersDark)) {
-            document.documentElement.classList.add('dark');
-          }
-        })();
-      `}</Script>
+      <head>
+        {/* Apply theme class before first paint to avoid flash of wrong theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var s=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(!s&&d))document.documentElement.classList.add('dark');})();`,
+          }}
+        />
+      </head>
       <body className="bg-background text-foreground flex min-h-full flex-col">
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <header className="bg-card/80 sticky top-0 z-10 border-b backdrop-blur-sm">

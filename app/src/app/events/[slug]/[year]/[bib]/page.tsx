@@ -69,6 +69,21 @@ export default async function AthletePage({ params }: Props) {
   });
   if (!athlete) notFound();
 
+  // Multi-year history — find other appearances by this athlete in the same race
+  const raceHistory = athlete.normalizedName
+    ? await prisma.athlete.findMany({
+        where: {
+          normalizedName: athlete.normalizedName,
+          event: { raceId: race.id, year: { not: year } },
+        },
+        include: {
+          event: { select: { year: true } },
+          segments: { select: { net: true } },
+        },
+        orderBy: { event: { year: "asc" } },
+      })
+    : [];
+
   const overallNet = athlete.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
 
   // Pre-compute cumulative times in segment display order so we can reference
@@ -122,46 +137,146 @@ export default async function AthletePage({ params }: Props) {
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="secondary">Bib {athlete.bib}</Badge>
-          {athlete.division && <Badge variant="secondary">{athlete.division}</Badge>}
-          {athlete.gender && <Badge variant="secondary">{athlete.gender}</Badge>}
-          {athlete.country && <Badge variant="outline">{athlete.country}</Badge>}
-          <Badge variant={athlete.status === "FIN" ? "secondary" : "outline"}>
-            {athlete.status}
-          </Badge>
         </div>
       </div>
 
-      {/* Rank summary — always render all four cards, show — for missing values */}
+      {/* Rank summary — gender/division label includes the category value */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          {
-            label: "Finish Time",
-            value: athlete.finishTime ?? null,
-          },
-          {
-            label: "Overall Rank",
-            value: athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : null,
-          },
-          {
-            label: "Gender Rank",
-            value: athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : null,
-          },
-          {
-            label: "Division Rank",
-            value:
-              athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : null,
-          },
-        ].map(({ label, value }) => (
-          <div key={label} className="bg-card rounded-xl border p-4 shadow-sm">
-            <p className="text-muted-foreground text-sm">{label}</p>
-            <p
-              className={`mt-1 text-2xl font-bold tabular-nums ${value == null ? "text-muted-foreground" : ""}`}
-            >
-              {value ?? "—"}
-            </p>
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Finish Time</p>
           </div>
-        ))}
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.finishTime == null ? "text-muted-foreground" : ""}`}
+          >
+            {athlete.finishTime ?? "—"}
+          </p>
+        </div>
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Overall Rank</p>
+          </div>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.overallRank == null ? "text-muted-foreground" : ""}`}
+          >
+            {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
+          </p>
+        </div>
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Gender Rank</p>
+            {athlete.gender && <p className="text-muted-foreground text-xs">{athlete.gender}</p>}
+          </div>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.genderRank == null ? "text-muted-foreground" : ""}`}
+          >
+            {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
+          </p>
+        </div>
+        <div className="bg-card flex flex-col justify-between rounded-xl border p-4 shadow-sm">
+          <div>
+            <p className="text-muted-foreground text-sm">Division Rank</p>
+            {athlete.division && (
+              <p className="text-muted-foreground text-xs">{athlete.division}</p>
+            )}
+          </div>
+          <p
+            className={`mt-1 text-2xl font-bold tabular-nums ${athlete.divisionRank == null ? "text-muted-foreground" : ""}`}
+          >
+            {athlete.divisionRank != null ? `#${athlete.divisionRank.toLocaleString()}` : "—"}
+          </p>
+        </div>
       </div>
+
+      {/* Race history — only shown when this athlete has prior/future years */}
+      {raceHistory.length > 0 && (
+        <div className="mb-8">
+          <h2 className="mb-3 text-xl font-semibold">Race History at {race.name}</h2>
+          <div className="overflow-x-auto rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Year</TableHead>
+                  <TableHead className="text-right">Finish Time</TableHead>
+                  <TableHead className="text-right">Overall</TableHead>
+                  <TableHead className="hidden text-right sm:table-cell">Gender</TableHead>
+                  <TableHead className="hidden text-right sm:table-cell">Division</TableHead>
+                  <TableHead className="text-center">Net Passes</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[
+                  // Inject the current year into the history list and sort newest first
+                  {
+                    eventYear: year,
+                    finishTime: athlete.finishTime,
+                    overallRank: athlete.overallRank,
+                    genderRank: athlete.genderRank,
+                    divisionRank: athlete.divisionRank,
+                    net: overallNet,
+                    bib: athlete.bib,
+                    isCurrent: true,
+                  },
+                  ...raceHistory.map((h) => ({
+                    eventYear: h.event.year,
+                    finishTime: h.finishTime,
+                    overallRank: h.overallRank,
+                    genderRank: h.genderRank,
+                    divisionRank: h.divisionRank,
+                    net: h.segments.reduce((sum, s) => sum + (s.net ?? 0), 0),
+                    bib: h.bib,
+                    isCurrent: false,
+                  })),
+                ]
+                  .sort((a, b) => b.eventYear - a.eventYear)
+                  .map((row) => (
+                    <TableRow
+                      key={row.eventYear}
+                      className={row.isCurrent ? "bg-muted/30 font-medium" : undefined}
+                    >
+                      <TableCell>
+                        {row.eventYear}{" "}
+                        {row.isCurrent && (
+                          <span className="text-muted-foreground text-xs font-normal">
+                            (this race)
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-sm tabular-nums">
+                        {row.finishTime ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {row.overallRank != null ? `#${row.overallRank.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                        {row.genderRank != null ? `#${row.genderRank.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                        {row.divisionRank != null ? `#${row.divisionRank.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell
+                        className={`text-center font-bold tabular-nums ${netColor(row.net)}`}
+                      >
+                        {netLabel(row.net)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {!row.isCurrent && (
+                          <Link
+                            href={`/events/${slug}/${row.eventYear}/${row.bib}`}
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
+                          >
+                            View {row.eventYear} →
+                          </Link>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
 
       {/* Passing breakdown */}
       <h2 className="mb-3 text-xl font-semibold">Leg-by-Leg Passing</h2>
