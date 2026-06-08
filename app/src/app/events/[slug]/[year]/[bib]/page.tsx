@@ -196,65 +196,70 @@ export default async function AthletePage({ params }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Current year row */}
-                <TableRow className="bg-muted/30 font-medium">
-                  <TableCell>
-                    {year}{" "}
-                    <span className="text-muted-foreground text-xs font-normal">(this race)</span>
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums">
-                    {athlete.finishTime ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {athlete.overallRank != null ? `#${athlete.overallRank.toLocaleString()}` : "—"}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-right tabular-nums">
-                    {athlete.genderRank != null ? `#${athlete.genderRank.toLocaleString()}` : "—"}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-right tabular-nums">
-                    {athlete.divisionRank != null
-                      ? `#${athlete.divisionRank.toLocaleString()}`
-                      : "—"}
-                  </TableCell>
-                  <TableCell
-                    className={`text-center font-bold tabular-nums ${netColor(overallNet)}`}
-                  >
-                    {netLabel(overallNet)}
-                  </TableCell>
-                  <TableCell />
-                </TableRow>
-                {/* Other year rows */}
-                {raceHistory.map((h) => {
-                  const hNet = h.segments.reduce((sum, s) => sum + (s.net ?? 0), 0);
-                  return (
-                    <TableRow key={h.event.year}>
-                      <TableCell>{h.event.year}</TableCell>
+                {[
+                  // Inject the current year into the history list and sort newest first
+                  {
+                    eventYear: year,
+                    finishTime: athlete.finishTime,
+                    overallRank: athlete.overallRank,
+                    genderRank: athlete.genderRank,
+                    divisionRank: athlete.divisionRank,
+                    net: overallNet,
+                    bib: athlete.bib,
+                    isCurrent: true,
+                  },
+                  ...raceHistory.map((h) => ({
+                    eventYear: h.event.year,
+                    finishTime: h.finishTime,
+                    overallRank: h.overallRank,
+                    genderRank: h.genderRank,
+                    divisionRank: h.divisionRank,
+                    net: h.segments.reduce((sum, s) => sum + (s.net ?? 0), 0),
+                    bib: h.bib,
+                    isCurrent: false,
+                  })),
+                ]
+                  .sort((a, b) => b.eventYear - a.eventYear)
+                  .map((row) => (
+                    <TableRow
+                      key={row.eventYear}
+                      className={row.isCurrent ? "bg-muted/30 font-medium" : undefined}
+                    >
+                      <TableCell>
+                        {row.eventYear}{" "}
+                        {row.isCurrent && (
+                          <span className="text-muted-foreground text-xs font-normal">
+                            (this race)
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right font-mono text-sm tabular-nums">
-                        {h.finishTime ?? "—"}
+                        {row.finishTime ?? "—"}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {h.overallRank != null ? `#${h.overallRank.toLocaleString()}` : "—"}
+                        {row.overallRank != null ? `#${row.overallRank.toLocaleString()}` : "—"}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-right tabular-nums">
-                        {h.genderRank != null ? `#${h.genderRank.toLocaleString()}` : "—"}
+                        {row.genderRank != null ? `#${row.genderRank.toLocaleString()}` : "—"}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-right tabular-nums">
-                        {h.divisionRank != null ? `#${h.divisionRank.toLocaleString()}` : "—"}
+                        {row.divisionRank != null ? `#${row.divisionRank.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className={`text-center font-bold tabular-nums ${netColor(hNet)}`}>
-                        {netLabel(hNet)}
+                      <TableCell className={`text-center font-bold tabular-nums ${netColor(row.net)}`}>
+                        {netLabel(row.net)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link
-                          href={`/events/${slug}/${h.event.year}/${h.bib}`}
-                          className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
-                        >
-                          View {h.event.year} →
-                        </Link>
+                        {!row.isCurrent && (
+                          <Link
+                            href={`/events/${slug}/${row.eventYear}/${row.bib}`}
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
+                          >
+                            View {row.eventYear} →
+                          </Link>
+                        )}
                       </TableCell>
                     </TableRow>
-                  );
-                })}
+                  ))}
               </TableBody>
             </Table>
           </div>
