@@ -5,21 +5,17 @@ without requiring new pages or major architecture changes.
 
 ---
 
-## 2. Richer SEO and social metadata
+## 2. Richer SEO and social metadata ✅ Complete
 
-**Current behavior:** Pages have basic `<title>` tags. No `description`,
-`og:image`, or structured data.
+**Implemented in PR #61.**
 
-**Enhancement:**
-
-- Add per-page `description` metadata (event name, date, athlete count).
-- Add `og:image` generation via Next.js's `ImageResponse` for event and athlete
-  pages — a simple card showing the race name, year, and athlete name/bib would
-  make shared links much more compelling.
-- Add `schema.org` `SportsEvent` structured data on event pages for better
-  search engine understanding.
-
-**Files:** All `page.tsx` files that export `metadata`.
+- Per-page `description` metadata on all routes.
+- Dynamic `og:image` generation via `next/og` (`ImageResponse`) for all pages —
+  default branded card, race series card, event card, and athlete card.
+- Shared `OgCard` component (`src/lib/og-card.tsx`) and `loadOgFonts` helper
+  (`src/lib/og-fonts.ts`) — Barlow Condensed loaded from Google Fonts.
+- `schema.org` `SportsEvent` JSON-LD structured data on event pages.
+- Consistent hex+play logo across header and all OG images.
 
 ---
 
@@ -36,45 +32,38 @@ on load to avoid flash of wrong theme.
 
 ---
 
-## 4. Athlete funnel visualization improvements
+## 4. Athlete funnel visualization improvements ⚠️ Partially complete
 
-**Current behavior:** The event page shows a simple "Started → [Segments] →
-Finished" funnel as text badges with counts.
+**What's done:** Percentage labels next to each segment count were added in PR #58.
 
-**Enhancement:**
+**Still to do:**
 
-- Add percentage labels next to each count (e.g. "4,821 — 94.2%").
 - Visually highlight the segment with the highest DNF/dropout rate.
 - Consider a simple bar or step chart for events with large fields.
 
-**Files:** `app/src/app/events/[slug]/[year]/page.tsx`
+**Files:** `app/src/app/events/[slug]/[year]/funnel.tsx`
 
 ---
 
-## 5. Shareable athlete result links
+## 5. Shareable athlete result links ⚠️ Partially complete
 
-**Current behavior:** The athlete detail page URL (`/events/[slug]/[year]/[bib]`)
-is already deep-linkable, but there is no share button or clipboard copy action
-anywhere.
+**What's done:** OG images are implemented (PR #61) — shared links render rich
+previews in iMessage, Slack, Twitter, etc., showing athlete name, finish time,
+and overall net passes.
 
-**Enhancement:** Add a "Share" button on the athlete detail page that copies the
-current URL to the clipboard. Combine with og:image generation (see item 2) so
-shared links render a rich preview in iMessage, Slack, Twitter, etc.
+**Still to do:** Add a "Share" button on the athlete detail page that copies the
+current URL to the clipboard.
 
 **Files:** `app/src/app/events/[slug]/[year]/[bib]/page.tsx`
 
 ---
 
-## 6. Persistent filter state via URL
+## 6. Persistent filter state via URL ✅ Complete (verified)
 
-**Current behavior:** Gender, division, search, sort, and page are all stored in
-URL search params, which is correct. However, navigating to an athlete detail
-page and pressing Back resets all filters.
+**Verified working** — all filter state (gender, division, search, sort, page)
+lives in URL search params. Navigating to an athlete detail page and pressing
+Back correctly restores the full filter state. No mount-time param clearing
+exists in `filters.tsx` or `sort-header.tsx`.
 
-**Enhancement:** This is actually already handled by the browser Back button
-since state lives in the URL — but verify that the Back button correctly restores
-the full filter state (including page number) and that no `router.replace` calls
-are accidentally clearing params on mount.
-
-**Files:** `app/src/app/events/[slug]/[year]/filters.tsx`,
-`app/src/app/events/[slug]/[year]/sort-header.tsx`
+**Note:** Gender values are stored as `"Male"` / `"Female"` in the database
+(not `"M"` / `"F"`), so manually constructed URLs must use the full word.
