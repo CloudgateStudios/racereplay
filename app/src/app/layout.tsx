@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s — Race Replay",
   },
   description:
-    "Race Replay shows you every position change from your triathlon or running race — leg by leg, athlete by athlete. Find your bib and see who you passed, and who passed you.",
+    "Race Replay shows you every position change from your triathlon or running race — leg by leg, athlete by athlete. See the story of your race in data from how you did on course.",
   metadataBase: new URL(BASE_URL),
   openGraph: {
     siteName: "Race Replay",
