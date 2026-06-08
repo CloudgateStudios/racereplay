@@ -34,7 +34,25 @@ const SORTABLE_COLUMNS: Record<string, object> = {
 export async function generateMetadata({ params }: Props) {
   const { slug, year } = await params;
   const race = await prisma.race.findUnique({ where: { slug } });
-  return { title: race ? `${race.name} ${year} — Race Replay` : "Not Found" };
+  if (!race) return { title: "Not Found" };
+  const event = await prisma.event.findUnique({
+    where: { raceId_year: { raceId: race.id, year: parseInt(year, 10) } },
+  });
+  const totalAthletes = event
+    ? await prisma.athlete.count({ where: { eventId: event.id } })
+    : 0;
+  const finisherCount = event
+    ? await prisma.athlete.count({ where: { eventId: event.id, status: "FIN" } })
+    : 0;
+  const finishPct =
+    totalAthletes > 0 ? ((finisherCount / totalAthletes) * 100).toFixed(1) : "0";
+  const title = `${race.name} ${year}`;
+  const description = `${race.name} ${year} results — ${totalAthletes.toLocaleString()} athletes, ${finisherCount.toLocaleString()} finishers (${finishPct}%). See leg-by-leg passing data on Race Replay.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+  };
 }
 
 export default async function EventPage({ params, searchParams }: Props) {
@@ -144,8 +162,23 @@ export default async function EventPage({ params, searchParams }: Props) {
     return `?${params.toString()}`;
   }
 
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://race-replay.com";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: `${race.name} ${year}`,
+    startDate: event.date.toISOString().slice(0, 10),
+    url: `${BASE_URL}/events/${slug}/${year}`,
+    organizer: { "@type": "Organization", name: race.name },
+    competitor: { "@type": "Person", name: `${totalAthletes.toLocaleString()} athletes` },
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <div className="mb-1">
         <Link

@@ -22,9 +22,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://race-replay.com";
+
 export const metadata: Metadata = {
-  title: "Race Replay",
+  title: {
+    default: "Race Replay",
+    template: "%s — Race Replay",
+  },
   description: "See who you passed — and who passed you, leg by leg.",
+  metadataBase: new URL(BASE_URL),
+  openGraph: {
+    siteName: "Race Replay",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
