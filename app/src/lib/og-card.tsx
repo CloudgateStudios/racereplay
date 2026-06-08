@@ -124,6 +124,21 @@ export function OgCard({
             <div style={{ color: "#a3a3a3", fontSize: "28px", fontWeight: 500 }}>{subtitle}</div>
           )}
         </div>
+        {/* CTA */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            background: "#f97316",
+            borderRadius: "9999px",
+            padding: "12px 32px",
+          }}
+        >
+          <span style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, letterSpacing: "0.02em" }}>
+            Find your race at racereplay.app
+          </span>
+        </div>
       </div>
     );
   }
