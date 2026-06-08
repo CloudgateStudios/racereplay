@@ -8,13 +8,6 @@ or data structures beyond what's currently in place.
 
 ---
 
-## ✅ Shipped
-
-- **Athlete comparison view** — `/events/[slug]/[year]/compare` (PR #68)
-- **Multi-year race history** — Race History table on athlete detail page (PR #70)
-
----
-
 ## 1. Per-segment leaderboard
 
 **Description:** A "Best splits" view for an event — who had the fastest bike
@@ -53,16 +46,6 @@ data source.
   forwarded.
 - Include all columns: Bib, Name, Division, Gender, Status, Finish Time,
   per-segment Gained/Lost/Net, Overall Net.
-
----
-
-## 4. Race series / multi-year athlete tracking
-
-**Status:** Schema foundation landed (PR #69 — `normalizedName` on Athlete).
-Race history UI landed (PR #70). Remaining work: year-over-year delta callouts.
-
-**Schema dependency:** None remaining for the history table. `AthleteProfile`
-model (see PLANNING.md S3) needed for full cross-race profile page.
 
 ---
 
