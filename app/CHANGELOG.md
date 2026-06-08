@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/CloudgateStudios/race_replay/compare/0.6.1...0.7.0) (2026-06-08)
+
+### Features
+
+- Add normalizedName to Athlete for cross-year/cross-race matching ([#69](https://github.com/CloudgateStudios/race_replay/issues/69)) ([7f481e5](https://github.com/CloudgateStudios/race_replay/commit/7f481e5608cb7656cc1f2193420c9403732695b3))
+- athlete comparison view ([#68](https://github.com/CloudgateStudios/race_replay/issues/68)) ([960098f](https://github.com/CloudgateStudios/race_replay/commit/960098f604e5a2221076af78c431e5a4f9d6cb3f))
+
 ### [0.6.1](https://github.com/CloudgateStudios/race_replay/compare/0.6.0...0.6.1) (2026-06-08)
 
 ### Features
