@@ -11,12 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EventFilters } from "../filters";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string; year: string }>;
-  searchParams: Promise<{ a?: string; b?: string }>;
+  searchParams: Promise<{ a?: string; b?: string; q?: string; gender?: string; division?: string }>;
 }
 
 export async function generateMetadata({ params, searchParams }: Props) {
@@ -30,7 +31,7 @@ export async function generateMetadata({ params, searchParams }: Props) {
 
 export default async function ComparePage({ params, searchParams }: Props) {
   const { slug, year: yearStr } = await params;
-  const { a: bibA, b: bibB } = await searchParams;
+  const { a: bibA, b: bibB, q = "", gender = "", division = "" } = await searchParams;
   const year = parseInt(yearStr, 10);
   if (isNaN(year)) notFound();
 
@@ -88,6 +89,9 @@ export default async function ComparePage({ params, searchParams }: Props) {
           bibB={bibB}
           athleteAName={athleteA?.name}
           athleteBName={athleteB?.name}
+          q={q}
+          gender={gender}
+          division={division}
         />
       )}
 
@@ -107,19 +111,42 @@ export default async function ComparePage({ params, searchParams }: Props) {
 // ── Athlete picker ──────────────────────────────────────────────────────────
 
 async function AthletePicker({
-  slug, year, eventId, bibA, bibB, athleteAName, athleteBName,
+  slug, year, eventId, bibA, bibB, athleteAName, athleteBName, q, gender, division,
 }: {
   slug: string; year: number; eventId: number;
   bibA?: string; bibB?: string;
   athleteAName?: string; athleteBName?: string;
+  q: string; gender: string; division: string;
 }) {
-  // Load a page of athletes for the search list
-  const athletes = await prisma.athlete.findMany({
-    where: { eventId, status: "FIN" },
-    orderBy: { overallRank: "asc" },
-    take: 200,
-    select: { bib: true, name: true, division: true, overallRank: true, finishTime: true },
-  });
+  const [athletes, genders, divisions] = await Promise.all([
+    prisma.athlete.findMany({
+      where: {
+        eventId,
+        status: "FIN",
+        ...(q && { OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { bib: { contains: q, mode: "insensitive" } },
+        ]}),
+        ...(gender && { gender }),
+        ...(division && { division }),
+      },
+      orderBy: { overallRank: "asc" },
+      take: 100,
+      select: { bib: true, name: true, division: true, overallRank: true, finishTime: true },
+    }),
+    prisma.athlete.findMany({
+      where: { eventId },
+      distinct: ["gender"],
+      select: { gender: true },
+      orderBy: { gender: "asc" },
+    }).then((r) => r.map((a) => a.gender).filter(Boolean)),
+    prisma.athlete.findMany({
+      where: { eventId, division: { not: "" } },
+      distinct: ["division"],
+      select: { division: true },
+      orderBy: { division: "asc" },
+    }).then((r) => r.map((a) => a.division).filter(Boolean)),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -129,6 +156,9 @@ async function AthletePicker({
         <SlotChip label="Athlete B" bib={bibB} name={athleteBName} color="orange" />
       </div>
 
+      {/* Filters — reuses the same EventFilters component as the results page */}
+      <EventFilters genders={genders} divisions={divisions} />
+
       {/* Instructions */}
       <p className="text-muted-foreground text-sm">
         {!bibA && !bibB
@@ -136,6 +166,10 @@ async function AthletePicker({
           : !bibB
           ? "Now select Athlete B."
           : "Now select Athlete A."}
+        {" "}
+        <span className="tabular-nums">
+          {athletes.length === 100 ? "Showing first 100 results — use filters to narrow down." : `${athletes.length} athlete${athletes.length !== 1 ? "s" : ""} shown.`}
+        </span>
       </p>
 
       {/* Athlete list */}
