@@ -293,6 +293,23 @@ async function main() {
   }
   console.log(`Segments: ${Object.keys(segmentMap).join(", ")}`);
 
+  // ── Remove stale segments ─────────────────────────────────────────────────
+  // If a segment's name changed between scraper runs (e.g. "Bike Finish" →
+  // "Bike"), the old segment would otherwise persist as an orphan.  Delete
+  // any segment for this event whose name is NOT in the current legs list,
+  // cascading through AthleteSegment first (no FK cascade on the schema).
+  const staleSegments = await prisma.segment.findMany({
+    where: { eventId: event.id, name: { notIn: legs } },
+    select: { id: true, name: true },
+  });
+  if (staleSegments.length > 0) {
+    const staleIds = staleSegments.map((s) => s.id);
+    const staleNames = staleSegments.map((s) => s.name).join(", ");
+    console.log(`Removing stale segment(s): ${staleNames}`);
+    await prisma.athleteSegment.deleteMany({ where: { segmentId: { in: staleIds } } });
+    await prisma.segment.deleteMany({ where: { id: { in: staleIds } } });
+  }
+
   // ── Upsert Athletes + AthleteSegments ─────────────────────────────────────
   // Process athletes in parallel using a worker pool to avoid the ~1M sequential
   // DB round trips that make large events (Chicago: 55k × 19 segments) very slow.
