@@ -108,6 +108,11 @@ describe("detectLegs", () => {
     expect(detectLegs(headers)).toEqual(["Bike"]);
   });
 
+  it("skips Wave Finish Time", () => {
+    const headers = ["Swim Time", "Wave Finish Time"];
+    expect(detectLegs(headers)).toEqual(["Swim"]);
+  });
+
   it("returns empty array when no leg columns exist", () => {
     const headers = ["Bib", "Name", "Overall Finish Time"];
     expect(detectLegs(headers)).toEqual([]);
