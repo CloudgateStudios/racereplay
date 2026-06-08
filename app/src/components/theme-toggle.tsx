@@ -15,7 +15,7 @@ export function ThemeToggle() {
   // updates automatically. Once the user manually flips the toggle (writing to
   // localStorage), this listener is detached and the manual choice wins.
   useEffect(() => {
-    if (localStorage.getItem("theme")) return; // manual override in effect, do nothing
+    if (localStorage.getItem("theme")) return;
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = (e: MediaQueryListEvent) => {
@@ -35,37 +35,37 @@ export function ThemeToggle() {
 
   return (
     <button
-      onClick={toggle}
+      role="switch"
+      aria-checked={isDark}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-md p-1.5 transition-colors"
+      onClick={toggle}
+      className={[
+        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent",
+        "transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        isDark ? "bg-primary" : "bg-muted",
+      ].join(" ")}
     >
-      {isDark ? (
-        // Sun icon — shown when dark, clicking switches to light
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          className="h-4 w-4"
-          aria-hidden
-        >
-          <path d="M10 2a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 2ZM10 15a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 15ZM10 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM15.657 5.404a.75.75 0 1 0-1.06-1.06l-1.061 1.06a.75.75 0 0 0 1.06 1.06l1.061-1.06ZM6.464 14.596a.75.75 0 1 0-1.06-1.06l-1.061 1.06a.75.75 0 0 0 1.06 1.06l1.061-1.06ZM18 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 18 10ZM5 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 5 10ZM14.596 15.657a.75.75 0 0 0 1.06-1.06l-1.06-1.061a.75.75 0 1 0-1.06 1.06l1.06 1.061ZM5.404 6.464a.75.75 0 0 0 1.06-1.06L5.404 4.343a.75.75 0 1 0-1.06 1.06l1.06 1.061Z" />
-        </svg>
-      ) : (
-        // Moon icon — shown when light, clicking switches to dark
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          className="h-4 w-4"
-          aria-hidden
-        >
-          <path
-            fillRule="evenodd"
-            d="M7.455 2.004a.75.75 0 0 1 .26.77 7 7 0 0 0 9.958 7.967.75.75 0 0 1 1.067.853A8.5 8.5 0 1 1 6.647 1.921a.75.75 0 0 1 .808.083Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      )}
+      {/* Sliding thumb */}
+      <span
+        className={[
+          "pointer-events-none flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm",
+          "transform transition-transform duration-200 ease-in-out",
+          isDark ? "translate-x-5" : "translate-x-0",
+        ].join(" ")}
+        aria-hidden
+      >
+        {isDark ? (
+          // Moon — shown in thumb when dark
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-primary">
+            <path d="M6.027 1.604a.75.75 0 0 1 .207.617 5.5 5.5 0 0 0 7.19 6.27.75.75 0 0 1 .856.683A6.8 6.8 0 1 1 5.32 1.537a.75.75 0 0 1 .707.067Z" />
+          </svg>
+        ) : (
+          // Sun — shown in thumb when light
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-amber-500">
+            <path d="M8 1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1A.75.75 0 0 1 8 1ZM8 12a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1A.75.75 0 0 1 8 12ZM8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM12.743 3.317a.75.75 0 0 0-1.06 1.06l.707.708a.75.75 0 0 0 1.06-1.06l-.707-.708ZM3.61 11.975a.75.75 0 0 0-1.06 1.06l.707.707a.75.75 0 0 0 1.06-1.06l-.707-.707ZM15 8a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1 0-1.5h1A.75.75 0 0 1 15 8ZM4 8a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1 0-1.5h1A.75.75 0 0 1 4 8ZM12.45 11.975a.75.75 0 0 1 1.06 1.06l-.707.707a.75.75 0 0 1-1.06-1.06l.707-.707ZM3.317 3.317a.75.75 0 0 1 1.06 1.06l-.707.708a.75.75 0 0 1-1.06-1.06l.707-.708Z" />
+          </svg>
+        )}
+      </span>
     </button>
   );
 }

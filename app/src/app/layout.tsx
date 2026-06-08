@@ -101,7 +101,6 @@ export default function RootLayout({
               >
                 About
               </Link>
-              <ThemeToggle />
             </nav>
           </div>
         </header>
@@ -126,6 +125,7 @@ export default function RootLayout({
               </Link>
             </p>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <Link
                 href="https://github.com/CloudgateStudios/race_replay"
                 target="_blank"
