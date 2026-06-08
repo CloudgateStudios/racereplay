@@ -5,30 +5,7 @@ or data structures beyond what's currently in place.
 
 ---
 
-## 1. Athlete comparison view
-
-**Description:** Select two athletes from the same event and see a side-by-side
-leg breakdown — who gained more on the bike, who closed the gap on the run, and
-where the race was won or lost.
-
-**Why it's valuable:** The most common question after a race is "how did I do vs
-[training partner / age group rival]?" The data to answer this already exists.
-
-**Approach:**
-- URL: `/events/[slug]/[year]/compare?a=[bib1]&b=[bib2]`
-- A "Compare" button on the athlete detail page that lets you pick a second
-  athlete (search by name/bib).
-- Side-by-side table: each row is a leg, each column is an athlete. Delta column
-  shows the difference in net passes per leg.
-- Color-code the winner of each leg.
-
-**New files:**
-- `app/src/app/events/[slug]/[year]/compare/page.tsx`
-- Athlete picker component (reusable search/select)
-
----
-
-## 2. Per-segment leaderboard
+## 1. Per-segment leaderboard
 
 **Description:** A "Best splits" view for an event — who had the fastest bike
 leg, fastest swim, fastest run — ranked independently from overall finish.

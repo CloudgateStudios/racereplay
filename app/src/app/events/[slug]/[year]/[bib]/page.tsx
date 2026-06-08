@@ -110,7 +110,15 @@ export default async function AthletePage({ params }: Props) {
       <div className="mt-3 mb-8">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-4xl font-bold tracking-tight">{athlete.name}</h1>
-          <ShareButton />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/events/${slug}/${year}/compare?a=${athlete.bib}`}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
+            >
+              Compare
+            </Link>
+            <ShareButton />
+          </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="secondary">Bib {athlete.bib}</Badge>
