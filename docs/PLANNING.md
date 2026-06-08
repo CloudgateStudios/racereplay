@@ -121,28 +121,6 @@ Check whether the scraper produces it before committing.
 
 ---
 
-### S5 — Race tags / categories
-**Problem:** No way to filter races by type (triathlon vs road race already
-exists via `EventType`), but no finer categorisation — no distance, no region,
-no series. A tag system would be flexible.
-
-**Proposed new model:**
-```prisma
-model RaceTag {
-  id    Int    @id @default(autoincrement())
-  slug  String @unique  // "ironman-703", "world-marathon-major", "new-england"
-  label String
-  races Race[] @relation("RaceTags")
-}
-```
-Many-to-many join table `_RaceTags`.
-
-**Migration:** New table + join table — zero downtime, purely additive.
-
-**Unlocks:** Tag-filtered browse pages, "All IRONMAN 70.3 events" view.
-
----
-
 ## 🟡 Feature Enhancements
 > Improvements to existing functionality. No schema changes unless noted.
 
@@ -187,21 +165,6 @@ No schema change. New `opengraph-image.tsx` under `[bib]/`.
 The Share button currently copies the URL. Consider:
 - Pre-formatted tweet text: "I passed 407 people at Ironman Wisconsin 2025 🏊‍♂️🚴‍♂️🏃‍♂️ #RaceReplay"
 - Native share sheet on mobile (Web Share API)
-
-No schema change.
-
----
-
-### E6 — Pagination on race history
-If an athlete has 10+ years at the same race, the history table grows long.
-Add a "Show all" expand or cap at 5 rows with a toggle.
-
-No schema change.
-
----
-
-### E7 — CSV export (existing item #3)
-Download the currently filtered results as CSV. Already specced.
 
 No schema change.
 
@@ -367,7 +330,6 @@ Before the next significant data push, consider landing these in one migration:
 | Medium | T2 | Gender normalization | Audit first — may need default |
 | Lower | S3 | AthleteProfile model | Additive table + FK |
 | Lower | S4 | Position snapshots | Only if source data supports it |
-| Lower | S5 | Race tags | Additive tables |
 
 The top three (T4, S1, T3) are the highest value-to-effort ratio and can be
 landed as a single migration with minimal risk.
