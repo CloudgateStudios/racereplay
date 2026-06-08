@@ -301,10 +301,10 @@ function ComparisonView({
                 <TableHead>Leg</TableHead>
                 <TableHead className="text-right text-blue-500">{athleteA.name.split(" ")[0]} Time</TableHead>
                 <TableHead className="text-right text-orange-500">{athleteB.name.split(" ")[0]} Time</TableHead>
-                <TableHead className="text-right">Δ Time</TableHead>
-                <TableHead className="text-center text-blue-500">A Net</TableHead>
-                <TableHead className="text-center text-orange-500">B Net</TableHead>
-                <TableHead className="text-center">Leg Winner</TableHead>
+                <TableHead className="hidden text-right sm:table-cell">Δ Time</TableHead>
+                <TableHead className="hidden text-center text-blue-500 sm:table-cell">A Net</TableHead>
+                <TableHead className="hidden text-center text-orange-500 sm:table-cell">B Net</TableHead>
+                <TableHead className="text-center">Winner</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -326,16 +326,16 @@ function ComparisonView({
                     <TableCell className={`text-right font-mono tabular-nums ${winner === "B" ? "font-bold text-orange-500" : ""}`}>
                       {formatSeconds(tB)}
                     </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums text-sm">
+                    <TableCell className="hidden text-right font-mono tabular-nums text-sm sm:table-cell">
                       {delta == null ? "—" : delta === 0 ? "even" : delta < 0
                         ? <span className="text-blue-500">A +{formatSeconds(Math.abs(delta))}</span>
                         : <span className="text-orange-500">B +{formatSeconds(Math.abs(delta))}</span>
                       }
                     </TableCell>
-                    <TableCell className={`text-center tabular-nums font-medium ${netColor(sA?.net ?? null)}`}>
+                    <TableCell className={`hidden text-center tabular-nums font-medium sm:table-cell ${netColor(sA?.net ?? null)}`}>
                       {netLabel(sA?.net ?? null)}
                     </TableCell>
-                    <TableCell className={`text-center tabular-nums font-medium ${netColor(sB?.net ?? null)}`}>
+                    <TableCell className={`hidden text-center tabular-nums font-medium sm:table-cell ${netColor(sB?.net ?? null)}`}>
                       {netLabel(sB?.net ?? null)}
                     </TableCell>
                     <TableCell className="text-center">
@@ -357,13 +357,13 @@ function ComparisonView({
                 <TableCell className={`text-right font-mono tabular-nums ${netB > netA ? "text-orange-500" : ""}`}>
                   {athleteB.finishTime ?? "—"}
                 </TableCell>
-                <TableCell className="text-right font-mono tabular-nums text-sm text-muted-foreground">
+                <TableCell className="hidden text-right font-mono tabular-nums text-sm text-muted-foreground sm:table-cell">
                   —
                 </TableCell>
-                <TableCell className={`text-center tabular-nums ${netColor(netA)}`}>
+                <TableCell className={`hidden text-center tabular-nums sm:table-cell ${netColor(netA)}`}>
                   {netLabel(netA)}
                 </TableCell>
-                <TableCell className={`text-center tabular-nums ${netColor(netB)}`}>
+                <TableCell className={`hidden text-center tabular-nums sm:table-cell ${netColor(netB)}`}>
                   {netLabel(netB)}
                 </TableCell>
                 <TableCell className="text-center">
@@ -437,10 +437,12 @@ function AthleteCard({
         {athlete.division && <Badge variant="secondary">{athlete.division}</Badge>}
         {athlete.country && <Badge variant="outline">{athlete.country}</Badge>}
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-3">
+      <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat label="Rank" value={athlete.overallRank ? `#${athlete.overallRank.toLocaleString()}` : "—"} />
-        <Stat label="Finish" value={athlete.finishTime ?? "—"} mono />
         <Stat label="Net" value={netLabel(net)} color={netColor(net)} />
+        <div className="col-span-2">
+          <Stat label="Finish" value={athlete.finishTime ?? "—"} mono />
+        </div>
       </div>
     </div>
   );
