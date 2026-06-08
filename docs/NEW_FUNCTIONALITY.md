@@ -3,6 +3,16 @@
 Net-new features that don't exist yet. Each one requires new pages, components,
 or data structures beyond what's currently in place.
 
+> **See also:** `PLANNING.md` for the full ideation backlog including tech debt,
+> schema migration planning, and feature enhancements.
+
+---
+
+## ✅ Shipped
+
+- **Athlete comparison view** — `/events/[slug]/[year]/compare` (PR #68)
+- **Multi-year race history** — Race History table on athlete detail page (PR #70)
+
 ---
 
 ## 1. Per-segment leaderboard
@@ -48,23 +58,11 @@ data source.
 
 ## 4. Race series / multi-year athlete tracking
 
-**Description:** If an athlete has competed in the same race across multiple
-years, show a "Your history" section on the athlete detail page with year-over-year
-comparisons.
+**Status:** Schema foundation landed (PR #69 — `normalizedName` on Athlete).
+Race history UI landed (PR #70). Remaining work: year-over-year delta callouts.
 
-**Why it's valuable:** Repeat participants (common in triathlons) want to know if
-they're improving. "You passed 12 more people on the bike than last year" is a
-compelling data point.
-
-**Approach:**
-- Match athletes across years by name (fuzzy) or by a stable identifier if
-  available in the CSV.
-- On the athlete detail page, if prior-year records are found, show a small
-  year-over-year summary card.
-- This requires some tolerance for name variations — consider a normalized name
-  field on `Athlete` set during ingest.
-
-**Schema change:** Add `normalizedName String?` to `Athlete`.
+**Schema dependency:** None remaining for the history table. `AthleteProfile`
+model (see PLANNING.md S3) needed for full cross-race profile page.
 
 ---
 
@@ -83,9 +81,8 @@ specific event.
   ~500 races).
 - For larger scale: Postgres full-text search or a search index.
 
-**New files:**
-- Search input component on `app/src/app/page.tsx` or new
-  `app/src/app/search/page.tsx`
+**Schema dependency:** PLANNING.md S1 (race location/series fields) makes this
+significantly more useful.
 
 ---
 
@@ -99,14 +96,12 @@ see their passing stats across all of them in one place — their "Race Replay
 profile."
 
 **Approach:**
-- URL: `/athletes/[normalized-name]` or keyed by a stable ID if one exists.
+- URL: `/athletes/[id]` keyed by `AthleteProfile.id` or `normalizedName`.
 - Shows all events the athlete has completed with overall net passes, finish time,
   and rank.
-- Requires the normalized name matching from item 4 above.
 
-**New files:**
-- `app/src/app/athletes/[id]/page.tsx`
-- Schema change: stable athlete identifier or normalized name
+**Schema dependency:** PLANNING.md S3 (`AthleteProfile` model) recommended before
+building this — provides a stable URL key and deduplication.
 
 ---
 
