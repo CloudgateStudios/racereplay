@@ -146,7 +146,11 @@ export function rowToObj(headers: string[], row: string[]): Record<string, strin
 
 // ─── Leg detection ────────────────────────────────────────────────────────────
 
-const SKIP_TIME_COLS = new Set(["Overall Finish Time", "Wave Finish Time", "Wave Offset (Seconds)"]);
+const SKIP_TIME_COLS = new Set([
+  "Overall Finish Time",
+  "Wave Finish Time",
+  "Wave Offset (Seconds)",
+]);
 
 export function detectLegs(headers: string[]): string[] {
   return headers
