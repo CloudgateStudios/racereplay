@@ -124,6 +124,7 @@ export const AthleteScalarFieldEnum = {
   team: 'team',
   status: 'status',
   finishTime: 'finishTime',
+  finishSeconds: 'finishSeconds',
   waveTime: 'waveTime',
   overallRank: 'overallRank',
   genderRank: 'genderRank',

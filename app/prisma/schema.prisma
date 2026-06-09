@@ -57,6 +57,7 @@ model Athlete {
   team         String?
   status       AthleteStatus
   finishTime   String?
+  finishSeconds Int?
   waveTime     String?
   overallRank  Int?
   genderRank   Int?
