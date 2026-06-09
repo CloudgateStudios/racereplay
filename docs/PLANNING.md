@@ -19,7 +19,7 @@ designed and batched before large-scale data ingestion.
 | 3 | T3 | ✅ `finishSeconds` on Athlete |
 | 4 | S2 | ✅ Event denormalized counts (finisherCount, totalCount) |
 | 5 | T2 | ✅ Gender normalization — audit existing values first, then migrate |
-| 6 | T5 | Decide on `epochTime` — document or remove |
+| 6 | T5 | ✅ Decide on `epochTime` — document or remove |
 | 7 | T6 | Ingest reporting improvements |
 | 8 | T1 | Country normalization (after S1 lands) |
 
@@ -383,8 +383,10 @@ Add `@@index([normalizedName])` to `Athlete` in schema.prisma.
 
 ### T5 — `epochTime` on `AthleteSegment` — unclear provenance
 
-`epochTime` is stored but never used in any query or UI. Either document what
-it represents and wire it up, or remove it to reduce confusion.
+`epochTime` is the absolute wall-clock time at each checkpoint, derived by the
+scraper as `waveStartEpoch + chipSplitSeconds`. It is stored at ingest time and
+will be required for S4 (race replay animation / position snapshots). No action
+needed — keeping the field.
 
 ---
 
