@@ -20,7 +20,7 @@ designed and batched before large-scale data ingestion.
 | 4 | S2 | ✅ Event denormalized counts (finisherCount, totalCount) |
 | 5 | T2 | ✅ Gender normalization — audit existing values first, then migrate |
 | 6 | T5 | ✅ Decide on `epochTime` — document or remove |
-| 7 | T6 | Ingest reporting improvements |
+| 7 | T6 | ✅ Ingest reporting improvements |
 | 8 | T1 | Country normalization (after S1 lands) |
 
 ### Phase 2 — Quick-win enhancements
