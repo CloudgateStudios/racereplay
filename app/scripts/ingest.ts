@@ -232,6 +232,56 @@ export function toAthleteStatus(val: string | undefined): AthleteStatus {
   return AthleteStatus.FIN;
 }
 
+// ─── Country helper ───────────────────────────────────────────────────────────
+
+// Maps known non-alpha-2 country codes to their ISO 3166-1 alpha-2 equivalents.
+// Extend as new data sources with non-standard codes are encountered.
+const COUNTRY_CORRECTIONS: Record<string, string> = {
+  RUS: "RU",
+  USA: "US",
+  GBR: "GB",
+  CAN: "CA",
+  AUS: "AU",
+  DEU: "DE",
+  FRA: "FR",
+  ITA: "IT",
+  ESP: "ES",
+  BRA: "BR",
+  JPN: "JP",
+  CHN: "CN",
+};
+
+const ALPHA2_RE = /^[A-Z]{2}$/;
+
+export function normalizeCountry(val: string | undefined): string {
+  const raw = (val ?? "").trim();
+  const upper = raw.toUpperCase();
+  const corrected = COUNTRY_CORRECTIONS[upper] ?? raw;
+  return corrected;
+}
+
+export function warnBadCountries(rows: string[][], headers: string[]): void {
+  const countryIdx = headers.indexOf("Country");
+  if (countryIdx === -1) return;
+
+  const bad = new Map<string, number>();
+  for (const row of rows) {
+    const raw = (row[countryIdx] ?? "").trim();
+    if (raw === "") continue; // blanks are expected
+    const upper = raw.toUpperCase();
+    const corrected = COUNTRY_CORRECTIONS[upper] ?? raw;
+    if (!ALPHA2_RE.test(corrected)) {
+      bad.set(raw, (bad.get(raw) ?? 0) + 1);
+    }
+  }
+
+  for (const [code, count] of bad.entries()) {
+    console.warn(
+      `  ⚠ Unrecognized country code "${code}" (${count} athlete${count === 1 ? "" : "s"}) — not a valid ISO 3166-1 alpha-2 code and no correction mapping found`
+    );
+  }
+}
+
 // ─── Gender helper ────────────────────────────────────────────────────────────
 
 import { Gender } from "../src/generated/prisma/client";
@@ -343,6 +393,7 @@ async function main() {
 
   console.log("Column check:");
   warnMissingColumns(headers);
+  warnBadCountries(rows, headers);
   console.log();
 
   if (dryRun) {
@@ -458,7 +509,7 @@ async function main() {
         normalizedName: normalizeName(athleteName),
         gender: toGender(obj["Gender"]),
         division: (obj["Division"] ?? "").trim(),
-        country: (obj["Country"] ?? "").trim(),
+        country: normalizeCountry(obj["Country"]),
         city: (obj["City"] ?? "").trim() || null,
         team: (obj["Team"] ?? "").trim() || null,
         status: toAthleteStatus(obj["Status"]),
