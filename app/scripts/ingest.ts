@@ -232,6 +232,26 @@ export function toAthleteStatus(val: string | undefined): AthleteStatus {
   return AthleteStatus.FIN;
 }
 
+// ─── Gender helper ────────────────────────────────────────────────────────────
+
+import { Gender } from "../src/generated/prisma/client";
+
+export function toGender(val: string | undefined): Gender {
+  switch ((val ?? "").trim().toLowerCase()) {
+    case "male":
+    case "m":
+      return Gender.Male;
+    case "female":
+    case "f":
+      return Gender.Female;
+    case "open":
+    case "o":
+      return Gender.Open;
+    default:
+      return Gender.Unknown;
+  }
+}
+
 // ─── Value helpers ────────────────────────────────────────────────────────────
 
 export function toInt(val: string | undefined): number | null {
@@ -427,7 +447,7 @@ async function main() {
       const athleteData = {
         name: athleteName,
         normalizedName: normalizeName(athleteName),
-        gender: (obj["Gender"] ?? "").trim(),
+        gender: toGender(obj["Gender"]),
         division: (obj["Division"] ?? "").trim(),
         country: (obj["Country"] ?? "").trim(),
         city: (obj["City"] ?? "").trim() || null,

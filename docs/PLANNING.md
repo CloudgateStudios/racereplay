@@ -18,7 +18,7 @@ designed and batched before large-scale data ingestion.
 | 2 | S1 | ✅ Race metadata fields (location, distanceType, seriesName) |
 | 3 | T3 | ✅ `finishSeconds` on Athlete |
 | 4 | S2 | ✅ Event denormalized counts (finisherCount, totalCount) |
-| 5 | T2 | Gender normalization — audit existing values first, then migrate |
+| 5 | T2 | ✅ Gender normalization — audit existing values first, then migrate |
 | 6 | T5 | Decide on `epochTime` — document or remove |
 | 7 | T6 | Ingest reporting improvements |
 | 8 | T1 | Country normalization (after S1 lands) |
