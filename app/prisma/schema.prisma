@@ -8,10 +8,15 @@ datasource db {
 }
 
 model Race {
-  id     Int     @id @default(autoincrement())
-  slug   String  @unique
-  name   String
-  events Event[]
+  id           Int     @id @default(autoincrement())
+  slug         String  @unique
+  name         String
+  location     String?
+  country      String?
+  distanceType String?
+  seriesName   String?
+  website      String?
+  events       Event[]
 }
 
 model Event {
@@ -59,6 +64,7 @@ model Athlete {
   segments     AthleteSegment[]
 
   @@unique([eventId, bib])
+  @@index([normalizedName])
 }
 
 model AthleteSegment {

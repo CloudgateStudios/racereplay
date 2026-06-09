@@ -684,10 +684,6 @@ export type AthleteUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.AthleteScalarWhereInput | Prisma.AthleteScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumAthleteStatusFieldUpdateOperationsInput = {
   set?: $Enums.AthleteStatus
 }
