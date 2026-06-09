@@ -895,7 +895,12 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const RaceScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
-  name: 'name'
+  name: 'name',
+  location: 'location',
+  country: 'country',
+  distanceType: 'distanceType',
+  seriesName: 'seriesName',
+  website: 'website'
 } as const
 
 export type RaceScalarFieldEnum = (typeof RaceScalarFieldEnum)[keyof typeof RaceScalarFieldEnum]
