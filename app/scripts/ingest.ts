@@ -528,7 +528,8 @@ async function main() {
         }
       });
 
-      if (isNew) created++; else updated++;
+      if (isNew) created++;
+      else updated++;
       completed++;
       if (completed % 500 === 0 || completed === total) {
         const elapsed = ((Date.now() - ingestStart) / 1000).toFixed(0);
