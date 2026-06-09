@@ -78,7 +78,6 @@ model AthleteSegment {
   segment     Segment  @relation(fields: [segmentId], references: [id])
   segmentId   Int
   timeSeconds Float?
-  epochTime   Float?
   gained      Int?
   lost        Int?
   net         Int?
