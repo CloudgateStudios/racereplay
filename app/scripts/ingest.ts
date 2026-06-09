@@ -18,7 +18,7 @@
  * the slug. CLI flags override the config file value for that field.
  *
  * Examples:
- *   npx tsx scripts/ingest.ts ../scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
+ *   npx tsx scripts/ingest.ts ../scraper/data/IRM-CHATTANOOGA703-2026_passing.csv \
  *     --slug im-703-chattanooga \
  *     --race-name "IM 70.3 Chattanooga" \
  *     --year 2026 \
@@ -26,7 +26,7 @@
  *     --event-date 2026-05-18
  *
  *   # Override a single field from the config:
- *   npx tsx scripts/ingest.ts ../scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
+ *   npx tsx scripts/ingest.ts ../scraper/data/IRM-CHATTANOOGA703-2026_passing.csv \
  *     --slug im-703-chattanooga \
  *     --race-name "IM 70.3 Chattanooga" \
  *     --year 2026 \
@@ -88,6 +88,18 @@ interface RaceMetadata {
   distanceType?: string;
   seriesName?: string;
   website?: string;
+  /**
+   * Maps raw CSV leg names to canonical segment names stored in the DB.
+   * Example: { "FINISH": "Run" } renames the FINISH leg to "Run" for all
+   * triathlon events so segments are consistent across years.
+   */
+  segmentNames?: Record<string, string>;
+  /**
+   * Documented hint for which --points flag to pass to racereplay.mjs when
+   * scraping this race. Not used by ingest.ts directly — serves as a reminder
+   * to force canonical checkpoints (e.g. collapsing extra run splits in 2022).
+   */
+  scraperPoints?: string;
 }
 
 interface Args {
@@ -159,6 +171,9 @@ function parseArgs(argv: string[]): Args {
     distanceType: flags["distance-type"] ?? configMetadata.distanceType,
     seriesName: flags["series-name"] ?? configMetadata.seriesName,
     website: flags["website"] ?? configMetadata.website,
+    // segmentNames and scraperPoints come from config only (no CLI override needed)
+    segmentNames: configMetadata.segmentNames,
+    scraperPoints: configMetadata.scraperPoints,
   };
 
   return {
@@ -385,9 +400,27 @@ async function main() {
 
   const raw = await fs.readFile(csvFile, "utf8");
   const { headers, rows } = parseCSV(raw);
-  const legs = detectLegs(headers);
 
-  console.log(`Detected legs:   ${legs.length > 0 ? legs.join(", ") : "(none)"}`);
+  // rawLegs: leg names as they appear in the CSV (e.g. ["SWIM","T1","BIKE","T2","FINISH"])
+  const rawLegs = detectLegs(headers);
+
+  // canonicalLegs: names stored in the DB, after applying any segmentNames renames.
+  // The rename map lives in races.config.json per slug (e.g. { "FINISH": "Run" }).
+  const nameMap = metadata.segmentNames ?? {};
+  const canonicalLegs = rawLegs.map((l) => nameMap[l] ?? l);
+
+  // rawForCanonical: reverse map so CSV column lookups use the original leg name.
+  const rawForCanonical: Record<string, string> = Object.fromEntries(
+    canonicalLegs.map((canonical, i) => [canonical, rawLegs[i]])
+  );
+
+  const renamed = rawLegs
+    .map((raw, i) => (nameMap[raw] ? `${raw} → ${canonicalLegs[i]}` : null))
+    .filter(Boolean);
+
+  console.log(`Detected legs:   ${rawLegs.length > 0 ? rawLegs.join(", ") : "(none)"}`);
+  if (renamed.length > 0) console.log(`Renamed legs:    ${renamed.join(", ")}`);
+  console.log(`Stored as:       ${canonicalLegs.join(", ")}`);
   console.log(`Athlete rows:    ${rows.length}`);
   console.log(`All CSV columns: ${headers.join(", ")}\n`);
 
@@ -404,8 +437,10 @@ async function main() {
   // ── Upsert Race ────────────────────────────────────────────────────────────
   // Metadata fields (location, country, etc.) are only updated when a value is
   // provided — undefined fields are omitted so existing DB values are preserved.
+  // segmentNames and scraperPoints are config-only; strip them before writing to DB.
+  const { segmentNames: _segNames, scraperPoints: _scraperPts, ...dbMetadata } = metadata;
   const metadataUpdate = Object.fromEntries(
-    Object.entries(metadata).filter(([, v]) => v !== undefined)
+    Object.entries(dbMetadata).filter(([, v]) => v !== undefined)
   );
   const race = await prisma.race.upsert({
     where: { slug },
@@ -423,13 +458,16 @@ async function main() {
   console.log(`Event: id=${event.id}`);
 
   // ── Upsert Segments ───────────────────────────────────────────────────────
+  // Store canonical names in the DB. The last leg is always isFinish=true
+  // (position-based, not name-based) since the final checkpoint is the finish
+  // line regardless of what it's called ("Finish", "Run", etc.).
   const segmentMap: Record<string, number> = {};
-  for (let i = 0; i < legs.length; i++) {
-    const name = legs[i];
+  for (let i = 0; i < canonicalLegs.length; i++) {
+    const name = canonicalLegs[i];
+    const isFinish = i === canonicalLegs.length - 1;
     let segment = await prisma.segment.findFirst({
       where: { eventId: event.id, name },
     });
-    const isFinish = name.toLowerCase() === "finish";
     if (segment) {
       segment = await prisma.segment.update({
         where: { id: segment.id },
@@ -445,12 +483,12 @@ async function main() {
   console.log(`Segments: ${Object.keys(segmentMap).join(", ")}`);
 
   // ── Remove stale segments ─────────────────────────────────────────────────
-  // If a segment's name changed between scraper runs (e.g. "Bike Finish" →
-  // "Bike"), the old segment would otherwise persist as an orphan.  Delete
-  // any segment for this event whose name is NOT in the current legs list,
+  // If a segment's name changed between scraper runs (e.g. "FINISH" → "Run"),
+  // the old segment would otherwise persist as an orphan. Delete any segment
+  // for this event whose name is NOT in the current canonical legs list,
   // cascading through AthleteSegment first (no FK cascade on the schema).
   const staleSegments = await prisma.segment.findMany({
-    where: { eventId: event.id, name: { notIn: legs } },
+    where: { eventId: event.id, name: { notIn: canonicalLegs } },
     select: { id: true, name: true },
   });
   if (staleSegments.length > 0) {
@@ -495,11 +533,10 @@ async function main() {
 
       const athleteName = (obj["Name"] ?? "").trim();
 
-      // Sum timeSeconds for all non-finish legs to get a numeric finish time.
-      // The "Finish" leg is a virtual segment added by the pipeline and is not
-      // part of the race clock — exclude it from the sum.
-      const finishLegs = legs.filter((l) => l.toLowerCase() !== "finish");
-      const legTimes = finishLegs.map((l) => toFloat(obj[`${l} Time`]));
+      // Sum timeSeconds for all legs to get a numeric finish time.
+      // We use rawLegs (CSV column names) since the CSV uses original names.
+      // All legs — including the final run/finish leg — are part of the race clock.
+      const legTimes = rawLegs.map((l) => toFloat(obj[`${l} Time`]));
       const finishSeconds = legTimes.every((t) => t !== null)
         ? Math.round(legTimes.reduce((sum, t) => sum! + t!, 0)!)
         : null;
@@ -562,14 +599,16 @@ async function main() {
           create: { eventId: event.id, bib: obj["Bib"], ...athleteData },
         });
 
-        for (const leg of legs) {
-          const segmentId = segmentMap[leg];
+        for (const canonical of canonicalLegs) {
+          const segmentId = segmentMap[canonical];
+          // Use the raw (CSV) leg name for column lookups; canonical name for DB keys.
+          const rawLeg = rawForCanonical[canonical];
           const segData = {
-            timeSeconds: toFloat(obj[`${leg} Time`]),
-            epochTime: toFloat(obj[`${leg} EpochTime`]),
-            gained: toInt(obj[`${leg} Gained`]),
-            lost: toInt(obj[`${leg} Lost`]),
-            net: toInt(obj[`${leg} Net`]),
+            timeSeconds: toFloat(obj[`${rawLeg} Time`]),
+            epochTime: toFloat(obj[`${rawLeg} EpochTime`]),
+            gained: toInt(obj[`${rawLeg} Gained`]),
+            lost: toInt(obj[`${rawLeg} Lost`]),
+            net: toInt(obj[`${rawLeg} Net`]),
           };
           await tx.athleteSegment.upsert({
             where: { athleteId_segmentId: { athleteId: athlete.id, segmentId } },
