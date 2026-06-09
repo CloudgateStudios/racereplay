@@ -20,15 +20,18 @@ model Race {
 }
 
 model Event {
-  id               Int              @id @default(autoincrement())
-  race             Race             @relation(fields: [raceId], references: [id])
-  raceId           Int
-  year             Int
-  type             EventType
-  date             DateTime         @db.Date
-  athletes         Athlete[]
-  segments         Segment[]
-  categoryResults  CategoryResult[]
+  id              Int              @id @default(autoincrement())
+  race            Race             @relation(fields: [raceId], references: [id])
+  raceId          Int
+  year            Int
+  type            EventType
+  date            DateTime         @db.Date
+  finisherCount   Int?
+  totalCount      Int?
+  description     String?
+  athletes        Athlete[]
+  segments        Segment[]
+  categoryResults CategoryResult[]
 
   @@unique([raceId, year])
 }

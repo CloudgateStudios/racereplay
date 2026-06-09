@@ -529,6 +529,19 @@ async function main() {
     console.log("Category results done.\n");
   }
 
+  // ── Update Event counts ───────────────────────────────────────────────────
+  // Derive finisherCount and totalCount from the ingested athlete rows so the
+  // event card can show "X finishers" without a COUNT query on every render.
+  const [finisherCount, totalCount] = await Promise.all([
+    prisma.athlete.count({ where: { eventId: event.id, status: "FIN" } }),
+    prisma.athlete.count({ where: { eventId: event.id } }),
+  ]);
+  await prisma.event.update({
+    where: { id: event.id },
+    data: { finisherCount, totalCount },
+  });
+  console.log(`Event counts: ${finisherCount} finishers / ${totalCount} total.\n`);
+
   await prisma.$disconnect();
 }
 

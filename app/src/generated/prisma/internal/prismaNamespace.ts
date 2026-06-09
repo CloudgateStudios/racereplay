@@ -911,7 +911,11 @@ export const EventScalarFieldEnum = {
   raceId: 'raceId',
   year: 'year',
   type: 'type',
-  date: 'date'
+  date: 'date',
+  finisherCount: 'finisherCount',
+  totalCount: 'totalCount',
+  locationNote: 'locationNote',
+  description: 'description'
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
