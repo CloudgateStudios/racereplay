@@ -28,7 +28,6 @@ model Event {
   date            DateTime         @db.Date
   finisherCount   Int?
   totalCount      Int?
-  locationNote    String?
   description     String?
   athletes        Athlete[]
   segments        Segment[]
