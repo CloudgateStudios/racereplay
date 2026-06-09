@@ -11,17 +11,16 @@
  * full re-fetch regardless of cached files.
  *
  * Usage:
- *   node scraper/racereplay.mjs <event-id> [options]
+ *   node scraper/racereplay.mjs <event-id> --appid <id> [options]
  *
  * Options:
- *   --appid <id>          RTRT app ID for this event's tracker app.
- *                         Defaults to the IRONMAN Tracker app ID.
+ *   --appid <id>          RTRT app ID for this event's tracker app. Required.
  *                         Find it at track.rtrt.me/e/<event-id> (view page
  *                         source, search for "appid").
  *   --output-dir <dir>    Directory to write output files (default: scraper/data/)
  *   --points <list>       Comma-separated list of point names to use, in order.
  *                         Overrides auto-discovery. Must include the finish point.
- *                         Example: --points START,5K,10K,FINISH
+ *                         Example: --points START,SWIM,T1,BIKE,T2,FINISH
  *   --concurrency <n>     Number of timing points to fetch in parallel (default: 4).
  *                         Higher values are faster but risk rate-limiting.
  *   --fresh               Ignore existing split cache files and re-fetch everything.
@@ -30,17 +29,9 @@
  *                         Use this when validating algorithm changes.
  *
  * Examples:
- *   # Shamrock Shuffle 2026 (Bank of America — uses a different app ID)
- *   node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
- *
- *   # Any IRONMAN event (uses default IRONMAN app ID)
- *   node scraper/racereplay.mjs IRM-OCEANSIDE703-2026
- *
- *   # Force a full re-fetch, ignoring any cached split files
- *   node scraper/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
- *
- *   # Verify the fast algorithm matches the reference on a cached event
- *   node scraper/racereplay.mjs IRM-OCEANSIDE703-2026 --verify
+ *   node scraper/racereplay.mjs <event-id> --appid <id>
+ *   node scraper/racereplay.mjs <event-id> --appid <id> --points START,SWIM,T1,BIKE,T2,FINISH
+ *   node scraper/racereplay.mjs <event-id> --appid <id> --fresh
  */
 
 import fs from "fs/promises";
@@ -49,7 +40,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const IRONMAN_APPID = "5824c5c948fd08c23a8b4567";
+// App IDs are not stored in source — pass --appid on every invocation.
 const API = "https://api.rtrt.me";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
 const PAGE = 20; // records per API page (RTRT caps at 20 regardless of count param)
@@ -1299,7 +1290,7 @@ function runPassingAnalysis(athletes, legNames, rtrtStarts, verifyMode) {
 const args = process.argv.slice(2);
 const eventId = args.find((a) => !a.startsWith("--"));
 const appidIdx = args.indexOf("--appid");
-const appid = appidIdx !== -1 ? args[appidIdx + 1] : IRONMAN_APPID;
+const appid = appidIdx !== -1 ? args[appidIdx + 1] : null;
 const outdirIdx = args.indexOf("--output-dir");
 const outputDir =
   outdirIdx !== -1 ? args[outdirIdx + 1] : path.join(__dirname, "data");
@@ -1316,35 +1307,32 @@ const concurrency =
 const freshMode = args.includes("--fresh");
 const verifyMode = args.includes("--verify");
 
-if (!eventId) {
-  console.error(`
-Usage: node scraper/racereplay.mjs <event-id> [options]
+if (!eventId || !appid) {
+  if (eventId && !appid) {
+    console.error(`Error: --appid is required.\n`);
+  }
+  console.error(`\
+Usage: node scraper/racereplay.mjs <event-id> --appid <id> [options]
 
-  event-id              RTRT event ID, e.g. BASS2026 or IRM-OCEANSIDE703-2026
+  event-id              RTRT event ID, e.g. IRM-OCEANSIDE703-2026
 
 Options:
-  --appid <id>          RTRT app ID for this event's tracker.
-                        Default: IRONMAN Tracker (for IRM-* events).
-                        For other events, find it at track.rtrt.me/e/<event-id>
-                        (view page source, search for "appid").
+  --appid <id>          RTRT app ID for this event's tracker app. Required.
+                        Find it at track.rtrt.me/e/<event-id> (view page
+                        source, search for "appid").
   --output-dir <dir>    Directory to write output files (default: scraper/data/)
   --points <list>       Comma-separated timing point names to use, in order.
                         Overrides auto-discovery.
-                        Example: --points START,5K,10K,FINISH
+                        Example: --points START,SWIM,T1,BIKE,T2,FINISH
   --concurrency <n>     Points to fetch in parallel (default: ${DEFAULT_CONCURRENCY}).
   --fresh               Ignore cached split files and re-fetch everything.
   --verify              Run the O(n²) reference algorithm after the fast algorithm
                         and diff the results to confirm correctness.
 
 Examples:
-  # Shamrock Shuffle 2026
-  node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
-
-  # Any IRONMAN event
-  node scraper/racereplay.mjs IRM-OCEANSIDE703-2026
-
-  # Force full re-fetch
-  node scraper/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
+  node scraper/racereplay.mjs <event-id> --appid <id>
+  node scraper/racereplay.mjs <event-id> --appid <id> --points START,SWIM,T1,BIKE,T2,FINISH
+  node scraper/racereplay.mjs <event-id> --appid <id> --fresh
 `);
   process.exit(1);
 }

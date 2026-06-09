@@ -23,15 +23,15 @@ For each leg and each athlete, Race Replay reports:
 ## Architecture
 
 ```
-scraper/            ← Local data pipeline (run on your machine)
-  racereplay.mjs    ← Fetch + analyze in one step, writes _passing.csv
-  check-legs.mjs    ← Preview timing points before scraping
-  test-algorithm.mjs← Unit tests for the passing algorithm
+scraper/             ← Local data pipeline (run on your machine)
+  racereplay.mjs     ← Fetch + analyze in one step, writes _passing.csv
+  check-legs.mjs     ← Preview timing points before scraping
+  test-algorithm.mjs ← Unit tests for the passing algorithm
 
-app/                ← Next.js web application
-  prisma/           ← Database schema and migrations
-  scripts/          ← Ingest script (load _passing.csv into the database)
-  src/app/          ← Pages and UI components
+app/                 ← Next.js web application
+  prisma/            ← Database schema and migrations
+  scripts/           ← Ingest script (load _passing.csv into the database)
+  src/app/           ← Pages and UI components
 ```
 
 Data flows one way: run the pipeline script locally → ingest the CSV → the website reads from the database.
@@ -127,22 +127,12 @@ Go to [track.rtrt.me](https://track.rtrt.me) and find the race. The URL will be:
 https://track.rtrt.me/e/<EVENT-ID>
 ```
 
-For non-IRONMAN races you also need the app ID — view the page source and search for `"appid"`. IRONMAN events use the default app ID automatically.
+You also need the app ID for that race's RTRT tracker — view page source and search for `"appid"`. App IDs are not stored in the source code; keep them in your own notes.
 
 ### Step 2 — Run the pipeline
 
 ```bash
-node scraper/racereplay.mjs <event-id> [--appid <id>]
-```
-
-Examples:
-
-```bash
-# Bank of America Shamrock Shuffle (non-IRONMAN, requires --appid)
-node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
-
-# Any IRONMAN event (default app ID)
-node scraper/racereplay.mjs IRM-OCEANSIDE703-2026
+node scraper/racereplay.mjs <event-id> --appid <id>
 ```
 
 The script fetches all timing splits from RTRT.me, runs the passing algorithm, and writes `scraper/data/<EVENT-ID>_passing.csv` directly — no intermediate files.

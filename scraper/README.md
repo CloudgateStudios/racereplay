@@ -24,11 +24,11 @@ Run these locally before ingesting data into the database.
 
 1. Go to **https://track.rtrt.me** and find the race
 2. The URL will be `https://track.rtrt.me/e/<EVENT-ID>` — the last segment is the event ID
-3. For non-IRONMAN events, view page source (`Cmd+U`) and search for `"appid"`:
+3. Find the app ID: view page source (`Cmd+U`) and search for `"appid"`:
    ```json
-   "appid":"4d9df5bf9f36bc4a1dc8fce2"
+   "appid":"<id>"
    ```
-   IRONMAN events (`IRM-*`) use the built-in default app ID — no `--appid` needed.
+   The app ID is required for every run — it is not stored in the source code.
 
 ### Step 2 — Check the legs before scraping
 
@@ -43,11 +43,7 @@ node scraper/check-legs.mjs <event-id> [--appid <id>]
 Examples:
 
 ```bash
-# IRONMAN event (default app ID)
-node scraper/check-legs.mjs IRM-WISCONSIN-2025
-
-# Non-IRONMAN event
-node scraper/check-legs.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+node scraper/check-legs.mjs <event-id> --appid <id>
 ```
 
 Output shows every timing point — its raw name, label, cleaned leg name, and km
@@ -69,20 +65,17 @@ node scraper/racereplay.mjs <event-id> [--appid <id>] [--points A,B,C,D,E,F]
 Examples:
 
 ```bash
-# Standard IRONMAN triathlon
-node scraper/racereplay.mjs IRM-WISCONSIN-2025
+# Standard run
+node scraper/racereplay.mjs <event-id> --appid <id>
 
 # Force canonical checkpoints (use when check-legs shows extra splits)
-node scraper/racereplay.mjs IRM-WISCONSIN-2022 --points START,SWIM,T1,BIKE,T2,FINISH
-
-# Non-IRONMAN event
-node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+node scraper/racereplay.mjs <event-id> --appid <id> --points START,SWIM,T1,BIKE,T2,FINISH
 ```
 
 **All flags:**
 
 ```
---appid <id>          RTRT tracker app ID (default: IRONMAN app ID)
+--appid <id>          RTRT tracker app ID. Required.
 --points A,B,C        Force specific timing points — use to collapse extra splits
 --output-dir <dir>    Write output here (default: scraper/data/)
 --concurrency <n>     Parallel point fetches (default: 4)
@@ -151,7 +144,7 @@ when RTRT adds or removes intermediate checkpoints year to year.
 | IM 70.3 Chattanooga      | 2026 | IRM-CHATTANOOGA703-2026    |                                     |
 | IM 70.3 Oceanside        | 2025 | IRM-OCEANSIDE703-2025      |                                     |
 | IM 70.3 Oceanside        | 2026 | IRM-OCEANSIDE703-2026      |                                     |
-| BofA Shamrock Shuffle    | 2026 | BASS2026                   | `--appid 4d9df5bf9f36bc4a1dc8fce2`  |
+| BofA Shamrock Shuffle    | 2026 | BASS2026                   | Uses a different app ID             |
 
 ---
 

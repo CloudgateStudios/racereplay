@@ -7,32 +7,27 @@
  * with what's already in the database.
  *
  * Usage:
- *   node scripts/check-legs.mjs <eventId> [--appid <appid>]
+ *   node scraper/check-legs.mjs <eventId> --appid <appid>
  *
  * Examples:
- *   node scripts/check-legs.mjs IMWI2025
- *   node scripts/check-legs.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
- *
- * If --appid is omitted, defaults to the standard Ironman app ID.
+ *   node scraper/check-legs.mjs <event-id> --appid <id>
  */
 
 const API = "https://api.rtrt.me";
-const IRONMAN_APPID = "5824c5c948fd08c23a8b4567";
 const UA = "racereplay-leg-check/1.0";
 const PAGE = 20; // RTRT returns up to 20 points per page
 
 // ─── Args ─────────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
-if (!args.length || args[0] === "--help" || args[0] === "-h") {
-  console.log("Usage: node scripts/check-legs.mjs <eventId> [--appid <appid>]");
-  process.exit(0);
-}
+const eventId = args.find((a) => !a.startsWith("--"));
+const appidIdx = args.indexOf("--appid");
+const appid = appidIdx !== -1 ? args[appidIdx + 1] : null;
 
-const eventId = args[0];
-let appid = IRONMAN_APPID;
-for (let i = 1; i < args.length; i++) {
-  if (args[i] === "--appid" && args[i + 1]) appid = args[++i];
+if (!eventId || !appid || args[0] === "--help" || args[0] === "-h") {
+  if (eventId && !appid) console.error("Error: --appid is required.\n");
+  console.error("Usage: node scraper/check-legs.mjs <eventId> --appid <id>");
+  process.exit(eventId && !appid ? 1 : 0);
 }
 
 // ─── RTRT Helpers ─────────────────────────────────────────────────────────────
