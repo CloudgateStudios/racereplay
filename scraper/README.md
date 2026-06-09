@@ -13,7 +13,6 @@ Run these locally before ingesting data into the database.
 | -------------------- | ---------------------------------------------------------------------------- |
 | `racereplay.mjs`     | Fetch splits from RTRT.me, run passing algorithm, write `_passing.csv`       |
 | `check-legs.mjs`     | Preview timing points and segment names for an event before scraping         |
-| `analyze-passing.mjs`| Standalone passing analysis on an existing splits JSON (debugging tool)      |
 | `test-algorithm.mjs` | Unit tests for the passing algorithm — run before trusting a new race output |
 
 ---
