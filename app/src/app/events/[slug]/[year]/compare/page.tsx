@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { Gender } from "@/generated/prisma/client";
 import { formatSeconds, netColor, netLabel } from "@/lib/formatting";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -34,7 +35,10 @@ export async function generateMetadata({ params, searchParams }: Props) {
 
 export default async function ComparePage({ params, searchParams }: Props) {
   const { slug, year: yearStr } = await params;
-  const { a: bibA, b: bibB, q = "", gender = "", division = "" } = await searchParams;
+  const { a: bibA, b: bibB, q = "", gender: genderParam = "", division = "" } = await searchParams;
+  const gender = (Object.values(Gender) as string[]).includes(genderParam)
+    ? (genderParam as Gender)
+    : null;
   const year = parseInt(yearStr, 10);
   if (isNaN(year)) notFound();
 
@@ -140,7 +144,7 @@ async function AthletePicker({
   athleteAName?: string;
   athleteBName?: string;
   q: string;
-  gender: string;
+  gender: Gender | null;
   division: string;
 }) {
   const [athletes, genders, divisions] = await Promise.all([
@@ -154,7 +158,7 @@ async function AthletePicker({
             { bib: { contains: q, mode: "insensitive" } },
           ],
         }),
-        ...(gender && { gender }),
+        ...(gender !== null && { gender }),
         ...(division && { division }),
       },
       orderBy: { overallRank: "asc" },

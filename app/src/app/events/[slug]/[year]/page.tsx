@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
+import { Gender } from "@/generated/prisma/client";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -60,7 +61,10 @@ export default async function EventPage({ params, searchParams }: Props) {
   if (isNaN(year)) notFound();
 
   const q = sp.q?.trim() ?? "";
-  const gender = sp.gender ?? "";
+  const genderParam = sp.gender ?? "";
+  const gender = (Object.values(Gender) as string[]).includes(genderParam)
+    ? (genderParam as Gender)
+    : null;
   const division = sp.division ?? "";
   const sort = sp.sort ?? "rank";
   const dir = (sp.dir ?? "asc") as "asc" | "desc";
@@ -84,7 +88,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         { bib: { contains: q, mode: "insensitive" as const } },
       ],
     }),
-    ...(gender && { gender }),
+    ...(gender !== null && { gender }),
     ...(division && { division }),
   };
 

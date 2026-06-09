@@ -50,7 +50,7 @@ export type AthleteMinAggregateOutputType = {
   bib: string | null
   name: string | null
   normalizedName: string | null
-  gender: string | null
+  gender: $Enums.Gender | null
   division: string | null
   country: string | null
   city: string | null
@@ -70,7 +70,7 @@ export type AthleteMaxAggregateOutputType = {
   bib: string | null
   name: string | null
   normalizedName: string | null
-  gender: string | null
+  gender: $Enums.Gender | null
   division: string | null
   country: string | null
   city: string | null
@@ -277,7 +277,7 @@ export type AthleteGroupByOutputType = {
   bib: string
   name: string
   normalizedName: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city: string | null
@@ -320,7 +320,7 @@ export type AthleteWhereInput = {
   bib?: Prisma.StringFilter<"Athlete"> | string
   name?: Prisma.StringFilter<"Athlete"> | string
   normalizedName?: Prisma.StringNullableFilter<"Athlete"> | string | null
-  gender?: Prisma.StringFilter<"Athlete"> | string
+  gender?: Prisma.EnumGenderFilter<"Athlete"> | $Enums.Gender
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
   city?: Prisma.StringNullableFilter<"Athlete"> | string | null
@@ -368,7 +368,7 @@ export type AthleteWhereUniqueInput = Prisma.AtLeast<{
   bib?: Prisma.StringFilter<"Athlete"> | string
   name?: Prisma.StringFilter<"Athlete"> | string
   normalizedName?: Prisma.StringNullableFilter<"Athlete"> | string | null
-  gender?: Prisma.StringFilter<"Athlete"> | string
+  gender?: Prisma.EnumGenderFilter<"Athlete"> | $Enums.Gender
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
   city?: Prisma.StringNullableFilter<"Athlete"> | string | null
@@ -418,7 +418,7 @@ export type AthleteScalarWhereWithAggregatesInput = {
   bib?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   name?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   normalizedName?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
-  gender?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
+  gender?: Prisma.EnumGenderWithAggregatesFilter<"Athlete"> | $Enums.Gender
   division?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   country?: Prisma.StringWithAggregatesFilter<"Athlete"> | string
   city?: Prisma.StringNullableWithAggregatesFilter<"Athlete"> | string | null
@@ -436,7 +436,7 @@ export type AthleteCreateInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -458,7 +458,7 @@ export type AthleteUncheckedCreateInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -477,7 +477,7 @@ export type AthleteUpdateInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -499,7 +499,7 @@ export type AthleteUncheckedUpdateInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -520,7 +520,7 @@ export type AthleteCreateManyInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -538,7 +538,7 @@ export type AthleteUpdateManyMutationInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -558,7 +558,7 @@ export type AthleteUncheckedUpdateManyInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -712,6 +712,10 @@ export type AthleteUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.AthleteScalarWhereInput | Prisma.AthleteScalarWhereInput[]
 }
 
+export type EnumGenderFieldUpdateOperationsInput = {
+  set?: $Enums.Gender
+}
+
 export type EnumAthleteStatusFieldUpdateOperationsInput = {
   set?: $Enums.AthleteStatus
 }
@@ -734,7 +738,7 @@ export type AthleteCreateWithoutEventInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -754,7 +758,7 @@ export type AthleteUncheckedCreateWithoutEventInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -804,7 +808,7 @@ export type AthleteScalarWhereInput = {
   bib?: Prisma.StringFilter<"Athlete"> | string
   name?: Prisma.StringFilter<"Athlete"> | string
   normalizedName?: Prisma.StringNullableFilter<"Athlete"> | string | null
-  gender?: Prisma.StringFilter<"Athlete"> | string
+  gender?: Prisma.EnumGenderFilter<"Athlete"> | $Enums.Gender
   division?: Prisma.StringFilter<"Athlete"> | string
   country?: Prisma.StringFilter<"Athlete"> | string
   city?: Prisma.StringNullableFilter<"Athlete"> | string | null
@@ -822,7 +826,7 @@ export type AthleteCreateWithoutSegmentsInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -843,7 +847,7 @@ export type AthleteUncheckedCreateWithoutSegmentsInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -877,7 +881,7 @@ export type AthleteUpdateWithoutSegmentsInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -898,7 +902,7 @@ export type AthleteUncheckedUpdateWithoutSegmentsInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -917,7 +921,7 @@ export type AthleteCreateManyEventInput = {
   bib: string
   name: string
   normalizedName?: string | null
-  gender: string
+  gender: $Enums.Gender
   division: string
   country: string
   city?: string | null
@@ -935,7 +939,7 @@ export type AthleteUpdateWithoutEventInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -955,7 +959,7 @@ export type AthleteUncheckedUpdateWithoutEventInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -975,7 +979,7 @@ export type AthleteUncheckedUpdateManyWithoutEventInput = {
   bib?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   normalizedName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   division?: Prisma.StringFieldUpdateOperationsInput | string
   country?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1130,7 +1134,7 @@ export type $AthletePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     bib: string
     name: string
     normalizedName: string | null
-    gender: string
+    gender: $Enums.Gender
     division: string
     country: string
     city: string | null
@@ -1572,7 +1576,7 @@ export interface AthleteFieldRefs {
   readonly bib: Prisma.FieldRef<"Athlete", 'String'>
   readonly name: Prisma.FieldRef<"Athlete", 'String'>
   readonly normalizedName: Prisma.FieldRef<"Athlete", 'String'>
-  readonly gender: Prisma.FieldRef<"Athlete", 'String'>
+  readonly gender: Prisma.FieldRef<"Athlete", 'Gender'>
   readonly division: Prisma.FieldRef<"Athlete", 'String'>
   readonly country: Prisma.FieldRef<"Athlete", 'String'>
   readonly city: Prisma.FieldRef<"Athlete", 'String'>

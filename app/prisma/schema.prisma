@@ -53,7 +53,7 @@ model Athlete {
   bib            String
   name           String
   normalizedName String?
-  gender         String
+  gender         Gender
   division     String
   country      String
   city         String?
@@ -107,4 +107,11 @@ enum AthleteStatus {
   DNF
   DSQ
   DNS
+}
+
+enum Gender {
+  Male
+  Female
+  Open
+  Unknown
 }
