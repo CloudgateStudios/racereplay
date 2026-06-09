@@ -420,10 +420,9 @@ async function main() {
       // part of the race clock — exclude it from the sum.
       const finishLegs = legs.filter((l) => l.toLowerCase() !== "finish");
       const legTimes = finishLegs.map((l) => toFloat(obj[`${l} Time`]));
-      const finishSeconds =
-        legTimes.every((t) => t !== null)
-          ? Math.round(legTimes.reduce((sum, t) => sum! + t!, 0)!)
-          : null;
+      const finishSeconds = legTimes.every((t) => t !== null)
+        ? Math.round(legTimes.reduce((sum, t) => sum! + t!, 0)!)
+        : null;
 
       const athleteData = {
         name: athleteName,
