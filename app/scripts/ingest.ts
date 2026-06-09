@@ -232,6 +232,30 @@ export function toAthleteStatus(val: string | undefined): AthleteStatus {
   return AthleteStatus.FIN;
 }
 
+// ─── Country helper ───────────────────────────────────────────────────────────
+
+// Maps known non-alpha-2 country codes to their ISO 3166-1 alpha-2 equivalents.
+// Extend as new data sources with non-standard codes are encountered.
+const COUNTRY_CORRECTIONS: Record<string, string> = {
+  RUS: "RU",
+  USA: "US",
+  GBR: "GB",
+  CAN: "CA",
+  AUS: "AU",
+  DEU: "DE",
+  FRA: "FR",
+  ITA: "IT",
+  ESP: "ES",
+  BRA: "BR",
+  JPN: "JP",
+  CHN: "CN",
+};
+
+export function normalizeCountry(val: string | undefined): string {
+  const code = (val ?? "").trim().toUpperCase();
+  return COUNTRY_CORRECTIONS[code] ?? (val ?? "").trim();
+}
+
 // ─── Gender helper ────────────────────────────────────────────────────────────
 
 import { Gender } from "../src/generated/prisma/client";
@@ -458,7 +482,7 @@ async function main() {
         normalizedName: normalizeName(athleteName),
         gender: toGender(obj["Gender"]),
         division: (obj["Division"] ?? "").trim(),
-        country: (obj["Country"] ?? "").trim(),
+        country: normalizeCountry(obj["Country"]),
         city: (obj["City"] ?? "").trim() || null,
         team: (obj["Team"] ?? "").trim() || null,
         status: toAthleteStatus(obj["Status"]),
