@@ -505,6 +505,7 @@ async function main() {
           const segmentId = segmentMap[leg];
           const segData = {
             timeSeconds: toFloat(obj[`${leg} Time`]),
+            epochTime: toFloat(obj[`${leg} EpochTime`]),
             gained: toInt(obj[`${leg} Gained`]),
             lost: toInt(obj[`${leg} Lost`]),
             net: toInt(obj[`${leg} Net`]),

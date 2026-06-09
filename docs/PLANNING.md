@@ -383,8 +383,10 @@ Add `@@index([normalizedName])` to `Athlete` in schema.prisma.
 
 ### T5 — `epochTime` on `AthleteSegment` — unclear provenance
 
-`epochTime` is stored but never used in any query or UI. Either document what
-it represents and wire it up, or remove it to reduce confusion.
+`epochTime` is the absolute wall-clock time at each checkpoint, derived by the
+scraper as `waveStartEpoch + chipSplitSeconds`. It is stored at ingest time and
+will be required for S4 (race replay animation / position snapshots). No action
+needed — keeping the field.
 
 ---
 
