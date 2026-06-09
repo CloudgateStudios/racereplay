@@ -419,7 +419,16 @@ async function main() {
   const queue = rows.filter((r) => rowToObj(headers, r)["Bib"]);
   const total = queue.length;
   let completed = 0;
+  let created = 0;
+  let updated = 0;
   const ingestStart = Date.now();
+
+  // Pre-fetch existing bibs for this event so we can report created vs updated
+  const existingBibs = new Set(
+    (await prisma.athlete.findMany({ where: { eventId: event.id }, select: { bib: true } })).map(
+      (a) => a.bib
+    )
+  );
 
   // Collect category totals keyed by "category|name" → total.
   // Multiple athletes share the same category total (e.g. all males have
@@ -494,6 +503,7 @@ async function main() {
       }
 
       // Upsert athlete + all its segments in one transaction to cut round trips
+      const isNew = !existingBibs.has(obj["Bib"]);
       await prisma.$transaction(async (tx) => {
         const athlete = await tx.athlete.upsert({
           where: { eventId_bib: { eventId: event.id, bib: obj["Bib"] } },
@@ -518,6 +528,7 @@ async function main() {
         }
       });
 
+      if (isNew) created++; else updated++;
       completed++;
       if (completed % 500 === 0 || completed === total) {
         const elapsed = ((Date.now() - ingestStart) / 1000).toFixed(0);
@@ -533,7 +544,7 @@ async function main() {
   await Promise.all(Array.from({ length: CONCURRENCY }, ingestWorker));
 
   console.log(
-    `\nDone. ${completed} athletes ingested in ${((Date.now() - ingestStart) / 1000).toFixed(1)}s.\n`
+    `\nDone. ${completed} athletes in ${((Date.now() - ingestStart) / 1000).toFixed(1)}s — ${created} created, ${updated} updated.\n`
   );
 
   // ── Upsert CategoryResults ─────────────────────────────────────────────────
