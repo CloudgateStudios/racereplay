@@ -1,0 +1,30 @@
+{
+  "im-703-chattanooga": {
+    "location": "Chattanooga, TN",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/im703-chattanooga"
+  },
+  "im-703-oceanside": {
+    "location": "Oceanside, CA",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/im703-oceanside"
+  },
+  "im-703-pennsylvania": {
+    "location": "Happy Valley, PA",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/races/im703-pennsylvania"
+  },
+  "im-wisconsin": {
+    "location": "Madison, WI",
+    "country": "US",
+    "distanceType": "140.6",
+    "seriesName": "IRONMAN",
+    "website": "https://www.ironman.com/im-wisconsin"
+  }
+}
