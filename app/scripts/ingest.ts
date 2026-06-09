@@ -414,6 +414,17 @@ async function main() {
       const obj = rowToObj(headers, row);
 
       const athleteName = (obj["Name"] ?? "").trim();
+
+      // Sum timeSeconds for all non-finish legs to get a numeric finish time.
+      // The "Finish" leg is a virtual segment added by the pipeline and is not
+      // part of the race clock — exclude it from the sum.
+      const finishLegs = legs.filter((l) => l.toLowerCase() !== "finish");
+      const legTimes = finishLegs.map((l) => toFloat(obj[`${l} Time`]));
+      const finishSeconds =
+        legTimes.every((t) => t !== null)
+          ? Math.round(legTimes.reduce((sum, t) => sum! + t!, 0)!)
+          : null;
+
       const athleteData = {
         name: athleteName,
         normalizedName: normalizeName(athleteName),
@@ -424,6 +435,7 @@ async function main() {
         team: (obj["Team"] ?? "").trim() || null,
         status: toAthleteStatus(obj["Status"]),
         finishTime: (obj["Overall Finish Time"] || obj["Finish Time"] || "").trim() || null,
+        finishSeconds,
         waveTime: (obj["Wave Finish Time"] ?? "").trim() || null,
         overallRank: toInt(obj["Overall Rank"]),
         genderRank: toInt(obj["Gender Rank"]),
