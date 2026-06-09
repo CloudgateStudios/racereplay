@@ -23,8 +23,9 @@ For each leg and each athlete, Race Replay reports:
 ## Architecture
 
 ```
-scripts/            ← Local data pipeline (run on your machine)
+scraper/            ← Local data pipeline (run on your machine)
   racereplay.mjs    ← Fetch + analyze in one step, writes _passing.csv
+  check-legs.mjs    ← Preview timing points before scraping
   test-algorithm.mjs← Unit tests for the passing algorithm
 
 app/                ← Next.js web application
@@ -131,28 +132,28 @@ For non-IRONMAN races you also need the app ID — view the page source and sear
 ### Step 2 — Run the pipeline
 
 ```bash
-node scripts/racereplay.mjs <event-id> [--appid <id>]
+node scraper/racereplay.mjs <event-id> [--appid <id>]
 ```
 
 Examples:
 
 ```bash
 # Bank of America Shamrock Shuffle (non-IRONMAN, requires --appid)
-node scripts/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
 
 # Any IRONMAN event (default app ID)
-node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
+node scraper/racereplay.mjs IRM-OCEANSIDE703-2026
 ```
 
-The script fetches all timing splits from RTRT.me, runs the passing algorithm, and writes `scripts/data/<EVENT-ID>_passing.csv` directly — no intermediate files.
+The script fetches all timing splits from RTRT.me, runs the passing algorithm, and writes `scraper/data/<EVENT-ID>_passing.csv` directly — no intermediate files.
 
-See [scripts/README.md](scripts/README.md) for full details including the `--points` override flag and timing estimates for large events.
+See [scraper/README.md](scraper/README.md) for full details including the `--points` override flag and timing estimates for large events.
 
 ### Step 3 — Ingest into the database
 
 ```bash
 cd app
-npx tsx scripts/ingest.ts ../scripts/data/<EVENT-ID>_passing.csv \
+npx tsx scripts/ingest.ts ../scraper/data/<EVENT-ID>_passing.csv \
   --slug <slug> \
   --race-name "<Race Name>" \
   --year <YYYY> \
@@ -240,7 +241,8 @@ To add a new word, put it in whichever file fits and commit.
 
 ## Adding a New Race
 
-1. Run `node scripts/racereplay.mjs <event-id>` to produce a `_passing.csv`
-2. Choose a URL slug (e.g. `im-703-chattanooga`)
-3. Run the ingest script against the target database
-4. The race appears on the site immediately — no code changes needed
+1. Run `node scraper/check-legs.mjs <event-id>` to verify leg structure
+2. Run `node scraper/racereplay.mjs <event-id>` to produce a `_passing.csv`
+3. Choose a URL slug (e.g. `im-703-chattanooga`) and add it to `app/scripts/races.config.json`
+4. Run the ingest script against the target database
+5. The race appears on the site immediately — no code changes needed

@@ -11,14 +11,14 @@
  * full re-fetch regardless of cached files.
  *
  * Usage:
- *   node scripts/racereplay.mjs <event-id> [options]
+ *   node scraper/racereplay.mjs <event-id> [options]
  *
  * Options:
  *   --appid <id>          RTRT app ID for this event's tracker app.
  *                         Defaults to the IRONMAN Tracker app ID.
  *                         Find it at track.rtrt.me/e/<event-id> (view page
  *                         source, search for "appid").
- *   --output-dir <dir>    Directory to write output files (default: scripts/data/)
+ *   --output-dir <dir>    Directory to write output files (default: scraper/data/)
  *   --points <list>       Comma-separated list of point names to use, in order.
  *                         Overrides auto-discovery. Must include the finish point.
  *                         Example: --points START,5K,10K,FINISH
@@ -31,16 +31,16 @@
  *
  * Examples:
  *   # Shamrock Shuffle 2026 (Bank of America — uses a different app ID)
- *   node scripts/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+ *   node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
  *
  *   # Any IRONMAN event (uses default IRONMAN app ID)
- *   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
+ *   node scraper/racereplay.mjs IRM-OCEANSIDE703-2026
  *
  *   # Force a full re-fetch, ignoring any cached split files
- *   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
+ *   node scraper/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
  *
  *   # Verify the fast algorithm matches the reference on a cached event
- *   node scripts/racereplay.mjs IRM-OCEANSIDE703-2026 --verify
+ *   node scraper/racereplay.mjs IRM-OCEANSIDE703-2026 --verify
  */
 
 import fs from "fs/promises";
@@ -1318,7 +1318,7 @@ const verifyMode = args.includes("--verify");
 
 if (!eventId) {
   console.error(`
-Usage: node scripts/racereplay.mjs <event-id> [options]
+Usage: node scraper/racereplay.mjs <event-id> [options]
 
   event-id              RTRT event ID, e.g. BASS2026 or IRM-OCEANSIDE703-2026
 
@@ -1327,7 +1327,7 @@ Options:
                         Default: IRONMAN Tracker (for IRM-* events).
                         For other events, find it at track.rtrt.me/e/<event-id>
                         (view page source, search for "appid").
-  --output-dir <dir>    Directory to write output files (default: scripts/data/)
+  --output-dir <dir>    Directory to write output files (default: scraper/data/)
   --points <list>       Comma-separated timing point names to use, in order.
                         Overrides auto-discovery.
                         Example: --points START,5K,10K,FINISH
@@ -1338,13 +1338,13 @@ Options:
 
 Examples:
   # Shamrock Shuffle 2026
-  node scripts/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
+  node scraper/racereplay.mjs BASS2026 --appid 4d9df5bf9f36bc4a1dc8fce2
 
   # Any IRONMAN event
-  node scripts/racereplay.mjs IRM-OCEANSIDE703-2026
+  node scraper/racereplay.mjs IRM-OCEANSIDE703-2026
 
   # Force full re-fetch
-  node scripts/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
+  node scraper/racereplay.mjs IRM-OCEANSIDE703-2026 --fresh
 `);
   process.exit(1);
 }

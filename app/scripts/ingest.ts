@@ -18,7 +18,7 @@
  * the slug. CLI flags override the config file value for that field.
  *
  * Examples:
- *   npx tsx scripts/ingest.ts ../scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
+ *   npx tsx scripts/ingest.ts ../scraper/data/IRM-CHATTANOOGA703-2026_passing.csv \
  *     --slug im-703-chattanooga \
  *     --race-name "IM 70.3 Chattanooga" \
  *     --year 2026 \
@@ -26,7 +26,7 @@
  *     --event-date 2026-05-18
  *
  *   # Override a single field from the config:
- *   npx tsx scripts/ingest.ts ../scripts/data/IRM-CHATTANOOGA703-2026_passing.csv \
+ *   npx tsx scripts/ingest.ts ../scraper/data/IRM-CHATTANOOGA703-2026_passing.csv \
  *     --slug im-703-chattanooga \
  *     --race-name "IM 70.3 Chattanooga" \
  *     --year 2026 \

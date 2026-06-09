@@ -13,8 +13,8 @@ node_modules/
 .env.*.local
 
 # Race data — never commit CSVs or wave offset files
-scripts/data/
-!scripts/data/wave-offsets-example.json
+scraper/data/
+!scraper/data/wave-offsets-example.json
 
 # Vercel
 .vercel
