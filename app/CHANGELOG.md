@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/CloudgateStudios/race_replay/compare/0.7.0...0.8.0) (2026-06-09)
+
+### Features
+
+- Multi-year race history on athlete detail page ([#70](https://github.com/CloudgateStudios/race_replay/issues/70)) ([c54d046](https://github.com/CloudgateStudios/race_replay/commit/c54d046b6d634471639e009a0b08bae0d7e46eaf))
+- S1 — race metadata fields on Race model ([#76](https://github.com/CloudgateStudios/race_replay/issues/76)) ([7b6f889](https://github.com/CloudgateStudios/race_replay/commit/7b6f88907a2d1220f1fa52bcee34ea2a5070aef7))
+- S2 — event metadata fields (finisherCount, totalCount, etc.) ([#78](https://github.com/CloudgateStudios/race_replay/issues/78)) ([40ec1f5](https://github.com/CloudgateStudios/race_replay/commit/40ec1f56b4774eaca8271974b413409d0e0a9c10))
+- T2 — normalize Athlete.gender to Gender enum ([#79](https://github.com/CloudgateStudios/race_replay/issues/79)) ([c8f907e](https://github.com/CloudgateStudios/race_replay/commit/c8f907e2d0bb5aa55b254ea2cf501a5453ba2fb6))
+- T3 — add finishSeconds to Athlete ([#77](https://github.com/CloudgateStudios/race_replay/issues/77)) ([fa4f763](https://github.com/CloudgateStudios/race_replay/commit/fa4f763fc20ba2719e221eed86cb783ba98acdc9))
+
 ## [0.7.0](https://github.com/CloudgateStudios/race_replay/compare/0.6.1...0.7.0) (2026-06-08)
 
 ### Features
