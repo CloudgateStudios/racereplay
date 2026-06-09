@@ -25,3 +25,13 @@ export const AthleteStatus = {
 } as const
 
 export type AthleteStatus = (typeof AthleteStatus)[keyof typeof AthleteStatus]
+
+
+export const Gender = {
+  Male: 'Male',
+  Female: 'Female',
+  Open: 'Open',
+  Unknown: 'Unknown'
+} as const
+
+export type Gender = (typeof Gender)[keyof typeof Gender]

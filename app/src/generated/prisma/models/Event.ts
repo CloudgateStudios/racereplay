@@ -50,7 +50,6 @@ export type EventMinAggregateOutputType = {
   date: Date | null
   finisherCount: number | null
   totalCount: number | null
-  locationNote: string | null
   description: string | null
 }
 
@@ -62,7 +61,6 @@ export type EventMaxAggregateOutputType = {
   date: Date | null
   finisherCount: number | null
   totalCount: number | null
-  locationNote: string | null
   description: string | null
 }
 
@@ -74,7 +72,6 @@ export type EventCountAggregateOutputType = {
   date: number
   finisherCount: number
   totalCount: number
-  locationNote: number
   description: number
   _all: number
 }
@@ -104,7 +101,6 @@ export type EventMinAggregateInputType = {
   date?: true
   finisherCount?: true
   totalCount?: true
-  locationNote?: true
   description?: true
 }
 
@@ -116,7 +112,6 @@ export type EventMaxAggregateInputType = {
   date?: true
   finisherCount?: true
   totalCount?: true
-  locationNote?: true
   description?: true
 }
 
@@ -128,7 +123,6 @@ export type EventCountAggregateInputType = {
   date?: true
   finisherCount?: true
   totalCount?: true
-  locationNote?: true
   description?: true
   _all?: true
 }
@@ -227,7 +221,6 @@ export type EventGroupByOutputType = {
   date: Date
   finisherCount: number | null
   totalCount: number | null
-  locationNote: string | null
   description: string | null
   _count: EventCountAggregateOutputType | null
   _avg: EventAvgAggregateOutputType | null
@@ -262,7 +255,6 @@ export type EventWhereInput = {
   date?: Prisma.DateTimeFilter<"Event"> | Date | string
   finisherCount?: Prisma.IntNullableFilter<"Event"> | number | null
   totalCount?: Prisma.IntNullableFilter<"Event"> | number | null
-  locationNote?: Prisma.StringNullableFilter<"Event"> | string | null
   description?: Prisma.StringNullableFilter<"Event"> | string | null
   race?: Prisma.XOR<Prisma.RaceScalarRelationFilter, Prisma.RaceWhereInput>
   athletes?: Prisma.AthleteListRelationFilter
@@ -278,7 +270,6 @@ export type EventOrderByWithRelationInput = {
   date?: Prisma.SortOrder
   finisherCount?: Prisma.SortOrderInput | Prisma.SortOrder
   totalCount?: Prisma.SortOrderInput | Prisma.SortOrder
-  locationNote?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   race?: Prisma.RaceOrderByWithRelationInput
   athletes?: Prisma.AthleteOrderByRelationAggregateInput
@@ -298,7 +289,6 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   date?: Prisma.DateTimeFilter<"Event"> | Date | string
   finisherCount?: Prisma.IntNullableFilter<"Event"> | number | null
   totalCount?: Prisma.IntNullableFilter<"Event"> | number | null
-  locationNote?: Prisma.StringNullableFilter<"Event"> | string | null
   description?: Prisma.StringNullableFilter<"Event"> | string | null
   race?: Prisma.XOR<Prisma.RaceScalarRelationFilter, Prisma.RaceWhereInput>
   athletes?: Prisma.AthleteListRelationFilter
@@ -314,7 +304,6 @@ export type EventOrderByWithAggregationInput = {
   date?: Prisma.SortOrder
   finisherCount?: Prisma.SortOrderInput | Prisma.SortOrder
   totalCount?: Prisma.SortOrderInput | Prisma.SortOrder
-  locationNote?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.EventCountOrderByAggregateInput
   _avg?: Prisma.EventAvgOrderByAggregateInput
@@ -334,7 +323,6 @@ export type EventScalarWhereWithAggregatesInput = {
   date?: Prisma.DateTimeWithAggregatesFilter<"Event"> | Date | string
   finisherCount?: Prisma.IntNullableWithAggregatesFilter<"Event"> | number | null
   totalCount?: Prisma.IntNullableWithAggregatesFilter<"Event"> | number | null
-  locationNote?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
 }
 
@@ -344,7 +332,6 @@ export type EventCreateInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
@@ -360,7 +347,6 @@ export type EventUncheckedCreateInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
@@ -373,7 +359,6 @@ export type EventUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
@@ -389,7 +374,6 @@ export type EventUncheckedUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
@@ -404,7 +388,6 @@ export type EventCreateManyInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
 }
 
@@ -414,7 +397,6 @@ export type EventUpdateManyMutationInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -426,7 +408,6 @@ export type EventUncheckedUpdateManyInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -453,7 +434,6 @@ export type EventCountOrderByAggregateInput = {
   date?: Prisma.SortOrder
   finisherCount?: Prisma.SortOrder
   totalCount?: Prisma.SortOrder
-  locationNote?: Prisma.SortOrder
   description?: Prisma.SortOrder
 }
 
@@ -473,7 +453,6 @@ export type EventMaxOrderByAggregateInput = {
   date?: Prisma.SortOrder
   finisherCount?: Prisma.SortOrder
   totalCount?: Prisma.SortOrder
-  locationNote?: Prisma.SortOrder
   description?: Prisma.SortOrder
 }
 
@@ -485,7 +464,6 @@ export type EventMinOrderByAggregateInput = {
   date?: Prisma.SortOrder
   finisherCount?: Prisma.SortOrder
   totalCount?: Prisma.SortOrder
-  locationNote?: Prisma.SortOrder
   description?: Prisma.SortOrder
 }
 
@@ -608,7 +586,6 @@ export type EventCreateWithoutRaceInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentCreateNestedManyWithoutEventInput
@@ -622,7 +599,6 @@ export type EventUncheckedCreateWithoutRaceInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
@@ -666,7 +642,6 @@ export type EventScalarWhereInput = {
   date?: Prisma.DateTimeFilter<"Event"> | Date | string
   finisherCount?: Prisma.IntNullableFilter<"Event"> | number | null
   totalCount?: Prisma.IntNullableFilter<"Event"> | number | null
-  locationNote?: Prisma.StringNullableFilter<"Event"> | string | null
   description?: Prisma.StringNullableFilter<"Event"> | string | null
 }
 
@@ -676,7 +651,6 @@ export type EventCreateWithoutSegmentsInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
@@ -691,7 +665,6 @@ export type EventUncheckedCreateWithoutSegmentsInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
   categoryResults?: Prisma.CategoryResultUncheckedCreateNestedManyWithoutEventInput
@@ -719,7 +692,6 @@ export type EventUpdateWithoutSegmentsInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
@@ -734,7 +706,6 @@ export type EventUncheckedUpdateWithoutSegmentsInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   categoryResults?: Prisma.CategoryResultUncheckedUpdateManyWithoutEventNestedInput
@@ -746,7 +717,6 @@ export type EventCreateWithoutAthletesInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   segments?: Prisma.SegmentCreateNestedManyWithoutEventInput
@@ -761,7 +731,6 @@ export type EventUncheckedCreateWithoutAthletesInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
   categoryResults?: Prisma.CategoryResultUncheckedCreateNestedManyWithoutEventInput
@@ -789,7 +758,6 @@ export type EventUpdateWithoutAthletesInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   segments?: Prisma.SegmentUpdateManyWithoutEventNestedInput
@@ -804,7 +772,6 @@ export type EventUncheckedUpdateWithoutAthletesInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
   categoryResults?: Prisma.CategoryResultUncheckedUpdateManyWithoutEventNestedInput
@@ -816,7 +783,6 @@ export type EventCreateWithoutCategoryResultsInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   race: Prisma.RaceCreateNestedOneWithoutEventsInput
   athletes?: Prisma.AthleteCreateNestedManyWithoutEventInput
@@ -831,7 +797,6 @@ export type EventUncheckedCreateWithoutCategoryResultsInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
   athletes?: Prisma.AthleteUncheckedCreateNestedManyWithoutEventInput
   segments?: Prisma.SegmentUncheckedCreateNestedManyWithoutEventInput
@@ -859,7 +824,6 @@ export type EventUpdateWithoutCategoryResultsInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   race?: Prisma.RaceUpdateOneRequiredWithoutEventsNestedInput
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
@@ -874,7 +838,6 @@ export type EventUncheckedUpdateWithoutCategoryResultsInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
@@ -887,7 +850,6 @@ export type EventCreateManyRaceInput = {
   date: Date | string
   finisherCount?: number | null
   totalCount?: number | null
-  locationNote?: string | null
   description?: string | null
 }
 
@@ -897,7 +859,6 @@ export type EventUpdateWithoutRaceInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   athletes?: Prisma.AthleteUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUpdateManyWithoutEventNestedInput
@@ -911,7 +872,6 @@ export type EventUncheckedUpdateWithoutRaceInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   athletes?: Prisma.AthleteUncheckedUpdateManyWithoutEventNestedInput
   segments?: Prisma.SegmentUncheckedUpdateManyWithoutEventNestedInput
@@ -925,7 +885,6 @@ export type EventUncheckedUpdateManyWithoutRaceInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finisherCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  locationNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -986,7 +945,6 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   date?: boolean
   finisherCount?: boolean
   totalCount?: boolean
-  locationNote?: boolean
   description?: boolean
   race?: boolean | Prisma.RaceDefaultArgs<ExtArgs>
   athletes?: boolean | Prisma.Event$athletesArgs<ExtArgs>
@@ -1003,7 +961,6 @@ export type EventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   date?: boolean
   finisherCount?: boolean
   totalCount?: boolean
-  locationNote?: boolean
   description?: boolean
   race?: boolean | Prisma.RaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["event"]>
@@ -1016,7 +973,6 @@ export type EventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   date?: boolean
   finisherCount?: boolean
   totalCount?: boolean
-  locationNote?: boolean
   description?: boolean
   race?: boolean | Prisma.RaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["event"]>
@@ -1029,11 +985,10 @@ export type EventSelectScalar = {
   date?: boolean
   finisherCount?: boolean
   totalCount?: boolean
-  locationNote?: boolean
   description?: boolean
 }
 
-export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "raceId" | "year" | "type" | "date" | "finisherCount" | "totalCount" | "locationNote" | "description", ExtArgs["result"]["event"]>
+export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "raceId" | "year" | "type" | "date" | "finisherCount" | "totalCount" | "description", ExtArgs["result"]["event"]>
 export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   race?: boolean | Prisma.RaceDefaultArgs<ExtArgs>
   athletes?: boolean | Prisma.Event$athletesArgs<ExtArgs>
@@ -1064,7 +1019,6 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     date: Date
     finisherCount: number | null
     totalCount: number | null
-    locationNote: string | null
     description: string | null
   }, ExtArgs["result"]["event"]>
   composites: {}
@@ -1500,7 +1454,6 @@ export interface EventFieldRefs {
   readonly date: Prisma.FieldRef<"Event", 'DateTime'>
   readonly finisherCount: Prisma.FieldRef<"Event", 'Int'>
   readonly totalCount: Prisma.FieldRef<"Event", 'Int'>
-  readonly locationNote: Prisma.FieldRef<"Event", 'String'>
   readonly description: Prisma.FieldRef<"Event", 'String'>
 }
     
