@@ -45,7 +45,9 @@ async function main() {
       where: { id: event.id },
       data: { finisherCount, totalCount },
     });
-    console.log(`  Event ${event.id} (year ${event.year}): ${finisherCount} finishers / ${totalCount} total`);
+    console.log(
+      `  Event ${event.id} (year ${event.year}): ${finisherCount} finishers / ${totalCount} total`
+    );
   }
 
   console.log("\nDone.");

@@ -716,14 +716,6 @@ export type EnumAthleteStatusFieldUpdateOperationsInput = {
   set?: $Enums.AthleteStatus
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type AthleteCreateNestedOneWithoutSegmentsInput = {
   create?: Prisma.XOR<Prisma.AthleteCreateWithoutSegmentsInput, Prisma.AthleteUncheckedCreateWithoutSegmentsInput>
   connectOrCreate?: Prisma.AthleteCreateOrConnectWithoutSegmentsInput
