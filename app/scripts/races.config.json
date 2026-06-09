@@ -1,38 +1,11 @@
 {
-  "im-703-chattanooga": {
-    "location": "Chattanooga, TN",
-    "country": "US",
-    "distanceType": "70.3",
-    "seriesName": "IRONMAN 70.3",
-    "website": "https://www.ironman.com/im703-chattanooga",
-    "scraperPoints": "START,SWIM,T1,BIKE,T2,FINISH",
-    "segmentNames": { "FINISH": "Run" }
-  },
-  "im-703-oceanside": {
-    "location": "Oceanside, CA",
-    "country": "US",
-    "distanceType": "70.3",
-    "seriesName": "IRONMAN 70.3",
-    "website": "https://www.ironman.com/im703-oceanside",
-    "scraperPoints": "START,SWIM,T1,BIKE,T2,FINISH",
-    "segmentNames": { "FINISH": "Run" }
-  },
-  "im-703-pennsylvania": {
-    "location": "Happy Valley, PA",
-    "country": "US",
-    "distanceType": "70.3",
-    "seriesName": "IRONMAN 70.3",
-    "website": "https://www.ironman.com/races/im703-pennsylvania",
-    "scraperPoints": "START,SWIM,T1,BIKE,T2,FINISH",
-    "segmentNames": { "FINISH": "Run" }
-  },
-  "im-wisconsin": {
+  "ironman-wisconsin": {
     "location": "Madison, WI",
     "country": "US",
     "distanceType": "140.6",
     "seriesName": "IRONMAN",
     "website": "https://www.ironman.com/im-wisconsin",
-    "scraperPoints": "START,SWIM,T1,BIKE,T2,FINISH",
-    "segmentNames": { "FINISH": "Run" }
+    "scraperPoints": "SWIM,T1,BIKE,T2,FINISH",
+    "segmentNames": { "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
   }
 }
