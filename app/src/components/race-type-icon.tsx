@@ -18,7 +18,11 @@ export function RaceTypeIcon({ type }: Props) {
       title={isTriathlon ? "Triathlon" : "Road Race"}
       aria-label={isTriathlon ? "Triathlon" : "Road Race"}
     >
-      {isTriathlon ? "🏊" : "🏃"}
+      {isTriathlon ? (
+        <span className="text-xs font-black tracking-tight">TRI</span>
+      ) : (
+        <span className="text-xs font-black tracking-tight">RUN</span>
+      )}
     </div>
   );
 }

@@ -14,7 +14,6 @@ export default async function HomePage() {
     orderBy: { date: "desc" },
     include: {
       race: true,
-      segments: { orderBy: { displayOrder: "asc" }, select: { name: true } },
       _count: { select: { athletes: true } },
     },
   });
@@ -28,10 +27,10 @@ export default async function HomePage() {
         inner padding keeps the text aligned with the rest of the page.
       */}
       <section className="relative -mx-[clamp(1.5rem,5vw,5rem)] mb-20 px-[clamp(1.5rem,5vw,5rem)] pt-12 pb-16">
-        {/* Full-width gradient wash */}
+        {/* Full-width gradient wash — uses fixed positioning to escape max-w container */}
         <div
           aria-hidden
-          className="from-primary/10 pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b to-transparent"
+          className="from-primary/10 pointer-events-none fixed inset-x-0 top-0 h-80 bg-gradient-to-b to-transparent"
         />
 
         <div className="relative max-w-3xl">
@@ -133,11 +132,6 @@ export default async function HomePage() {
                   <Badge variant="secondary">
                     {event._count.athletes.toLocaleString()} athletes
                   </Badge>
-                  {event.segments.length > 0 && (
-                    <Badge variant="outline" className="text-muted-foreground">
-                      {event.segments.map((s) => s.name).join(" · ")}
-                    </Badge>
-                  )}
                 </div>
               </Link>
             ))}
