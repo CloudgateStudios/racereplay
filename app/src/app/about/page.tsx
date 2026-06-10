@@ -54,6 +54,41 @@ export default function AboutPage() {
           </section>
 
           <section>
+            <h2 className="mb-5 text-xl font-bold tracking-tight">Why this data matters</h2>
+            <div className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Chip time tells you the outcome. Passing tells you the mechanism. Two athletes can
+                cross the line at the same time having had completely opposite race experiences —
+                one ran down 150 people on the run leg, the other gave back every spot they gained
+                on the bike.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                It also cuts through noise that time can&apos;t. A slower finish time year-over-year
+                might reflect heat, a tougher field, or a bad day — but if your passing numbers
+                improved, you got stronger. Race Replay gives you the signal beneath the clock.
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="mb-5 text-xl font-bold tracking-tight">Built for coaches too</h2>
+            <div className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Coaches already know what to prescribe. Race Replay gives them race-day evidence to
+                validate or challenge it. Instead of debriefing on splits alone, you can see exactly
+                where an athlete moved through the field and where they lost ground — leg by leg,
+                relative to everyone else on course that day.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                If you coach multiple athletes in the same race, you can compare their patterns
+                side by side: who&apos;s a strong swimmer getting caught on the bike, who blows up
+                on the run, who races consistently well but starts too conservatively. Passing data
+                surfaces those tendencies in a way split times alone never could.
+              </p>
+            </div>
+          </section>
+
+          <section>
             <h2 className="mb-5 text-xl font-bold tracking-tight">Who built this</h2>
             <div className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
