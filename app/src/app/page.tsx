@@ -14,7 +14,7 @@ export default async function HomePage() {
     orderBy: { date: "desc" },
     include: {
       race: true,
-_count: { select: { athletes: true } },
+      _count: { select: { athletes: true } },
     },
   });
 

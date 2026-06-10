@@ -38,11 +38,11 @@ function SortHeader({
     <th className={`px-6 py-3 font-semibold ${className ?? ""}`}>
       <Link
         href={`?sort=${col}&dir=${nextDir}`}
-        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+        className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
       >
         {label}
         <span className="text-xs">
-          {isActive ? (dir === "asc" ? "↑" : "↓") : <span className="opacity-30">↕</span>}
+          {isActive ? dir === "asc" ? "↑" : "↓" : <span className="opacity-30">↕</span>}
         </span>
       </Link>
     </th>
@@ -55,9 +55,9 @@ export default async function RacesPage({
   searchParams: Promise<{ sort?: string; dir?: string; q?: string }>;
 }) {
   const { sort, dir, q } = await searchParams;
-  const sortKey: SortKey = (["name", "type", "years", "athletes"].includes(sort ?? "")
-    ? sort
-    : "name") as SortKey;
+  const sortKey: SortKey = (
+    ["name", "type", "years", "athletes"].includes(sort ?? "") ? sort : "name"
+  ) as SortKey;
   const sortDir: SortDir = dir === "desc" ? "desc" : "asc";
 
   const races = await prisma.race.findMany({
@@ -110,10 +110,10 @@ export default async function RacesPage({
       {filtered.length === 0 ? (
         <p className="text-muted-foreground">No races found.</p>
       ) : (
-        <div className="rounded-xl border overflow-hidden mx-2">
+        <div className="mx-2 overflow-hidden rounded-xl border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-muted/50 border-b text-left text-muted-foreground">
+              <tr className="bg-muted/50 text-muted-foreground border-b text-left">
                 <SortHeader label="Race" col="name" current={sortKey} dir={sortDir} />
                 <SortHeader
                   label="Type"
@@ -136,7 +136,7 @@ export default async function RacesPage({
               {filtered.map((row, i) => (
                 <tr
                   key={row.slug}
-                  className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}
+                  className={`hover:bg-muted/30 border-b transition-colors last:border-0 ${i % 2 === 0 ? "" : "bg-muted/10"}`}
                 >
                   <td className="px-6 py-3">
                     <Link
@@ -146,13 +146,13 @@ export default async function RacesPage({
                       {row.name}
                     </Link>
                   </td>
-                  <td className="px-6 py-3 hidden sm:table-cell text-muted-foreground">
+                  <td className="text-muted-foreground hidden px-6 py-3 sm:table-cell">
                     {row.type === "TRIATHLON" ? "Triathlon" : "Road Race"}
                   </td>
-                  <td className="px-6 py-3 text-muted-foreground tabular-nums">
+                  <td className="text-muted-foreground px-6 py-3 tabular-nums">
                     {row.years.join(", ")}
                   </td>
-                  <td className="px-6 py-3 text-right tabular-nums text-muted-foreground">
+                  <td className="text-muted-foreground px-6 py-3 text-right tabular-nums">
                     {row.totalAthletes.toLocaleString()}
                   </td>
                 </tr>
