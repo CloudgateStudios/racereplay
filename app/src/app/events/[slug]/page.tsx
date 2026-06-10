@@ -57,7 +57,9 @@ export default async function RacePage({ params }: Props) {
   const totalEntries = race.events.reduce((sum, e) => sum + e._count.athletes, 0);
   const years = race.events.map((e) => e.year);
   const coverage =
-    years.length > 1 ? `${Math.min(...years)}–${String(Math.max(...years)).slice(2)}` : String(years[0]);
+    years.length > 1
+      ? `${Math.min(...years)}–${String(Math.max(...years)).slice(2)}`
+      : String(years[0]);
   const maxAthletes = Math.max(...race.events.map((e) => e._count.athletes));
   const latestYear = race.events[0]?.year;
 
@@ -65,7 +67,10 @@ export default async function RacePage({ params }: Props) {
     <div>
       {/* Breadcrumb + header */}
       <div className="mb-8">
-        <Link href="/races" className="text-muted-foreground hover:text-primary text-sm transition-colors">
+        <Link
+          href="/races"
+          className="text-muted-foreground hover:text-primary text-sm transition-colors"
+        >
           ← All races
         </Link>
         <h1 className="mt-3 text-4xl font-bold tracking-tight">{race.name}</h1>
@@ -109,7 +114,7 @@ export default async function RacePage({ params }: Props) {
 
       {/* Bar chart */}
       <div className="bg-card mb-6 rounded-xl border p-5">
-        <p className="text-muted-foreground mb-4 text-xs font-medium uppercase tracking-wide">
+        <p className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
           Entries by year — click to view results
         </p>
         <div className="flex items-end gap-3" style={{ height: "96px" }}>
@@ -128,11 +133,13 @@ export default async function RacePage({ params }: Props) {
                 </span>
                 <div className="flex w-full flex-1 flex-col justify-end">
                   <div
-                    className={`w-full rounded-t group-hover:opacity-75 transition-opacity ${isLatest ? "bg-primary" : "bg-primary/60"}`}
+                    className={`w-full rounded-t transition-opacity group-hover:opacity-75 ${isLatest ? "bg-primary" : "bg-primary/60"}`}
                     style={{ height: `${heightPct}%` }}
                   />
                 </div>
-                <span className={`text-xs tabular-nums ${isLatest ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                <span
+                  className={`text-xs tabular-nums ${isLatest ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                >
                   {event.year}
                 </span>
               </Link>
@@ -152,7 +159,9 @@ export default async function RacePage({ params }: Props) {
                 Finishers
               </th>
               <th className="text-muted-foreground px-5 py-3 text-right font-medium">Entries</th>
-              <th className="text-muted-foreground hidden px-5 py-3 font-medium lg:table-cell">Legs</th>
+              <th className="text-muted-foreground hidden px-5 py-3 font-medium lg:table-cell">
+                Legs
+              </th>
               <th className="px-5 py-3" />
             </tr>
           </thead>
@@ -162,7 +171,7 @@ export default async function RacePage({ params }: Props) {
               return (
                 <tr
                   key={event.year}
-                  className={`hover:bg-muted/30 border-b last:border-0 transition-colors ${i % 2 !== 0 ? "bg-muted/10" : ""}`}
+                  className={`hover:bg-muted/30 border-b transition-colors last:border-0 ${i % 2 !== 0 ? "bg-muted/10" : ""}`}
                 >
                   <td className="px-5 py-3">
                     <Link
