@@ -42,6 +42,15 @@
     "seriesName": "IRONMAN 70.3",
     "website": "https://www.ironman.com/races/im703-wisconsin",
     "scraperPoints": "SWIM,SWIM-703,T1,T1-703,BIKE,BIKE-703,T2,T2-703,FINISH,FINISH-703",
-    "segmentNames": { "SWIM-703": "Swim", "T1-703": "T1", "BIKE-703": "Bike", "T2-703": "T2", "FINISH-703": "Run", "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
+    "segmentNames": {
+      "SWIM-703": "Swim",
+      "T1-703": "T1",
+      "BIKE-703": "Bike",
+      "T2-703": "T2",
+      "FINISH-703": "Run",
+      "SWIM": "Swim",
+      "BIKE": "Bike",
+      "FINISH": "Run"
+    }
   }
 }
