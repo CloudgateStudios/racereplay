@@ -8,6 +8,15 @@
     "scraperPoints": "SWIM,T1,BIKE,T2,FINISH",
     "segmentNames": { "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
   },
+  "ironman-florida": {
+    "location": "Panama City Beach, FL",
+    "country": "US",
+    "distanceType": "140.6",
+    "seriesName": "IRONMAN",
+    "website": "https://www.ironman.com/races/im-arizona",
+    "scraperPoints": "SWIM,T1,BIKE,T2,FINISH",
+    "segmentNames": { "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
+  },
   "ironman-wisconsin": {
     "location": "Madison, WI",
     "country": "US",
