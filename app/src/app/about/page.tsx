@@ -17,8 +17,8 @@ export default function AboutPage() {
       </p>
 
       {/* ── Content row: 2/3 text + 1/3 image ── */}
-      <div className="flex flex-col gap-10 sm:flex-row sm:items-center">
-        {/* Left: sections (below image on mobile) */}
+      <div className="flex flex-col gap-10 sm:flex-row sm:items-start">
+        {/* Left: first two sections (below image on mobile) */}
         <div className="order-2 w-full space-y-14 sm:order-1 sm:w-2/3">
           <section>
             <h2 className="mb-5 text-xl font-bold tracking-tight">The problem</h2>
@@ -52,48 +52,6 @@ export default function AboutPage() {
               </p>
             </div>
           </section>
-
-          <section>
-            <h2 className="mb-5 text-xl font-bold tracking-tight">Who built this</h2>
-            <div className="space-y-4">
-              <p className="text-muted-foreground leading-relaxed">
-                Race Replay is a project by{" "}
-                <Link
-                  href="https://cloudgatestudios.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 inline-flex items-center gap-1 font-medium transition-colors"
-                >
-                  Cloudgate Studios
-                </Link>
-                . It started as a personal tool to make sense of triathlon results, and grew into
-                something worth sharing with the broader racing community.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                The project is open source. If you want to see how it works under the hood, report a
-                bug, or add support for a new race series, the code is on GitHub.
-              </p>
-            </div>
-          </section>
-
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="https://github.com/CloudgateStudios/race_replay"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-card hover:border-primary/50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="text-primary h-4 w-4"
-                fill="currentColor"
-                aria-hidden
-              >
-                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
-              </svg>
-              View on GitHub
-            </Link>
-          </div>
         </div>
 
         {/* Right: photo */}
@@ -107,6 +65,151 @@ export default function AboutPage() {
             priority
           />
         </div>
+      </div>
+
+      {/* ── Full-width sections ── */}
+      <div className="mt-20 space-y-20">
+        {/* Why this data matters — comparison card */}
+        <section>
+          <h2 className="mb-5 text-xl font-bold tracking-tight">Why this data matters</h2>
+          <p className="text-muted-foreground mb-8 leading-relaxed">
+            Chip time tells you the outcome. Passing tells you the mechanism. A slower finish
+            year-over-year might reflect heat, a tougher field, or a bad day — but if your passing
+            numbers improved, you got stronger. Race Replay gives you the signal beneath the clock.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="bg-card rounded-xl border p-6">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-widest uppercase">
+                Athlete A — 4:52:14
+              </p>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Swim</span>
+                  <span className="font-medium text-green-500">+42 passed</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Bike</span>
+                  <span className="font-medium text-green-500">+118 passed</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Run</span>
+                  <span className="font-medium text-green-500">+91 passed</span>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between text-sm font-semibold">
+                    <span>Net</span>
+                    <span className="text-green-500">+251</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-card rounded-xl border p-6">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-widest uppercase">
+                Athlete B — 4:52:14
+              </p>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Swim</span>
+                  <span className="text-muted-foreground font-medium">−38 passed</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Bike</span>
+                  <span className="font-medium text-green-500">+204 passed</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Run</span>
+                  <span className="font-medium text-red-500">−215 passed</span>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between text-sm font-semibold">
+                    <span>Net</span>
+                    <span className="text-muted-foreground">−49</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="text-muted-foreground mt-4 text-sm">
+            Same finish time. Completely different race.
+          </p>
+        </section>
+
+        {/* Built for coaches too — icon grid */}
+        <section>
+          <h2 className="mb-5 text-xl font-bold tracking-tight">Built for coaches too</h2>
+          <p className="text-muted-foreground mb-8 leading-relaxed">
+            Coaches already know what to prescribe. Race Replay gives them race-day evidence to
+            validate or challenge it. Leg by leg, relative to everyone else on course that day.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="bg-card rounded-xl border p-6">
+              <div className="text-primary mb-4 text-2xl">📍</div>
+              <h3 className="mb-2 font-semibold">Pinpoint weaknesses</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                See exactly where an athlete moves through the field and where they lose ground. Not
+                just their split time, but their position relative to the whole field.
+              </p>
+            </div>
+            <div className="bg-card rounded-xl border p-6">
+              <div className="text-primary mb-4 text-2xl">👥</div>
+              <h3 className="mb-2 font-semibold">Compare athletes</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Coach multiple athletes in the same race? Compare their leg-by-leg patterns side by
+                side to spot who blows up on the run or gets caught on the bike.
+              </p>
+            </div>
+            <div className="bg-card rounded-xl border p-6">
+              <div className="text-primary mb-4 text-2xl">📈</div>
+              <h3 className="mb-2 font-semibold">Track real progress</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                A slower finish time doesn&apos;t always mean regression. Passing numbers cut
+                through field and weather noise to show if an athlete is genuinely improving.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Who built this */}
+        <section>
+          <h2 className="mb-5 text-xl font-bold tracking-tight">Who built this</h2>
+          <div className="space-y-4">
+            <p className="text-muted-foreground leading-relaxed">
+              Race Replay is a project by{" "}
+              <Link
+                href="https://cloudgatestudios.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary/80 inline-flex items-center gap-1 font-medium transition-colors"
+              >
+                Cloudgate Studios
+              </Link>
+              . It started as a personal tool to make sense of triathlon results, and grew into
+              something worth sharing with the broader racing community.
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              The project is open source. If you want to see how it works under the hood, report a
+              bug, or add support for a new race series, the code is on GitHub.
+            </p>
+          </div>
+          <div className="mt-8">
+            <Link
+              href="https://github.com/CloudgateStudios/race_replay"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-card hover:border-primary/50 inline-flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="text-primary h-4 w-4"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+              </svg>
+              View on GitHub
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

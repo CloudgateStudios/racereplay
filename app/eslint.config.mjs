@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     },
   },
   // Override default ignores of eslint-config-next.
+  // Allow unused vars/args that start with _ (destructuring discard pattern).
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+      ],
+    },
+  },
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
