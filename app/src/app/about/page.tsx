@@ -80,9 +80,9 @@ export default function AboutPage() {
                 relative to everyone else on course that day.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                If you coach multiple athletes in the same race, you can compare their patterns
-                side by side: who&apos;s a strong swimmer getting caught on the bike, who blows up
-                on the run, who races consistently well but starts too conservatively. Passing data
+                If you coach multiple athletes in the same race, you can compare their patterns side
+                by side: who&apos;s a strong swimmer getting caught on the bike, who blows up on the
+                run, who races consistently well but starts too conservatively. Passing data
                 surfaces those tendencies in a way split times alone never could.
               </p>
             </div>
