@@ -76,7 +76,13 @@ export default async function AthletePage({ params }: Props) {
           normalizedName: athlete.normalizedName,
           event: { raceId: race.id, year: { not: year } },
         },
-        include: {
+        select: {
+          bib: true,
+          finishTime: true,
+          finishSeconds: true,
+          overallRank: true,
+          genderRank: true,
+          divisionRank: true,
           event: { select: { year: true } },
           segments: { select: { net: true } },
         },
@@ -212,72 +218,125 @@ export default async function AthletePage({ params }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[
-                  // Inject the current year into the history list and sort newest first
-                  {
-                    eventYear: year,
-                    finishTime: athlete.finishTime,
-                    overallRank: athlete.overallRank,
-                    genderRank: athlete.genderRank,
-                    divisionRank: athlete.divisionRank,
-                    net: overallNet,
-                    bib: athlete.bib,
-                    isCurrent: true,
-                  },
-                  ...raceHistory.map((h) => ({
-                    eventYear: h.event.year,
-                    finishTime: h.finishTime,
-                    overallRank: h.overallRank,
-                    genderRank: h.genderRank,
-                    divisionRank: h.divisionRank,
-                    net: h.segments.reduce((sum, s) => sum + (s.net ?? 0), 0),
-                    bib: h.bib,
-                    isCurrent: false,
-                  })),
-                ]
-                  .sort((a, b) => b.eventYear - a.eventYear)
-                  .map((row) => (
-                    <TableRow
-                      key={row.eventYear}
-                      className={row.isCurrent ? "bg-muted/30 font-medium" : undefined}
-                    >
-                      <TableCell>
-                        {row.eventYear}{" "}
-                        {row.isCurrent && (
-                          <span className="text-muted-foreground text-xs font-normal">
-                            (this race)
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-sm tabular-nums">
-                        {row.finishTime ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {row.overallRank != null ? `#${row.overallRank.toLocaleString()}` : "—"}
-                      </TableCell>
-                      <TableCell className="hidden text-right tabular-nums sm:table-cell">
-                        {row.genderRank != null ? `#${row.genderRank.toLocaleString()}` : "—"}
-                      </TableCell>
-                      <TableCell className="hidden text-right tabular-nums sm:table-cell">
-                        {row.divisionRank != null ? `#${row.divisionRank.toLocaleString()}` : "—"}
-                      </TableCell>
-                      <TableCell
-                        className={`text-center font-bold tabular-nums ${netColor(row.net)}`}
+                {(() => {
+                  const rows = [
+                    {
+                      eventYear: year,
+                      finishTime: athlete.finishTime,
+                      finishSeconds: athlete.finishSeconds,
+                      overallRank: athlete.overallRank,
+                      genderRank: athlete.genderRank,
+                      divisionRank: athlete.divisionRank,
+                      net: overallNet,
+                      bib: athlete.bib,
+                      isCurrent: true,
+                    },
+                    ...raceHistory.map((h) => ({
+                      eventYear: h.event.year,
+                      finishTime: h.finishTime,
+                      finishSeconds: h.finishSeconds,
+                      overallRank: h.overallRank,
+                      genderRank: h.genderRank,
+                      divisionRank: h.divisionRank,
+                      net: h.segments.reduce((sum, s) => sum + (s.net ?? 0), 0),
+                      bib: h.bib,
+                      isCurrent: false,
+                    })),
+                  ].sort((a, b) => b.eventYear - a.eventYear);
+
+                  const currentRow = rows.find((r) => r.isCurrent)!;
+
+                  return rows.map((row) => {
+                    // Compute deltas vs the current year for historical rows
+                    const timeDeltaSecs =
+                      !row.isCurrent &&
+                      row.finishSeconds != null &&
+                      currentRow.finishSeconds != null
+                        ? currentRow.finishSeconds - row.finishSeconds
+                        : null;
+                    const rankDelta =
+                      !row.isCurrent && row.overallRank != null && currentRow.overallRank != null
+                        ? row.overallRank - currentRow.overallRank
+                        : null;
+                    const netDelta = !row.isCurrent ? currentRow.net - row.net : null;
+
+                    return (
+                      <TableRow
+                        key={row.eventYear}
+                        className={row.isCurrent ? "bg-muted/30 font-medium" : undefined}
                       >
-                        {netLabel(row.net)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {!row.isCurrent && (
-                          <Link
-                            href={`/events/${slug}/${row.eventYear}/${row.bib}`}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
-                          >
-                            View {row.eventYear} →
-                          </Link>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        <TableCell>
+                          {row.eventYear}{" "}
+                          {row.isCurrent && (
+                            <span className="text-muted-foreground text-xs font-normal">
+                              (this race)
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm tabular-nums">
+                          {row.finishTime ?? "—"}
+                          {timeDeltaSecs !== null && (
+                            <div
+                              className={`text-xs font-normal ${timeDeltaSecs > 0 ? "text-green-600" : timeDeltaSecs < 0 ? "text-red-500" : "text-muted-foreground"}`}
+                            >
+                              {timeDeltaSecs > 0
+                                ? `▲ ${formatSeconds(Math.abs(timeDeltaSecs))} faster`
+                                : timeDeltaSecs < 0
+                                  ? `▼ ${formatSeconds(Math.abs(timeDeltaSecs))} slower`
+                                  : "same time"}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {row.overallRank != null ? `#${row.overallRank.toLocaleString()}` : "—"}
+                          {rankDelta !== null && (
+                            <div
+                              className={`text-xs font-normal ${rankDelta > 0 ? "text-green-600" : rankDelta < 0 ? "text-red-500" : "text-muted-foreground"}`}
+                            >
+                              {rankDelta > 0
+                                ? `↑ ${rankDelta.toLocaleString()} places`
+                                : rankDelta < 0
+                                  ? `↓ ${Math.abs(rankDelta).toLocaleString()} places`
+                                  : "same rank"}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                          {row.genderRank != null ? `#${row.genderRank.toLocaleString()}` : "—"}
+                        </TableCell>
+                        <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                          {row.divisionRank != null ? `#${row.divisionRank.toLocaleString()}` : "—"}
+                        </TableCell>
+                        <TableCell
+                          className={`text-center font-bold tabular-nums ${netColor(row.net)}`}
+                        >
+                          {netLabel(row.net)}
+                          {netDelta !== null && (
+                            <div
+                              className={`text-xs font-normal ${netDelta > 0 ? "text-green-600" : netDelta < 0 ? "text-red-500" : "text-muted-foreground"}`}
+                            >
+                              {netDelta > 0
+                                ? `+${netDelta} more`
+                                : netDelta < 0
+                                  ? `${netDelta} fewer`
+                                  : "same"}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {!row.isCurrent && (
+                            <Link
+                              href={`/events/${slug}/${row.eventYear}/${row.bib}`}
+                              className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
+                            >
+                              View {row.eventYear} →
+                            </Link>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+                })()}
               </TableBody>
             </Table>
           </div>
