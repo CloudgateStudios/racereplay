@@ -132,7 +132,13 @@ export default async function AthletePage({ params }: Props) {
             >
               Compare
             </Link>
-            <ShareButton />
+            <ShareButton
+              athleteName={athlete.name}
+              raceName={race.name}
+              year={year}
+              netPasses={overallNet}
+              finishTime={athlete.finishTime}
+            />
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
