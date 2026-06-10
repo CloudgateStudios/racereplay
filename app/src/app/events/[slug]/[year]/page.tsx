@@ -217,11 +217,21 @@ export default async function EventPage({ params, searchParams }: Props) {
         <EventFilters genders={genders} divisions={divisions} />
       </Suspense>
 
-      {/* Results count */}
-      <p className="text-muted-foreground mb-3 text-sm">
-        {total.toLocaleString()} result{total !== 1 ? "s" : ""}
-        {page > 1 ? ` — page ${page} of ${totalPages}` : ""}
-      </p>
+      {/* Results count + "Find me" CTA when exactly one match */}
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <p className="text-muted-foreground text-sm">
+          {total.toLocaleString()} result{total !== 1 ? "s" : ""}
+          {page > 1 ? ` — page ${page} of ${totalPages}` : ""}
+        </p>
+        {q && total === 1 && athletes[0] && (
+          <Link
+            href={`/events/${slug}/${year}/${athletes[0].bib}`}
+            className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors"
+          >
+            View {athletes[0].name} →
+          </Link>
+        )}
+      </div>
 
       {/* Table: on mobile shows Rank, Name (+ status badge inline), Overall Net only.
           Secondary columns (Bib, Division, Status, Finish, per-segment nets) are

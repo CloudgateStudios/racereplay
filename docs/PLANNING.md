@@ -28,11 +28,11 @@ designed and batched before large-scale data ingestion.
 
 | # | Item | Description |
 |---|------|-------------|
-| 9 | N3 | "Find me" name search UX on results page |
+| 9 | ✅ N3 | "Find me" name search UX on results page |
 | 10 | E2 | Segment leaderboard on event page |
 | 11 | E3 | Most passes in a single leg leaderboard |
 | 12 | E1 | Year-over-year delta callout on athlete page (cleaner with T3 done) |
-| 13 | E4 | OG image for athlete pages |
+| 13 | ✅ E4 | OG image for athlete pages |
 | 14 | ✅ E5 | Share improvements (tweet text, Web Share API) |
 
 ### Phase 3 — New features unlocked by Phase 1
@@ -221,13 +221,11 @@ No schema change.
 
 ---
 
-### E4 — OG image for athlete pages
+### ✅ E4 — OG image for athlete pages
 
-Currently athlete pages have no custom OG image — they inherit the root card.
-A custom card showing the athlete name, race, year, finish time, and overall
-rank would make shares much more compelling.
-
-No schema change. New `opengraph-image.tsx` under `[bib]/`.
+`opengraph-image.tsx` under `[bib]/` renders a 1200×630 card with athlete name,
+race · year · bib eyebrow, division label, finish time, and net passes (green/red).
+`racereplay.app` CTA in the bottom-right corner.
 
 ---
 
@@ -298,14 +296,11 @@ but S3 is the right foundation.
 
 ---
 
-### N3 — "Find me" search on event results
+### ✅ N3 — "Find me" search on event results
 
-A search-by-name shortcut on the race results page. Athlete types their name,
-jumps straight to their result. Currently requires knowing your bib.
-
-No schema change. Enhancement to existing `EventFilters` name search.
-(The filter already exists — this is just UX polish, e.g. auto-focus or
-a "View my result →" CTA when exactly one match is found.)
+When the name/bib search filter narrows to exactly one match, a "View [Name] →"
+pill link appears next to the result count, jumping directly to the athlete detail
+page. No schema change — pure render logic using the existing filtered result set.
 
 ---
 
