@@ -33,14 +33,14 @@ designed and batched before large-scale data ingestion.
 | 11 | E3 | Most passes in a single leg leaderboard |
 | 12 | E1 | Year-over-year delta callout on athlete page (cleaner with T3 done) |
 | 13 | E4 | OG image for athlete pages |
-| 14 | E5 | Share improvements (tweet text, Web Share API) |
+| 14 | ✅ E5 | Share improvements (tweet text, Web Share API) |
 
 ### Phase 3 — New features unlocked by Phase 1
 > These depend on schema changes from Phase 1.
 
 | # | Item | Description |
 |---|------|-------------|
-| 15 | N1 | Race search / discovery (needs S1) |
+| 15 | ✅ N1 | Race search / discovery (needs S1) |
 | 16 | N4 | Race series page (needs S1) |
 | 17 | N6 | Race comparison, two events side-by-side |
 | 18 | S3 | AthleteProfile model |
@@ -231,6 +231,30 @@ No schema change. New `opengraph-image.tsx` under `[bib]/`.
 
 ---
 
+### ✅ UI — Races page table with search + sort
+
+Replaced card grid with a sortable table (one row per race, years combined). Added search input filtering by race name via `?q=` URL param. Column headers sort by name/type/years/entries via URL params. Renamed "Athletes" → "Entries".
+
+---
+
+### ✅ UI — Race detail page redesign
+
+Replaced year-picker cards with a full race profile: metadata badges (location, series, distance), stat strip (years tracked, total entries, coverage), clickable bar chart per year, and a year table with Finishers + Entries columns.
+
+---
+
+### ✅ UI — About page additions
+
+Added "Why this data matters" section (comparison card) and "Built for coaches too" section (3-column icon grid) below the existing about page content.
+
+---
+
+### ✅ UI — Home page cleanup
+
+Removed leg pill from latest race cards. Replaced swimmer emoji with TRI/RUN text badge. Fixed hero gradient to span full viewport width.
+
+---
+
 ### ✅ E5 — Share improvements
 
 The Share button now builds a human-readable message from athlete context:
@@ -255,10 +279,9 @@ No schema change (needs env var `ADMIN_SECRET`).
 
 > Net-new capabilities that don't exist today.
 
-### N1 — Race search / discovery (existing item #5)
+### ✅ N1 — Race search / discovery (existing item #5)
 
-Search bar on home or dedicated `/search` page. Client-side filter over race
-list works until ~500 races; Postgres full-text search after that.
+Search box on the races page filters by race name via `?q=` URL param. Client-side via `router.replace` with `useTransition`. Works well at current catalog size; upgrade to Postgres full-text if catalog grows past ~500 races.
 
 **Schema dependency:** S1 (location, distanceType) makes search much more useful.
 
