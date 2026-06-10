@@ -52,6 +52,15 @@ jobs:
           TAG=$(node -p "require('./package.json').version")
           echo "tag=$TAG" >> $GITHUB_ENV
 
+      - name: Extract CHANGELOG section for this release
+        working-directory: app
+        run: |
+          # Pull the block between the first two "## [" headings
+          awk '/^## \[/{n++} n==1{print} n==2{exit}' CHANGELOG.md \
+            | tail -n +2 \
+            > /tmp/release_notes.md
+          echo "release_notes_path=/tmp/release_notes.md" >> $GITHUB_ENV
+
       - name: Format CHANGELOG
         working-directory: app
         run: npx prettier --write CHANGELOG.md
@@ -102,3 +111,4 @@ jobs:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           tag_name: ${{ env.tag }}
+          body_path: ${{ env.release_notes_path }}
