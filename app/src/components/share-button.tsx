@@ -2,20 +2,31 @@
 
 import { useState } from "react";
 
-export function ShareButton() {
+interface Props {
+  athleteName?: string;
+  raceName?: string;
+  year?: number;
+  netPasses?: number;
+  finishTime?: string | null;
+}
+
+export function ShareButton({ athleteName, raceName, year, netPasses, finishTime }: Props) {
   const [copied, setCopied] = useState(false);
+
+  const shareText = buildShareText({ athleteName, raceName, year, netPasses, finishTime });
 
   async function handleShare() {
     const url = window.location.href;
     if (navigator.share) {
       try {
-        await navigator.share({ url });
+        await navigator.share({ title: athleteName, text: shareText, url });
         return;
       } catch {
-        // User cancelled or share failed — fall through to clipboard
+        // User cancelled — fall through to clipboard
       }
     }
-    await navigator.clipboard.writeText(url);
+    const copyValue = shareText ? `${shareText}\n${url}` : url;
+    await navigator.clipboard.writeText(copyValue);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -32,6 +43,7 @@ export function ShareButton() {
             viewBox="0 0 16 16"
             fill="currentColor"
             className="h-3.5 w-3.5 text-green-500"
+            aria-hidden="true"
           >
             <path
               fillRule="evenodd"
@@ -46,4 +58,19 @@ export function ShareButton() {
       )}
     </button>
   );
+}
+
+function buildShareText({ athleteName, raceName, year, netPasses, finishTime }: Props): string {
+  if (!athleteName || !raceName || !year) return "";
+
+  const passLine =
+    netPasses != null && netPasses > 0
+      ? `I passed ${netPasses} people on course`
+      : netPasses != null && netPasses < 0
+        ? `I got passed ${Math.abs(netPasses)} times on course`
+        : "Check out my race data";
+
+  const timePart = finishTime ? ` in ${finishTime}` : "";
+
+  return `${passLine} at ${raceName} ${year}${timePart} 🏊🚴🏃 #RaceReplay`;
 }
