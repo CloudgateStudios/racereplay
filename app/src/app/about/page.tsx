@@ -69,7 +69,6 @@ export default function AboutPage() {
 
       {/* ── Full-width sections ── */}
       <div className="mt-20 space-y-20">
-
         {/* Why this data matters — comparison card */}
         <section>
           <h2 className="mb-5 text-xl font-bold tracking-tight">Why this data matters</h2>
@@ -80,7 +79,7 @@ export default function AboutPage() {
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="bg-card rounded-xl border p-6">
-              <p className="text-muted-foreground mb-1 text-xs font-semibold uppercase tracking-widest">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-widest uppercase">
                 Athlete A — 4:52:14
               </p>
               <div className="mt-4 space-y-3">
@@ -105,7 +104,7 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="bg-card rounded-xl border p-6">
-              <p className="text-muted-foreground mb-1 text-xs font-semibold uppercase tracking-widest">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-widest uppercase">
                 Athlete B — 4:52:14
               </p>
               <div className="mt-4 space-y-3">
@@ -147,8 +146,8 @@ export default function AboutPage() {
               <div className="text-primary mb-4 text-2xl">📍</div>
               <h3 className="mb-2 font-semibold">Pinpoint weaknesses</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                See exactly where an athlete moves through the field and where they lose ground.
-                Not just their split time, but their position relative to the whole field.
+                See exactly where an athlete moves through the field and where they lose ground. Not
+                just their split time, but their position relative to the whole field.
               </p>
             </div>
             <div className="bg-card rounded-xl border p-6">
@@ -211,7 +210,6 @@ export default function AboutPage() {
             </Link>
           </div>
         </section>
-
       </div>
     </div>
   );
