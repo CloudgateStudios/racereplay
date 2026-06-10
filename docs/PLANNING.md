@@ -231,12 +231,13 @@ No schema change. New `opengraph-image.tsx` under `[bib]/`.
 
 ---
 
-### E5 — Share improvements
+### ✅ E5 — Share improvements
 
-The Share button currently copies the URL. Consider:
+The Share button now builds a human-readable message from athlete context:
+"I passed 87 people on course at Ironman Wisconsin 2025 in 8:36:15 🏊🚴🏃 #RaceReplay"
 
-- Pre-formatted tweet text: "I passed 407 people at Ironman Wisconsin 2025 🏊‍♂️🚴‍♂️🏃‍♂️ #RaceReplay"
-- Native share sheet on mobile (Web Share API)
+Web Share API pre-fills title + text for the native mobile share sheet.
+Clipboard fallback copies the rich text + URL. Handles positive/negative/zero net passes.
 
 No schema change.
 

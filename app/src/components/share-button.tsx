@@ -60,13 +60,7 @@ export function ShareButton({ athleteName, raceName, year, netPasses, finishTime
   );
 }
 
-function buildShareText({
-  athleteName,
-  raceName,
-  year,
-  netPasses,
-  finishTime,
-}: Props): string {
+function buildShareText({ athleteName, raceName, year, netPasses, finishTime }: Props): string {
   if (!athleteName || !raceName || !year) return "";
 
   const passLine =
