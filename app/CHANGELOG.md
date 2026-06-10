@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/CloudgateStudios/race_replay/compare/0.8.0...0.9.0) (2026-06-10)
+
+### Features
+
+- add config for rockford and penn ([#85](https://github.com/CloudgateStudios/race_replay/issues/85)) ([a616bb4](https://github.com/CloudgateStudios/race_replay/commit/a616bb42dc9f576ea5a347e3d1af6095c1978cb3))
+- normalize segment names via races.config.json segmentNames map ([#83](https://github.com/CloudgateStudios/race_replay/issues/83)) ([2ca46cc](https://github.com/CloudgateStudios/race_replay/commit/2ca46cc534047e4702b94924baa31ee572bc7ea1))
+- share improvements — rich pre-filled share text ([#88](https://github.com/CloudgateStudios/race_replay/issues/88)) ([b9bbaac](https://github.com/CloudgateStudios/race_replay/commit/b9bbaacfea128ced55f3ed2c21f083b14cd4836c))
+- UI cleanup — races table, search, sort, TRI badge, full-width gradient ([#87](https://github.com/CloudgateStudios/race_replay/issues/87)) ([a477892](https://github.com/CloudgateStudios/race_replay/commit/a477892340771b91135baab2fe936986bed7af1f))
+- update about page ([#86](https://github.com/CloudgateStudios/race_replay/issues/86)) ([13d3f51](https://github.com/CloudgateStudios/race_replay/commit/13d3f513072de67a091c71c817ba205cc8a9be71))
+
+### Bug Fixes
+
+- update config ([#84](https://github.com/CloudgateStudios/race_replay/issues/84)) ([43ff91c](https://github.com/CloudgateStudios/race_replay/commit/43ff91c4a5b32e0cf617a9c41805ee0b452d2da0))
+
 ## [0.8.0](https://github.com/CloudgateStudios/race_replay/compare/0.7.0...0.8.0) (2026-06-09)
 
 ### Features
