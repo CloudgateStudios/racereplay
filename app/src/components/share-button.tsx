@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePostHog } from "posthog-js/react";
 
 interface Props {
   athleteName?: string;
@@ -12,6 +13,7 @@ interface Props {
 
 export function ShareButton({ athleteName, raceName, year, netPasses, finishTime }: Props) {
   const [copied, setCopied] = useState(false);
+  const posthog = usePostHog();
 
   const shareText = buildShareText({ athleteName, raceName, year, netPasses, finishTime });
 
@@ -20,6 +22,7 @@ export function ShareButton({ athleteName, raceName, year, netPasses, finishTime
     if (navigator.share) {
       try {
         await navigator.share({ title: athleteName, text: shareText, url });
+        posthog?.capture("athlete_shared", { method: "native", raceName, year });
         return;
       } catch {
         // User cancelled — fall through to clipboard
@@ -27,6 +30,7 @@ export function ShareButton({ athleteName, raceName, year, netPasses, finishTime
     }
     const copyValue = shareText ? `${shareText}\n${url}` : url;
     await navigator.clipboard.writeText(copyValue);
+    posthog?.capture("athlete_shared", { method: "clipboard", raceName, year });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }

@@ -23,9 +23,11 @@ noemit
 oklch
 opengraph
 overallrank
+pageleave
 popover
 postgres
 postgresql
+posthog
 prerender
 prerendering
 prisma
