@@ -140,15 +140,15 @@ export default function AboutPage() {
           <h2 className="mb-5 text-xl font-bold tracking-tight">Built for coaches too</h2>
           <p className="text-muted-foreground mb-8 leading-relaxed">
             Coaches already know what to prescribe. Race Replay gives them race-day evidence to
-            validate or challenge it — leg by leg, relative to everyone else on course that day.
+            validate or challenge it. Leg by leg, relative to everyone else on course that day.
           </p>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="bg-card rounded-xl border p-6">
               <div className="text-primary mb-4 text-2xl">📍</div>
               <h3 className="mb-2 font-semibold">Pinpoint weaknesses</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                See exactly where an athlete moves through the field and where they lose ground —
-                not just their split time, but their position relative to the whole field.
+                See exactly where an athlete moves through the field and where they lose ground.
+                Not just their split time, but their position relative to the whole field.
               </p>
             </div>
             <div className="bg-card rounded-xl border p-6">
