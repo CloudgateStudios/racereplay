@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.2](https://github.com/CloudgateStudios/race_replay/compare/0.9.1...0.9.2) (2026-06-10)
+
+### Features
+
+- add ironman florida config ([#95](https://github.com/CloudgateStudios/race_replay/issues/95)) ([694c1ae](https://github.com/CloudgateStudios/race_replay/commit/694c1ae7bafa7cd54e507ee3c364c56c830408db))
+- PostHog analytics — pageviews and share events ([#96](https://github.com/CloudgateStudios/race_replay/issues/96)) ([447ba51](https://github.com/CloudgateStudios/race_replay/commit/447ba51cbace0a83cf3e7da660867fcc222f6592))
+
 ### [0.9.1](https://github.com/CloudgateStudios/race_replay/compare/0.9.0...0.9.1) (2026-06-10)
 
 ### Features
