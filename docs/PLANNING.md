@@ -31,7 +31,7 @@ designed and batched before large-scale data ingestion.
 | 9 | ✅ N3 | "Find me" name search UX on results page |
 | 10 | E2 | Segment leaderboard on event page |
 | 11 | E3 | Most passes in a single leg leaderboard |
-| 12 | E1 | Year-over-year delta callout on athlete page (cleaner with T3 done) |
+| 12 | ✅ E1 | Year-over-year delta callout on athlete page (cleaner with T3 done) |
 | 13 | ✅ E4 | OG image for athlete pages |
 | 14 | ✅ E5 | Share improvements (tweet text, Web Share API) |
 
@@ -189,16 +189,17 @@ Check whether the scraper produces it before committing.
 
 > Improvements to existing functionality. No schema changes unless noted.
 
-### E1 — Year-over-year delta callout on athlete page
+### ✅ E1 — Year-over-year delta callout on athlete page
 
-Currently the Race History table shows raw numbers per year. Add computed
-year-over-year delta rows or badges:
+The Race History table now shows computed deltas vs. the current year for each historical row:
 
-- Finish time: "18:22 faster than 2024"
-- Overall rank: "↑56 places vs 2024"
-- Net passes: "+13 more than 2024"
+- Finish time: "▲ 18:22 faster" / "▼ 5:14 slower"
+- Overall rank: "↑ 56 places" / "↓ 12 places"
+- Net passes: "+13 more" / "-5 fewer"
 
-No schema change. Pure render logic.
+Deltas appear as small sub-lines under the raw value, color-coded green/red. Requires `finishSeconds` (T3) to be populated — gracefully omitted when null.
+
+No schema change. Pure render logic using `finishSeconds` for numeric time comparison.
 
 ---
 
