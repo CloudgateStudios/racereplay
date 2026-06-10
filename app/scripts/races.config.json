@@ -4,7 +4,25 @@
     "country": "US",
     "distanceType": "140.6",
     "seriesName": "IRONMAN",
-    "website": "https://www.ironman.com/im-wisconsin",
+    "website": "https://www.ironman.com/races/im-wisconsin",
+    "scraperPoints": "SWIM,T1,BIKE,T2,FINISH",
+    "segmentNames": { "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
+  },
+  "ironman703-rockford": {
+    "location": "Rockford, IL",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/races/im703-rockford-illinois",
+    "scraperPoints": "SWIM,T1,BIKE,T2,FINISH",
+    "segmentNames": { "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
+  },
+  "ironman703-pennsylvania": {
+    "location": "State College, PA",
+    "country": "US",
+    "distanceType": "70.3",
+    "seriesName": "IRONMAN 70.3",
+    "website": "https://www.ironman.com/races/im703-pennsylvania",
     "scraperPoints": "SWIM,T1,BIKE,T2,FINISH",
     "segmentNames": { "SWIM": "Swim", "BIKE": "Bike", "FINISH": "Run" }
   }
