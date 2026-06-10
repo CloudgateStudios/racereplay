@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.1](https://github.com/CloudgateStudios/race_replay/compare/0.9.0...0.9.1) (2026-06-10)
+
+### Features
+
+- add config for madison 70.3 ([#90](https://github.com/CloudgateStudios/race_replay/issues/90)) ([699ae59](https://github.com/CloudgateStudios/race_replay/commit/699ae596d2d86f5c84aa5b236b7f1962f3a3e2e6))
+- race detail page — stat strip, entry chart, year table ([#91](https://github.com/CloudgateStudios/race_replay/issues/91)) ([0fa7fab](https://github.com/CloudgateStudios/race_replay/commit/0fa7fabc7f150ef2ce9b2b6622b74fcf314aa31f))
+- show View [name] CTA when search has exactly one result ([#93](https://github.com/CloudgateStudios/race_replay/issues/93)) ([5a07ff5](https://github.com/CloudgateStudios/race_replay/commit/5a07ff5a054508c0b06336c33dcd278ba0dc8cab))
+- year-over-year delta badges on athlete race history table (E1) ([#94](https://github.com/CloudgateStudios/race_replay/issues/94)) ([9256133](https://github.com/CloudgateStudios/race_replay/commit/92561336a97e409984ff022cf1657036b5df2176))
+
+### Bug Fixes
+
+- populate GitHub release body from CHANGELOG section ([#89](https://github.com/CloudgateStudios/race_replay/issues/89)) ([91c7622](https://github.com/CloudgateStudios/race_replay/commit/91c76220c76619064ce3b0869f505c869a5857fa))
+
 ## [0.9.0](https://github.com/CloudgateStudios/race_replay/compare/0.8.0...0.9.0) (2026-06-10)
 
 ### Features
