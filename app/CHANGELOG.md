@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.3](https://github.com/CloudgateStudios/race_replay/compare/0.9.2...0.9.3) (2026-06-12)
+
+### Bug Fixes
+
+- route PostHog events through reverse proxy to avoid ad blockers ([#97](https://github.com/CloudgateStudios/race_replay/issues/97)) ([6a4dc07](https://github.com/CloudgateStudios/race_replay/commit/6a4dc071298e8cb48506a1a53636e08d50da1ce2))
+
 ### [0.9.2](https://github.com/CloudgateStudios/race_replay/compare/0.9.1...0.9.2) (2026-06-10)
 
 ### Features
